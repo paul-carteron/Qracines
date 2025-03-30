@@ -1,64 +1,139 @@
 from qgis.core import *
-from qgis.utils import iface
+from qgis.utils import *
+from collections import *
+import geopandas as gpd 
 
-class VariableUtils:
-    def __init__(self, iface):
-        self.iface = iface
+# Fonction pour ajouter une variable globale       
+def set_global_variable(variable_name, value):
+    QgsExpressionContextUtils.setGlobalVariable(variable_name, value)
+
+# Fonction pour récupérer une variable globale
+def get_global_variable(variable_name):
+    return QgsExpressionContextUtils.globalScope().variable(variable_name)
+  
+# Fonction pour ajouter une variable projet
+def set_project_variable(variable_name, value):
+    project = QgsProject.instance()
+    context = QgsExpressionContextUtils.projectScope(project)
+    exists = context.variable(variable_name)
+    if not exists:
+        QgsExpressionContextUtils.setProjectVariable(project, variable_name, value)
+
+# Fonction pour récupérer une variable projet
+def get_project_variable(variable_name):
+    project = QgsProject.instance()
+    context = QgsExpressionContextUtils.projectScope(project)
+    exists = context.variable(variable_name)
+    if exists:
+        return context.variable(variable_name)
+    
+# Fonction pour récupérer un prefixe depuis un répertoire
+def get_prefix_from_directory(path):
+    last_part = os.path.basename(path).split('_')[-1]
+    return last_part
+
+# Fonction pour City & Owner
+def get_grouped_values_from_shapefile(shapefile_path, value_field, filter_field, surface_field):
+    # Lecture du shapefile
+    gdf = gpd.read_file(shapefile_path)
+    
+    # Dictionnaire pour regrouper les valeurs
+    group_dict = defaultdict(list)
+    
+    # Si filter_field est None, on va regrouper sous un groupe "No Filter"
+    if filter_field is None:
+        filter_field = "No Filter"
+    
+    # Parcours des entités du GeoDataFrame
+    for _, row in gdf.iterrows():
+        # Si filter_field est "No Filter", on n'utilise pas de champ de filtre
+        filter_value = row[filter_field] if filter_field != "No Filter" else "No Filter"
+        value = row[value_field]
+        surface = row[surface_field]
         
-    # Fonctions de récupération des valeurs d'un champ    
-    def values_from_layer(self, layer_name, field_name):
-        layer = QgsProject.instance().mapLayersByName(layer_name)[0]
-        unique_values = set()
-        for feature in layer.getFeatures():
-            value = feature[field_name]
-            unique_values.add(value)
-        sorted_values = sorted(unique_values)
-        concatenated_values = ' & '.join(map(str, sorted_values))
-        number_of_values = len(sorted_values)
-        return concatenated_values, number_of_values
-        pass
-      
-    # Fonction de récupération des communes  
-    def concatenate_com_per_dep(self, layer_name):
-        layer = QgsProject.instance().mapLayersByName(layer_name)[0]
-        dep_com_dict = {}
-        for feature in layer.getFeatures():
-            dep_value = feature['DEP_CODE']
-            com_value = feature['COM_NOM']
-            if dep_value not in dep_com_dict:
-                dep_com_dict[dep_value] = set()  # Utilisation d'un set pour garantir l'unicité
-                dep_com_dict[dep_value].add(com_value)
-        forest_city_parts = []
-        for dep, com_values in dep_com_dict.items():
-            concatenated_com = ', '.join(sorted(map(str, com_values)))
-            forest_city_parts.append(f"{concatenated_com} ({dep})")
-        forest_city = ' & '.join(forest_city_parts)
-        return forest_city
-      
-    # Fonctions de somme d'un champ filtré sur un autre
-    def sum_from_layer(self, layer_name, field_to_sum, filter_field, filter_value):
-        layer = QgsProject.instance().mapLayersByName(layer_name)[0]
-        filter_expression = f'"{filter_field}" = \'{filter_value}\''
-        request = QgsFeatureRequest().setFilterExpression(filter_expression)
-        total_sum = 0.0
-        for feature in layer.getFeatures(request):
-            value = feature[field_to_sum]
-            if isinstance(value, float):
-                total_sum += float(value)
-        return total_sum
-            
-    # Fonction pour ajouter variable
-    def set_project_variable(self, variable_name, value):
-        project = QgsProject.instance()
-        exists = QgsExpressionContextUtils.projectScope(project).variable(variable_name)
-        if not exists:
-            QgsExpressionContextUtils.setProjectVariable(project, variable_name, value)
-            
-    def set_global_variable(variable_name, value):
-        settings = QgsSettings()
-        settings.setValue(variable_name, value)
+        # Regroupement des valeurs par le champ de filtre (par exemple, DEP_CODE)
+        group_dict[filter_value].append((value, surface))
+    
+    result_list = []
+    
+    # Pour chaque groupe, on agrège les valeurs par le champ de filtre
+    for group, values in group_dict.items():
+        # Dictionnaire pour accumuler les valeurs uniques par COM_CODE
+        aggregated_values = defaultdict(float)
         
-    def get_global_variable(variable_name):
-        settings = QgsSettings()
-        return settings.value(variable_name, "")
-      
+        for value, surface in values:
+            aggregated_values[value] += surface
+        
+        # Trie les valeurs en fonction de la somme des surfaces
+        sorted_values = sorted(aggregated_values.items(), key=lambda x: x[1], reverse=True)
+        
+        value_list = [v[0] for v in sorted_values]
+        
+        # Construction de la chaîne de caractères avec , et &
+        if len(value_list) == 2:
+            result_string = f"{value_list[0]} & {value_list[1]}"
+        else:
+            result_string = f"{', '.join(value_list[:-1])} & {value_list[-1]}" if len(value_list) > 1 else value_list[0]
+        
+        # Si filter_field était None, on ne veut pas afficher " (No Filter)"
+        if filter_field != "No Filter":
+            result_list.append(f"{result_string} ({group})")
+        else:
+            result_list.append(f"{result_string}")
+    
+    return "; ".join(result_list)
+  
+# Fonction pour Surface
+def sum_surface_from_shapefile(shapefile_path, surface_field, filter_field=None, filter_value=None):
+    # Lecture du shapefile
+    gdf = gpd.read_file(shapefile_path)
+    
+    # Si un filter_field et un filter_value sont spécifiés, on filtre les données
+    if filter_field and filter_value is not None:
+        gdf = gdf[gdf[filter_field] == filter_value]
+    
+    # Si filter_field est None ou si aucun filtre n'est appliqué, on calcule la somme globale
+    if filter_field is None or filter_value is None:
+        total_surface = gdf[surface_field].sum()
+        return total_surface
+    
+    # Si filter_field est spécifié mais filter_value est None, on groupe par ce champ
+    surface_by_group = gdf.groupby(filter_field)[surface_field].sum()
+    
+    # Vérifier si filter_value est dans les indices et retourner la somme correspondante
+    if filter_value in surface_by_group.index:
+        return surface_by_group[filter_value]
+    else:
+        # Si la valeur n'existe pas dans les indices, retourner None
+        return None
+  
+def get_formated_surface(surface):
+    hectares = round(surface // 10000)
+    ares = round((surface % 10000) // 100)
+    centiares = round(surface % 100)
+    formatted_surface = f"Surface totale: {hectares} ha {ares:02} a {centiares:02} ca"
+    return formatted_surface
+  
+# Fonction pour lancer un nouveai projet tout en conservant les variables
+def create_new_projet_with_variables():
+  
+    # Récupération des variables
+    forest_city = get_project_variable("forest_city")
+    forest_directory = get_project_variable("forest_directory")
+    forest_formated_surface = get_project_variable("forest_formated_surface")
+    forest_name = get_project_variable("forest_name")
+    forest_owner = get_project_variable("forest_owner")
+    forest_prefix = get_project_variable("forest_prefix")
+    forest_surface = get_project_variable("forest_surface")
+    
+    # Nouveau projet
+    QgsProject.instance().clear()
+    
+    # Déclaration des variables
+    set_project_variable("forest_city", forest_city)
+    set_project_variable("forest_directory", forest_directory)
+    set_project_variable("forest_formated_surface", forest_formated_surface)
+    set_project_variable("forest_name", forest_name)
+    set_project_variable("forest_owner", forest_owner)
+    set_project_variable("forest_prefix", forest_prefix)
+    set_project_variable("forest_surface", forest_surface)
