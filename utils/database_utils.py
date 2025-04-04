@@ -1,24 +1,58 @@
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery
+from qgis.core import QgsDataSourceUri, QgsVectorLayer
 
-class DatabaseUtils:
-    def __init__(self):
-        self.db = QSqlDatabase.addDatabase('QPSQL')
-        self.db.setHostName('c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com')
-        self.db.setDatabaseName('dfmt7djs1uirmt')
-        self.db.setUserName('ueo45oicvq7lh8')
-        self.db.setPassword('p128a3e76b86b7246f203e2e8e51286f5790546134f0e6075ab0b82f4ae16412d')
-        self.db.setPort(5432)
+import os
+import json
 
-    def open_connection(self):
-        if not self.db.open():
-            print("Failed to connect to the database.")
-            return False
-        return True
+class DatabaseManager:
+    def __init__(self, config_path=None):
+        config_path = os.path.join(os.path.dirname(__file__), '..', 'config.json')
+        self.load_config(config_path)
 
-    def close_connection(self):
-        if self.db.isOpen():
-            self.db.close()
+    def load_config(self, config_path):
+        if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                config = json.load(f)
+            # Assign values from the JSON file to class attributes
+            self.host = config.get("db_host")
+            self.port = config.get("db_port")
+            self.database = config.get("db_database")
+            self.username = config.get("db_username")
+            self.password = config.get("password")
+        else:
+            raise FileNotFoundError(f"Config file not found at {config_path}")
 
-    def fetch_essence_map(self):
-        # Implementation of fetch_essence_map
-        pass
+    def load_layer_from_query(self, sql_query, layer_name, geometry_column=None):
+        """
+        Load a SQL query result as a layer in QGIS.
+
+        Args:
+            query (str): The raw SQL query (without _uid_ wrapping).
+            layer_name (str): The name of the layer in QGIS.
+            geometry_column (str): The name of the geometry column (None for non-geometry).
+        """
+        # Build the query with _uid_
+        sql_query = f"(SELECT row_number() over () AS _uid_,* FROM ({sql_query}) AS _subq_1_ )"
+
+        # Create the URI
+        uri = QgsDataSourceUri()
+        uri.setConnection(self.host, self.port, self.database, self.username, self.password)
+        uri.setDataSource("", sql_query, geometry_column, "", "_uid_")
+
+        # Create the layer
+        layer = QgsVectorLayer(uri.uri(), layer_name, "postgres")
+
+        return layer
+    
+    @staticmethod
+    def q_essences():
+        query = """SELECT concat_ws(' ', e.name, ev.variation) AS essence_variation, e.code, ev.variation, ev.ordre, e.type
+        FROM public.gestion_essencevariation AS ev
+        JOIN public.gestion_essence AS e
+        ON ev.essence_id = e.id
+        WHERE concat_ws(' ', e.name, ev.variation) NOT LIKE '%sain%'
+        ORDER BY ev.ordre ASC
+        """
+        return query
+  
+    def load_essences(self):
+        return self.load_layer_from_query(sql_query = self.q_essences(), layer_name = "essences")
