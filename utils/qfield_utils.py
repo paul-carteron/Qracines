@@ -171,3 +171,30 @@ def create_qfield_package(forest_directory, project_path):
                         file_path = os.path.join(root, file)
                         zipf.write(file_path, os.path.relpath(file_path, forest_directory))
     return output_zip_path
+
+# Fonction affectant une liste au formulaire d'un champ d'une couche
+def apply_value_list_to_field(layer_name, field_name, values_list):
+    layer = QgsProject.instance().mapLayersByName(layer_name)[0]
+
+    # Nettoyage des doublons tout en conservant l'ordre
+    seen = set()
+    unique_values = [v for v in values_list if not (v in seen or seen.add(v))]
+
+    # Création du dictionnaire pour le ValueMap
+    value_map = {v: v for v in unique_values}
+
+    # Création du setup du widget ValueMap
+    config = {'map': value_map}
+    setup = QgsEditorWidgetSetup("ValueMap", config)
+
+    # Récupère l'index du champ
+    field_index = layer.fields().indexOf(field_name)
+
+    if field_index == -1:
+        raise ValueError(f"Champ '{field_name}' introuvable dans la couche '{layer_name}'.")
+
+    # Application du widget au champ
+    layer.setEditorWidgetSetup(field_index, setup)
+
+    # Mise à jour de la couche (optionnel)
+    layer.triggerRepaint()
