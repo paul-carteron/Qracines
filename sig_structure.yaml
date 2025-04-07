@@ -1,0 +1,61 @@
+structure:
+  output_folder:
+    path: [SIG, 0_OUTPUT]
+    files:
+      amenagements: { filename: AMENAGEMENTS.qgz, description: Projet QGIS assemblage }
+      assemblage: { filename: ASSEMBLAGE.qgz, description: Projet QGIS assemblage }
+      enjeux_environnementaux: { filename: "ENJEUX ENVIRONNEMENTAUX.qgz", description: Projet QGIS assemblage }
+      geologie: { filename: GEOLOGIE.qgz, description: Projet QGIS assemblage }
+      peuplements: { filename: PEUPLEMENTS.qgz, description: Projet QGIS assemblage }
+      situation: { filename: SITUATION.qgz, description: Projet QGIS situation }
+
+  raster_folder:
+    path: [SIG, 1_RASTER]
+    files:
+      mnt: { filename: "MNT.tif", description: Modèle Numérique de Terrain }
+      mnh: { filename: "MNH.tif", description: Modèle Numérique de Hauteur }
+      mns: { filename: "MNS.tif", description: Modèle Numérique de Surface }
+      plt: { filename: "PLT.tif", description: Carte des peuplements }
+      plt_anc: { filename: "PLT_ANC.tif", description: Carte des peuplements ancienne }
+      irc: { filename: "IRC.tif", description: Orthophoto infra-rouge }
+      rgb: { filename: "RGB.tif", description: Orthophoto couleur }
+      scan25: { filename: "SCAN25.tif", description: Carte scan25 }
+
+  vector_folder:
+    path: [SIG, 2_VECTOR]
+    files:
+      ame_polygon: { filename: "AME_polygon.shp", description: "Shapefile - AME polygon" }
+      batica_polygon: { filename: "BATICA_polygon.shp", description: "Shapefile - BATICA polygon" }
+      coms_line: { filename: "COMS_line.shp", description: "Shapefile - COMS line" }
+      coms_point: { filename: "COMS_point.shp", description: "Shapefile - COMS point" }
+      coms_polygon: { filename: "COMS_polygon.shp", description: "Shapefile - COMS polygon" }
+      com_line: { filename: "COM_line.shp", description: "Shapefile - COM line" }
+      com_point: { filename: "COM_point.shp", description: "Shapefile - COM point" }
+      geol_polygon: { filename: "GEOL_polygon.shp", description: "Shapefile - GEOL polygon" }
+      infra_line: { filename: "INFRA_line.shp", description: "Shapefile - INFRA line" }
+      infra_point: { filename: "INFRA_point.shp", description: "Shapefile - INFRA point" }
+      infra_polygon: { filename: "INFRA_polygon.shp", description: "Shapefile - INFRA polygon" }
+      parca_archive_polygon: { filename: "PARCA-ARCHIVE_polygon.shp", description: "Shapefile - PARCA-ARCHIVE polygon" }
+      parca_polygon: { filename: "PARCA_polygon.shp", description: "Shapefile - PARCA polygon" }
+      parcelles_polygon: { filename: "PARCELLES_polygon.shp", description: "Shapefile - PARCELLES polygon" }
+      pf_line: { filename: "PF_line.shp", description: "Shapefile - PF line" }
+      pf_polygon: { filename: "PF_polygon.shp", description: "Shapefile - PF polygon" }
+      pn_polygon: { filename: "PN_polygon.shp", description: "Shapefile - PN polygon" }
+      prop_line: { filename: "PROP_line.shp", description: "Shapefile - PROP line" }
+      prop_point: { filename: "PROP_point.shp", description: "Shapefile - PROP point" }
+      prop_polygon: { filename: "PROP_polygon.shp", description: "Shapefile - PROP polygon" }
+      road_line: { filename: "ROAD_line.shp", description: "Shapefile - ROAD line" }
+      road_polygon: { filename: "ROAD_polygon.shp", description: "Shapefile - ROAD polygon" }
+      route_line: { filename: "ROUTE_line.shp", description: "Shapefile - ROUTE line" }
+      route_polygon: { filename: "ROUTE_polygon.shp", description: "Shapefile - ROUTE polygon" }
+      sic2105_polygon: { filename: "SIC2105_polygon.shp", description: "Shapefile - SIC2105 polygon" }
+      sspf_polygon: { filename: "SSPF_polygon.shp", description: "Shapefile - SSPF polygon" }
+      sspfinv_polygon: { filename: "SSPFinv_polygon.shp", description: "Shapefile - SSPFinv polygon" }
+      topo_line: { filename: "TOPO_line.shp", description: "Shapefile - TOPO line" }
+      ua_polygon: { filename: "UA_polygon.shp", description: "Shapefile - UA polygon" }
+      znieff1_polygon: { filename: "ZNIEFF1_polygon.shp", description: "Shapefile - ZNIEFF1 polygon" }
+
+  other_folder:
+    path: [SIG, 3_OTHER]
+    files:
+      inventaire: { filename: "inventaire.gpkg", description: Géopackage pour les inventaires Qfield }
