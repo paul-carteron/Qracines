@@ -128,6 +128,7 @@ def create_new_projet_with_variables():
     
     # Nouveau projet
     QgsProject.instance().clear()
+    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(2154))
     
     # Déclaration des variables
     set_project_variable("forest_city", forest_city)

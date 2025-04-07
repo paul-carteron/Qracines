@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="Vector">
     <attribute name="title">
@@ -110,7 +110,7 @@
       <string>AME_polygon</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox_SPPF">
+    <widget class="QCheckBox" name="checkBox_SSPF">
      <property name="geometry">
       <rect>
        <x>10</x>

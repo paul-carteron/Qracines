@@ -127,10 +127,10 @@ class ProjectSettingsDialog(QDialog):
                 
             # Surface
             ua_path = get_vector_from_config(directory, "new_directories", prefix, "UA_polygon")
-            if ua_path:
+            if os.path.exists(ua_path):
                 surface = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
                 self.ui.doubleSpinBox.setValue(surface)
-            elif parca_path:
+            elif os.path.exists(parca_path):
                 surface = sum_surface_from_shapefile(parca_path, "SURF_CA", None, None)
                 self.ui.doubleSpinBox.setValue(surface)
                 
@@ -141,6 +141,9 @@ class ProjectSettingsDialog(QDialog):
             
     def refresh_cartouche(self):
         name= get_project_variable("forest_temp_name")
+        if not name:
+            name = get_project_variable("forest_name")
+        
         full_name = ""
         
         if self.ui.checkBox_domaine.isChecked():
@@ -163,9 +166,10 @@ class ProjectSettingsDialog(QDialog):
             project = QgsProject.instance()
             save_path = os.path.join(forest_directory, "SIG", "0_OUTPUT", map_project + ".qgz")
             project.write(save_path)
+            project.write()
             
     def create_map_project(self, map_project):
-        create_new_projet_with_variables()
+        clear_qgis_project()
         styles_directory = get_global_variable("styles_directory")
         forest_directory = get_project_variable("forest_directory")
         forest_prefix = get_project_variable("forest_prefix")

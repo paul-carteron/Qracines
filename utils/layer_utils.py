@@ -4,6 +4,20 @@ from qgis.PyQt.QtCore import *
 import json
 import os
 
+# Efface le projet en cours
+def clear_qgis_project():
+    project = QgsProject.instance()
+    root = project.layerTreeRoot()
+
+    # Supprime toutes les couches
+    for layer in project.mapLayers().values():
+        project.removeMapLayer(layer)
+
+    # Supprime tous les groupes
+    for group in root.children():
+        if isinstance(group, QgsLayerTreeGroup):
+            root.removeChildNode(group)
+            
 # Fonction pour charger des serveurs WMS configurés dans config.json
 def import_wms_from_config(server_names, group_name=None):
     
@@ -211,6 +225,20 @@ def import_rasters_from_config(styles_directory, forest_directory, directories_t
                 if os.path.exists(style_path):
                     raster_layer.loadNamedStyle(style_path)
                     raster_layer.triggerRepaint()
+                    
+# Fonction pour récupérer des listes configurées
+def get_list_from_config(clef, data=None):
+  
+    # Charge la configuration JSON
+    config_path = os.path.join(os.path.dirname(__file__), '..', 'config.json')
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    
+    # Récupère les données
+    if data is None:
+        return config.get(clef, {})
+    else:
+        return config.get(clef, {}).get(data, [])
 
 # Fonction zoom sur emprise
 def zoom_on_layer(layer_name):
@@ -238,7 +266,18 @@ def create_map_theme(theme_name, visible_layers, invisible_layers):
     visibility_on_layers(invisible_layers, False)
     map_theme = QgsMapThemeCollection.createThemeFromCurrentState(QgsProject.instance().layerTreeRoot(), iface.layerTreeView().layerTreeModel())
     QgsProject.instance().mapThemeCollection().insert(theme_name, map_theme)
-      
+
+# Fonction pour recharger les styles
+def style_on_layers(layers, style_directory):
+    project = QgsProject.instance()
+    for layer_name in layers:
+        matching_layers = project.mapLayersByName(layer_name)
+        if matching_layers:
+            layer = matching_layers[0]
+            style_path = os.path.join(style_directory, layer_name + ".qml")
+            if layer.loadNamedStyle(style_path):
+                layer.triggerRepaint()
+                
 # Réduire les couches  
 def replier():
     root = QgsProject.instance().layerTreeRoot()

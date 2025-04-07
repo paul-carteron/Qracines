@@ -14,19 +14,18 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_PedologyDialog(object):
     def setupUi(self, PedologyDialog):
         PedologyDialog.setObjectName("PedologyDialog")
-        PedologyDialog.resize(400, 123)
+        PedologyDialog.resize(404, 132)
         self.buttonBox = QtWidgets.QDialogButtonBox(PedologyDialog)
         self.buttonBox.setGeometry(QtCore.QRect(20, 80, 361, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.progressBar = QtWidgets.QProgressBar(PedologyDialog)
-        self.progressBar.setGeometry(QtCore.QRect(20, 40, 371, 23))
-        self.progressBar.setProperty("value", 24)
-        self.progressBar.setObjectName("progressBar")
         self.label = QtWidgets.QLabel(PedologyDialog)
         self.label.setGeometry(QtCore.QRect(20, 10, 361, 16))
         self.label.setObjectName("label")
+        self.comboBox = QtWidgets.QComboBox(PedologyDialog)
+        self.comboBox.setGeometry(QtCore.QRect(20, 40, 351, 22))
+        self.comboBox.setObjectName("comboBox")
 
         self.retranslateUi(PedologyDialog)
         self.buttonBox.rejected.connect(PedologyDialog.reject) # type: ignore
@@ -36,4 +35,4 @@ class Ui_PedologyDialog(object):
     def retranslateUi(self, PedologyDialog):
         _translate = QtCore.QCoreApplication.translate
         PedologyDialog.setWindowTitle(_translate("PedologyDialog", "Création de Pedologie"))
-        self.label.setText(_translate("PedologyDialog", "TextLabel"))
+        self.label.setText(_translate("PedologyDialog", "Guide de station :"))

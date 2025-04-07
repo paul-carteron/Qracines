@@ -5,12 +5,12 @@ from PyQt5.QtSvg import QSvgRenderer
 import os
 
 # Import from dialogs folder
-from .dialogs.global_settings import GlobalSettingsDialog
-from .dialogs.project_settings import ProjectSettingsDialog
-from .dialogs.add_data import AddDataDialog
-from .dialogs.diagnostic import DiagnosticDialog
+from .dialogs.global_settings import *
+from .dialogs.project_settings import *
+from .dialogs.add_data import *
+from .dialogs.diagnostic import *
 from .dialogs.pedology import *
-from .dialogs.tree_marking import Tree_markingDialog
+from .dialogs.tree_marking import *
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -80,7 +80,7 @@ class QSequoia2:
         if self.pedology_action is None:
             project_icon = os.path.join(plugin_dir, "icons", "pedology.svg")
             self.pedology_action = QAction(QIcon(project_icon), "Pedologie", self.iface.mainWindow())
-            self.pedology_action.triggered.connect(self.run_pedology_script)
+            self.pedology_action.triggered.connect(self.open_pedology)
             self.toolbar.addAction(self.pedology_action)
             self.iface.addPluginToMenu(self.plugin_name, self.pedology_action)
         
@@ -112,8 +112,10 @@ class QSequoia2:
             self.diagnostic_dialog = DiagnosticDialog()
         self.diagnostic_dialog.exec_()
         
-    def run_pedology_script(self):
-        create_pedology()
+    def open_pedology(self):
+        if not self.pedology_dialog:
+            self.pedology_dialog = PedologyDialog()
+        self.pedology_dialog.exec_()
         
     def open_tree_marking(self):
         if not self.tree_marking_dialog:

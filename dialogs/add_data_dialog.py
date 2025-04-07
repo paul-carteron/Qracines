@@ -40,9 +40,9 @@ class Ui_AddDataDialog(object):
         self.checkBox_AME = QtWidgets.QCheckBox(self.Vector)
         self.checkBox_AME.setGeometry(QtCore.QRect(10, 160, 341, 17))
         self.checkBox_AME.setObjectName("checkBox_AME")
-        self.checkBox_SPPF = QtWidgets.QCheckBox(self.Vector)
-        self.checkBox_SPPF.setGeometry(QtCore.QRect(10, 100, 341, 17))
-        self.checkBox_SPPF.setObjectName("checkBox_SPPF")
+        self.checkBox_SSPF = QtWidgets.QCheckBox(self.Vector)
+        self.checkBox_SSPF.setGeometry(QtCore.QRect(10, 100, 341, 17))
+        self.checkBox_SSPF.setObjectName("checkBox_SSPF")
         self.checkBox_UA = QtWidgets.QCheckBox(self.Vector)
         self.checkBox_UA.setGeometry(QtCore.QRect(10, 130, 341, 17))
         self.checkBox_UA.setObjectName("checkBox_UA")
@@ -136,7 +136,7 @@ class Ui_AddDataDialog(object):
         self.tabWidget.addTab(self.Wms, "")
 
         self.retranslateUi(AddDataDialog)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         self.buttonBox.accepted.connect(AddDataDialog.accept) # type: ignore
         self.buttonBox.rejected.connect(AddDataDialog.reject) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(AddDataDialog)
@@ -149,7 +149,7 @@ class Ui_AddDataDialog(object):
         self.checkBox_PF.setText(_translate("AddDataDialog", "PF_line + PF_polygon"))
         self.label_layers.setText(_translate("AddDataDialog", "Parmis les vecteurs SEQUOIA :"))
         self.checkBox_AME.setText(_translate("AddDataDialog", "AME_polygon"))
-        self.checkBox_SPPF.setText(_translate("AddDataDialog", "SSPF_line + SSPF_polygon"))
+        self.checkBox_SSPF.setText(_translate("AddDataDialog", "SSPF_line + SSPF_polygon"))
         self.checkBox_UA.setText(_translate("AddDataDialog", "UA_polygon"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Vector), _translate("AddDataDialog", "Vector"))
         self.checkBox_MNH.setText(_translate("AddDataDialog", "MNH"))

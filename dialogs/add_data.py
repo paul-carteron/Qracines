@@ -26,72 +26,6 @@ class AddDataDialog(QDialog):
         return True
         
     def add_data_selected(self):
-        if not self.check_variables():
-            return
-          
-        styles_directory = get_global_variable("styles_directory")
-        forest_directory = get_project_variable("forest_directory")
-        forest_prefix = get_project_variable("forest_prefix")
-        
-        # Vecteur
-        
-        if self.ui.checkBox_TOPO.isChecked():
-            vector_layers = ['TOPO_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-        
-        if self.ui.checkBox_ROUTE.isChecked():
-            vector_layers = ['ROUTE_polygon', 'ROUTE_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-            
-        if self.ui.checkBox_PF.isChecked():
-            vector_layers = ['PF_polygon', 'PF_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-        
-        if self.ui.checkBox_SSPF.isChecked():
-            vector_layers = ['SSPF_polygon', 'SSPF_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-        
-        if self.ui.checkBox_UA.isChecked():
-            vector_layers = ['UA_polygon_AME', 'UA_polygon_OCCUP', 'UA_polygon_PLT', 'UA_polygon']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-            
-        # Raster
-            
-        if self.ui.checkBox_PLT.isChecked():
-            raster_layers = ['PLT']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()
-            
-        if self.ui.checkBox_PLTANC.isChecked():
-            raster_layers = ['PLT-ANC']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()
-            
-        if self.ui.checkBox_IRC.isChecked():
-            raster_layers = ['IRC']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier() 
-            
-        if self.ui.checkBox_RGB.isChecked():
-            raster_layers = ['RGB']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier() 
-            
-        if self.ui.checkBox_MNH.isChecked():
-            raster_layers = ['MNH']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()        
-            
-        if self.ui.checkBox_MNT.isChecked():
-            raster_layers = ['MNT']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()
-            
         # Wms
             
         if self.ui.checkBox_SCAN25G.isChecked():
@@ -169,4 +103,72 @@ class AddDataDialog(QDialog):
             server_names = ['GEOL']
             import_wms_from_config(server_names, group_name="RASTER")
             replier()
+      
+        
+        # Vérification Vecteur + Raster
+        if not self.check_variables():
+            return
+          
+        styles_directory = get_global_variable("styles_directory")
+        forest_directory = get_project_variable("forest_directory")
+        forest_prefix = get_project_variable("forest_prefix")
+        
+        # Vecteur
+        
+        if self.ui.checkBox_UA.isChecked():
+            vector_layers = ['UA_polygon_AME', 'UA_polygon_OCCUP', 'UA_polygon_PLT', 'UA_polygon']
+            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
+            replier()
+        
+        if self.ui.checkBox_SSPF.isChecked():
+            vector_layers = ['SSPF_polygon', 'SSPF_line']
+            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
+            replier()
+            
+        if self.ui.checkBox_PF.isChecked():
+            vector_layers = ['PF_polygon', 'PF_line']
+            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
+            replier()
+        
+        if self.ui.checkBox_ROUTE.isChecked():
+            vector_layers = ['ROUTE_polygon', 'ROUTE_line']
+            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
+            replier()
+        
+        if self.ui.checkBox_TOPO.isChecked():
+            vector_layers = ['TOPO_line']
+            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
+            replier()
+            
+        # Raster    
+            
+        if self.ui.checkBox_MNT.isChecked():
+            raster_layers = ['MNT']
+            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+            replier()
+            
+        if self.ui.checkBox_MNH.isChecked():
+            raster_layers = ['MNH']
+            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+            replier()  
+            
+        if self.ui.checkBox_RGB.isChecked():
+            raster_layers = ['RGB']
+            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+            replier() 
+            
+        if self.ui.checkBox_IRC.isChecked():
+            raster_layers = ['IRC']
+            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+            replier() 
+            
+        if self.ui.checkBox_PLTANC.isChecked():
+            raster_layers = ['PLT-ANC']
+            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+            replier()
+            
+        if self.ui.checkBox_PLT.isChecked():
+            raster_layers = ['PLT']
+            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+            replier()  
             

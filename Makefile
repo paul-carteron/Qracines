@@ -1,5 +1,5 @@
 #/***************************************************************************
-# QSequoia2
+# Sequoia2
 #
 # Plugin to create forest GIS project
 #							 -------------------
@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	QSequoia2.py QSequoia2_dialog.py
+	Sequoia2.py Sequoia2_dialog.py
 
-PLUGINNAME = QSequoia2
+PLUGINNAME = Sequoia2
 
 PY_FILES = \
 	__init__.py \
-	QSequoia2.py QSequoia2_dialog.py
+	Sequoia2.py Sequoia2_dialog.py
 
-UI_FILES = QSequoia2_dialog_base.ui
+UI_FILES = Sequoia2_dialog_base.ui
 
 EXTRAS = metadata.txt icon.png
 
