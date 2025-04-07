@@ -2,24 +2,22 @@ from qgis.core import QgsDataSourceUri, QgsVectorLayer
 
 import os
 import json
+from ...utils.plugin_path import get_config_path
 
 class DatabaseManager:
-    def __init__(self, config_path=None):
-        config_path = os.path.join(os.path.dirname(__file__), '..', 'db.json')
-        self.load_config(config_path)
+    def __init__(self):
+        config_path = get_config_path("db.json")
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"Database config not found at {config_path}")
 
-    def load_config(self, config_path):
-        if os.path.exists(config_path):
-            with open(config_path, "r") as f:
-                config = json.load(f)
-            # Assign values from the JSON file to class attributes
-            self.host = config.get("db_host")
-            self.port = config.get("db_port")
-            self.database = config.get("db_database")
-            self.username = config.get("db_username")
-            self.password = config.get("db_password")
-        else:
-            raise FileNotFoundError(f"Config file not found at {config_path}")
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = json.load(f)
+
+        self.host = config.get("db_host")
+        self.port = config.get("db_port")
+        self.database = config.get("db_database")
+        self.username = config.get("db_username")
+        self.password = config.get("db_password")
 
     def load_layer_from_query(self, sql_query, layer_name, geometry_column=None):
         """

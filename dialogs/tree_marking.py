@@ -4,10 +4,10 @@ from PyQt5.QtGui import QFont
 from qgis.core import QgsFieldConstraints, QgsFeatureRequest, QgsExpression, QgsPalLayerSettings, QgsTextFormat, QgsVectorLayerSimpleLabeling
 
 from .tree_marking_dialog import Ui_Tree_markingDialog
-from ..utils.structure_utils import get_path
+from ..utils.path_manager import get_path
 from ..utils.qfield_utils import create_memory_layer, write_layer_to_gpkg, add_layers_from_gpkg
-from ..utils.database_utils import DatabaseManager
-from ..layer_manager import LayerManager
+from ..core.db.manager import DatabaseManager
+from ..core.layer.manager import LayerManager
 
 def create_tree_marking(codes = ['CHE', 'HET']):
     # param

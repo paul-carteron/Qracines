@@ -2,12 +2,11 @@ import os
 import yaml
 
 from .variable_utils import get_project_variable
+from .plugin_path import get_config_path
 
 def load_sig_structure_yaml():
-    """Load the sig_structure.yaml file from the plugin root."""
-    plugin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    structure_path = os.path.join(plugin_dir, "sig_structure.yaml")
-    with open(structure_path, "r", encoding="utf-8") as f:
+    path = get_config_path("sig_structure.yaml")
+    with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 def get_path(logical_key, forest=None, base_dir=None):

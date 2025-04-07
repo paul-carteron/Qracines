@@ -28,7 +28,6 @@ def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:21
 
     return layer
 
-
 # Fonction pour récupérer le gpkg configuré
 def get_gpkg_path(styles_directory, forest_directory, directories_type, forest_prefix, gpkg_name):
     
@@ -104,7 +103,7 @@ def add_layers_from_gpkg(gpkg_path):
         vlayer = QgsVectorLayer(uri, layer, 'ogr')
         if vlayer.isValid():
             QgsProject.instance().addMapLayer(vlayer)
-            print(f"Layer {layer} added to prpject")
+            print(f"Layer {layer} added to project")
         else:
             print(f"Layer {layer} is not valid")
 
