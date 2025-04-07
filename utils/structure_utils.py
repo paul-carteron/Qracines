@@ -37,7 +37,7 @@ def get_path(logical_key, forest=None, base_dir=None):
             raw_filename = files[logical_key]["filename"]
             filename = f"{forest}_{raw_filename}" if not raw_filename.startswith(forest) else raw_filename
             folder_path = folder["path"]
-            full_folder = os.path.join(base_dir, forest, *folder_path)
+            full_folder = os.path.join(base_dir, *folder_path)
             os.makedirs(full_folder, exist_ok=True)
             return os.path.join(full_folder, filename)
 

@@ -45,7 +45,7 @@ class DatabaseManager:
     
     @staticmethod
     def q_essences():
-        query = """SELECT concat_ws(' ', e.name, ev.variation) AS essence_variation, e.code, ev.variation, ev.ordre, e.type
+        query = """SELECT e.name AS essence, concat_ws(' ', e.name, ev.variation) AS essence_variation, e.code, ev.variation, ev.ordre, e.type
         FROM public.gestion_essencevariation AS ev
         JOIN public.gestion_essence AS e
         ON ev.essence_id = e.id

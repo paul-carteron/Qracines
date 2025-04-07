@@ -5,9 +5,8 @@ import zipfile
 import json
 import os
 
-# Fonction pour créer des layers
 def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:2154"):
-    # Handle geometry
+
     if geometry:
         crs_obj = QgsCoordinateReferenceSystem(crs)
         geometry_str = f"{geometry}?crs={crs_obj.authid()}"
@@ -28,6 +27,7 @@ def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:21
     layer.updateFields()
 
     return layer
+
 
 # Fonction pour récupérer le gpkg configuré
 def get_gpkg_path(styles_directory, forest_directory, directories_type, forest_prefix, gpkg_name):
@@ -75,7 +75,8 @@ def write_layer_to_gpkg(layer, gpkg_path):
 
     if error[0] != QgsVectorFileWriter.NoError:
            raise Exception(f"Error writing layer '{layer.name()}' to GeoPackage: {error[1]}")
- 
+
+
 # Fonction d'ajout de layer à un gpkg
 def add_all_layers_from_gpkg(gpkg_path, styles_directory=None):
     gpkg_data = ogr.Open(gpkg_path)
@@ -91,6 +92,21 @@ def add_all_layers_from_gpkg(gpkg_path, styles_directory=None):
             if os.path.exists(style_path):
                 vlayer.loadNamedStyle(style_path)
                 vlayer.triggerRepaint()
+
+# Fonction comme ci-dessus mais normalement plsu robuste car on évite d'utiliser iface
+def add_layers_from_gpkg(gpkg_path):
+    datasource = ogr.Open(gpkg_path)
+    if datasource is None:
+        raise Exception("Failed to open geopackage.")
+    available_layers = [layer.GetName() for layer in datasource]
+    for layer in reversed(available_layers):
+        uri = f"{gpkg_path}|layername={layer}"
+        vlayer = QgsVectorLayer(uri, layer, 'ogr')
+        if vlayer.isValid():
+            QgsProject.instance().addMapLayer(vlayer)
+            print(f"Layer {layer} added to prpject")
+        else:
+            print(f"Layer {layer} is not valid")
 
 # Fonction déplaçant une couche tout en haut
 def move_layer_to_top(layer_name):

@@ -2,7 +2,8 @@ from qgis.core import (
     QgsField,
     QgsFieldConstraints,
     QgsDefaultValue,
-    QgsEditorWidgetSetup
+    QgsEditorWidgetSetup,
+    QgsFeatureRequest
 )
 
 
@@ -20,6 +21,14 @@ class FieldEditor:
         self.layer.startEditing()
         self.layer.dataProvider().addAttributes([QgsField(name, field_type)])
         self.layer.updateFields()
+        self.layer.commitChanges()
+
+    def set_field_value_by_expression(self, field_name, value, expression):
+        request = QgsFeatureRequest().setFilterExpression(expression)
+        self.layer.startEditing()
+        for feature in self.layer.getFeatures(request):
+            feature[field_name] = value
+            self.layer.updateFeature(feature)
         self.layer.commitChanges()
 
     def set_default_value(self, field_name, default_value, apply_on_update=True):
