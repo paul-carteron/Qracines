@@ -5,7 +5,7 @@ import json
 
 class DatabaseManager:
     def __init__(self, config_path=None):
-        config_path = os.path.join(os.path.dirname(__file__), '..', 'config.json')
+        config_path = os.path.join(os.path.dirname(__file__), '..', 'db.json')
         self.load_config(config_path)
 
     def load_config(self, config_path):
@@ -17,7 +17,7 @@ class DatabaseManager:
             self.port = config.get("db_port")
             self.database = config.get("db_database")
             self.username = config.get("db_username")
-            self.password = config.get("password")
+            self.password = config.get("db_password")
         else:
             raise FileNotFoundError(f"Config file not found at {config_path}")
 
