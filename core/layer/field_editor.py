@@ -60,12 +60,18 @@ class FieldEditor:
         form_config.setReuseLastValue(index, True)
         self.layer.setEditFormConfig(form_config)
 
-    def add_value_map(self, field_name, value_map):
+    def add_value_map(self, field_name, config):
         index = self._get_field_index(field_name)
-        widget = QgsEditorWidgetSetup('ValueMap', {'map': value_map})
-        self.layer.setEditorWidgetSetup(index, widget)
+        widget_setup = QgsEditorWidgetSetup('ValueMap', config)
+        self.layer.setEditorWidgetSetup(index, widget_setup)
+        print(f"Value Map widget set for '{field_name}' field in '{self.layer.name()}' layer with map: {config}")
 
     def add_value_relation(self, field_name, config):
         index = self._get_field_index(field_name)
         widget = QgsEditorWidgetSetup('ValueRelation', config)
         self.layer.setEditorWidgetSetup(index, widget)
+
+    def add_range(self, field_name, config):
+        index = self._get_field_index(field_name)
+        widget_setup = QgsEditorWidgetSetup('Range', config)
+        self.layer.setEditorWidgetSetup(index, widget_setup)

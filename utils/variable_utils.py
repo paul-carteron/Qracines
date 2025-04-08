@@ -138,3 +138,25 @@ def create_new_projet_with_variables():
     set_project_variable("forest_owner", forest_owner)
     set_project_variable("forest_prefix", forest_prefix)
     set_project_variable("forest_surface", forest_surface)
+
+def clear_project():
+    variables = [
+        "forest_city",
+        "forest_directory",
+        "forest_formated_surface",
+        "forest_name",
+        "forest_owner",
+        "forest_prefix",
+        "forest_surface",
+    ]
+
+    # Sauvegarde des valeurs
+    values = {var: get_project_variable(var) for var in variables}
+
+    # Nouveau projet
+    QgsProject.instance().clear()
+    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(2154))
+    
+    # Restauration des variables
+    for var, value in values.items():
+        set_project_variable(var, value)
