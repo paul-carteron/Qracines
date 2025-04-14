@@ -17,6 +17,7 @@ from qfieldsync.gui.package_dialog import PackageDialog
 
 import os
 import processing
+import tempfile
 
 from .tree_marking_dialog import Ui_Tree_markingDialog
 
@@ -24,12 +25,13 @@ from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
 
 from ..utils.path_manager import get_path, get_style, find_similar_filenames
-from ..utils.qfield_utils import create_memory_layer, write_layer_to_gpkg, add_layers_from_gpkg
+from ..utils.qfield_utils import create_memory_layer, zip_folder_contents, add_layers_from_gpkg
 from ..utils.variable_utils import create_new_projet_with_variables
 
 class Tree_markingDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, iface, parent=None):
         super().__init__(parent)
+        self.iface = iface
         self.ui = Ui_Tree_markingDialog()
         self.ui.setupUi(self)
 
@@ -107,6 +109,7 @@ class Tree_markingDialog(QDialog):
         )
 
         self.load_selected_rasters()
+        self.package_for_qfield_and_zip()
         self.accept()  # Close dialog on success
 
     @staticmethod
@@ -374,27 +377,27 @@ class Tree_markingDialog(QDialog):
                         f"Impossible de charger {logical_key} : {str(e)}"
                     )
 
-    def package_for_qfield():
+    def package_for_qfield_and_zip(self):
         """
-        Packages the current QGIS project for QField without showing the UI.
-        
-        Parameters:
-            export_path (str): Absolute path to save the packaged .qgs file
+        Packages the current QGIS project for QField, zips the result,
+        and saves the zip file to `zip_output_path`.
         """
         project = QgsProject.instance()
         offline_editing = QgsOfflineEditing()
-        export_path = r"C:\Users\PaulCarteron\Desktop\temp\Qfield\test.qgs"
-        get_path()
-        dialog = PackageDialog(iface, project, offline_editing)
+        export_path = get_path("inv_qfield")
 
-        # Set the export path and project title
-        dialog.packagedProjectFileWidget.setFilePath(str(export_path))
-        dialog.packagedProjectTitleLineEdit.setText(project.baseName())
+        # Create a temp folder for the QField package
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Full path to .qgs file inside the package
+            project_file_path = os.path.join(tmp_dir, f"{project.baseName()}.qgs")
 
-        # Validate the file name (this sets internal flags in the dialog)
-        dialog._validate_packaged_project_filename()
+            dialog = PackageDialog(self.iface, project, offline_editing)
+            dialog.packagedProjectFileWidget.setFilePath(project_file_path)
+            dialog.packagedProjectTitleLineEdit.setText(project.baseName())
+            dialog._validate_packaged_project_filename()
+            dialog.package_project()
 
-        # Run the packaging process (without showing the UI)
-        dialog.package_project()
+            # Zip the temp folder contents into a single zip file
+            zip_folder_contents(tmp_dir, export_path)
 
         print(f"✅ Project packaged successfully for QField at: {export_path}")

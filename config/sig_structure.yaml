@@ -68,3 +68,4 @@ structure:
     path: [SIG, 3_OTHER]
     files:
       inventaire: { filename: "inventaire.gpkg"}
+      inv_qfield: { filename: "inv_qfield.zip"}

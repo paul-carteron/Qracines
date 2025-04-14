@@ -221,3 +221,20 @@ def apply_value_list_to_field(layer_name, field_name, values_list):
 
     # Mise à jour de la couche (optionnel)
     layer.triggerRepaint()
+
+def zip_folder_contents(folder_path, output_zip_path):
+    """
+    Zips all contents (files and subfolders) of folder_path
+    into a zip archive at output_zip_path.
+    
+    The contents will be stored in the zip archive without the top-level folder.
+    """
+    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Walk the folder tree
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Get the relative path to avoid including the top-level folder
+                arcname = os.path.relpath(file_path, folder_path)
+                zipf.write(file_path, arcname)
+    print(f"Created zip archive at {output_zip_path}")

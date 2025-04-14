@@ -119,7 +119,7 @@ class QSequoia2:
         
     def open_tree_marking(self):
         if not self.tree_marking_dialog:
-            self.tree_marking_dialog = Tree_markingDialog()
+            self.tree_marking_dialog = Tree_markingDialog(iface)
         self.tree_marking_dialog.exec_()
 
     def unload(self):
