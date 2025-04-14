@@ -9,10 +9,14 @@ from qgis.core import (
   QgsExpression,
   QgsPalLayerSettings,
   QgsTextFormat,
-  QgsVectorLayerSimpleLabeling
+  QgsVectorLayerSimpleLabeling,
+  QgsOfflineEditing
   )
 
+from qfieldsync.gui.package_dialog import PackageDialog
+
 import os
+import processing
 
 from .tree_marking_dialog import Ui_Tree_markingDialog
 
@@ -44,19 +48,19 @@ class Tree_markingDialog(QDialog):
         self.ui.pushButton_add.clicked.connect(self.add_selected_species)
         self.ui.pushButton_remove.clicked.connect(self.remove_selected_species)
 
+        self.essences_layer = DatabaseManager().load_essences()
         self.populate_species_list()
 
     def populate_species_list(self):
-        self.essences = DatabaseManager().load_essences()
-        self.essence_lookup = {}
+        self.essences_lookup = {}
 
         unique_essences = []
 
-        for feat in self.essences.getFeatures():
+        for feat in self.essences_layer.getFeatures():
             name = feat["essence"]
             code = feat["code"]
-            if name not in self.essence_lookup:
-                self.essence_lookup[name] = code
+            if name not in self.essences_lookup:
+                self.essences_lookup[name] = code
                 unique_essences.append(name)
 
         self.ui.listWidget_spiecies.addItems(unique_essences)
@@ -78,11 +82,10 @@ class Tree_markingDialog(QDialog):
         return any(list_widget.item(i).text() == text for i in range(list_widget.count()))
 
     def run_and_close(self):
-        
         create_new_projet_with_variables()
 
         selected_essences = [self.ui.listWidget_spiecies_selected.item(i).text() for i in range(self.ui.listWidget_spiecies_selected.count())]
-        selected_codes = [self.essence_lookup[ess] for ess in selected_essences if ess in self.essence_lookup]
+        selected_codes = [self.essences_lookup[ess] for ess in selected_essences if ess in self.essences_lookup]
 
         if not selected_codes:
             QMessageBox.warning(self, "No species selected", "Please select at least one species.")
@@ -106,134 +109,182 @@ class Tree_markingDialog(QDialog):
         self.load_selected_rasters()
         self.accept()  # Close dialog on success
 
-    def create_tree_marking(self, codes, dmin, dmax, hmin, hmax):
-
-        # create arbres layer
+    @staticmethod
+    def create_arbres_layer():
         arbres_fields = [
+            ("fid", QVariant.Int),
             ("ID_CODE", QVariant.String),
-            ("UUID", QVariant.String), ("PARCELLE", QVariant.String), ("ESSENCE_ID", QVariant.String),
-            ("ESSENCE_SECONDAIRE_ID", QVariant.String), ("DIAMETRE", QVariant.LongLong), ("EFFECTIF", QVariant.LongLong),
-            ("HAUTEUR", QVariant.LongLong), ("FAVORI", QVariant.Bool), ("OBSERVATION", QVariant.String),
+            ("UUID", QVariant.String),
+            ("PARCELLE", QVariant.String),
+            ("ESSENCE_ID", QVariant.String),
+            ("ESSENCE_SECONDAIRE_ID", QVariant.String),
+            ("DIAMETRE", QVariant.String),
+            ("EFFECTIF", QVariant.LongLong),
+            ("HAUTEUR", QVariant.String),
+            ("FAVORI", QVariant.Bool),
+            ("OBSERVATION", QVariant.String),
             ("COMPTEUR", QVariant.LongLong),
         ]
-        arbres = create_memory_layer(layer_name = 'arbres', fields_list = arbres_fields,  geometry = 'Point')
 
-        # write layer to geopackage and load them into QGIS
-        gpkg_path = get_path("inventaire")
-        [write_layer_to_gpkg(layer, gpkg_path) for layer in (arbres, self.essences)]
-        add_layers_from_gpkg(gpkg_path)
+        arbres_layer = create_memory_layer(
+            layer_name = 'arbres',
+            fields_list = arbres_fields, 
+            geometry = 'Point'
+        )
 
-        # Load layers using LayerManager
-        arbres = LayerManager("arbres")
-        essences = LayerManager("essences")
+        return arbres_layer
+    
+    @staticmethod
+    def configure_form(arbres_manager):
+        form_fields = ["COMPTEUR", "PARCELLE", "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE"]
+        arbres_manager.forms.init_drag_and_drop_form()
+        arbres_manager.forms.add_fields_to_tab(form_fields)
 
-        # --- ESSENCE value map (for main ESSENCE_ID field)
+    @staticmethod
+    def configure_essence_field(arbres_manager, essences_manager, codes):
+        # 1. Build value map for main ESSENCE_ID field
         query_string = " OR ".join([f"code = '{code}'" for code in codes])
         request = QgsFeatureRequest(QgsExpression(query_string))
 
-        essences_list = [{f"{ess['code']}{' ' + ess['variation'] if ess['variation'] else ''}": ess['fid']} for ess in essences.layer.getFeatures(request)]
-        arbres.fields.add_value_map('ESSENCE_ID', {'map': essences_list })
+        essences_list = [
+            {f"{ess['code']}{' ' + ess['variation'] if ess['variation'] else ''}": ess['fid']}
+            for ess in essences_manager.layer.getFeatures(request)
+        ]
+        arbres_manager.fields.add_value_map('ESSENCE_ID', {'map': essences_list})
 
-        # --- ESSENCE SECONDAIRE logic
-        # Add 'selected' field if not present
-        if "selected" not in [f.name() for f in essences.layer.fields()]:
-            essences.fields.add_field("selected", QVariant.Bool)
+        # 2. Ensure "selected" field for secondary essences
+        if "selected" not in [f.name() for f in essences_manager.layer.fields()]:
+            essences_manager.fields.add_field("selected", QVariant.Bool)
 
-        # Set 'selected = True' for secondary essences
+        # 3. Mark secondary essences as selected
         excluded_codes = ", ".join([f"'{code}'" for code in codes])
         expression = f"code NOT IN ({excluded_codes})"
-        essences.fields.set_field_value_by_expression("selected", True, expression)
+        essences_manager.fields.set_field_value_by_expression("selected", True, expression)
 
-        # RELATION
+        # 4. Add value relation for ESSENCE_SECONDAIRE_ID
         config = {
             'FilterExpression': '"selected" = True',
             'Key': 'fid',
-            'Layer': essences.layer.id(),
+            'Layer': essences_manager.layer.id(),
             'Value': 'essence_variation',
             'AllowNull': True
         }
-        arbres.fields.add_value_relation('ESSENCE_SECONDAIRE_ID', config)
+        arbres_manager.fields.add_value_relation('ESSENCE_SECONDAIRE_ID', config)
 
-        # FIELDS SETUP
-        required_fields = ["UUID", "PARCELLE", "DIAMETRE", "EFFECTIF"]
-        for field in required_fields:
-            arbres.fields.set_constraint(field, QgsFieldConstraints.ConstraintNotNull)
-
-        aliases = [("ID_CODE", "CODE"), ("ESSENCE_ID", "ESSENCE"), ("ESSENCE_SECONDAIRE_ID", "ESSENCE SECONDAIRE"), ("FAVORI", "⭐"), ("COMPTEUR", "ID")]
-        for field, alias in aliases:
-            arbres.fields.set_alias(field, alias)
-
-        for field in ["COMPTEUR", "ID_CODE"]:
-            arbres.fields.set_read_only(field)
-
-        ## FID
-        arbres.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1 ,maximum("fid") + 1)')
-
-        ## UUID
-        arbres.fields.set_constraint("UUID", QgsFieldConstraints.ConstraintUnique)
-        arbres.fields.set_default_value("UUID", "uuid()")
-
-        ## COMPTEUR
-        arbres.fields.set_default_value("COMPTEUR", 'count("fid") + 1')
-
-        ## PARCELLE
-        arbres.fields.set_reuse_last_value("PARCELLE")
-
-        ## ESSENCE_ID & ESSENCE_SECONDAIRE_ID
+        # 5. Constrain ESSENCE_ID & ESSENCE_SECONDAIRE_ID
         ess_expr = """
         ((COALESCE("ESSENCE_ID", '') <> '') AND "ESSENCE_SECONDAIRE_ID" IS NULL)
         OR
         ((COALESCE("ESSENCE_ID", '') = '') AND "ESSENCE_SECONDAIRE_ID" IS NOT NULL)
         """
         msg = "Veuillez sélectionner une valeur pour ESSENCE ou ESSENCE_SECONDAIRE (mais pas les deux)."
-        arbres.fields.set_constraint_expression('ESSENCE_ID', ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
-        arbres.fields.set_constraint_expression('ESSENCE_SECONDAIRE_ID', ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
+        arbres_manager.fields.set_constraint_expression('ESSENCE_ID', ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
 
-        ## DIAMETRE
-        arbres.fields.add_value_map('DIAMETRE', {'map': [{str(d): str(d)} for d in range(dmin, dmax, 5)]})
+    @staticmethod
+    def configure_aliases(layer_manager):
+        aliases = [
+            ("ID_CODE", "CODE"),
+            ("ESSENCE_ID", "ESSENCE"),
+            ("ESSENCE_SECONDAIRE_ID", "ESSENCE SECONDAIRE"),
+            ("FAVORI", "⭐"),
+            ("COMPTEUR", "ID")]
+        
+        for field, alias in aliases:
+            layer_manager.fields.set_alias(field, alias)
 
-        ## HAUTEUR
-        arbres.fields.add_value_map('HAUTEUR', {'map': [{str(h): str(h)} for h in range(hmin, hmax)]})
+    @staticmethod
+    def configure_fid(layer_manager):
+        layer_manager.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1 ,maximum("fid") + 1)')
 
-        ## EFFECTIF
-        arbres.fields.add_range('EFFECTIF', {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
-        arbres.fields.set_default_value("EFFECTIF", '1', False)
+    @staticmethod
+    def configure_uuid(layer_manager):
+        field_name = "UUID"
+        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
+        layer_manager.fields.set_default_value(field_name, "uuid()")
+        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
-        ## OBSERVATION
-        arbres.fields.add_value_map('OBSERVATION', {v: v for v in ["Chablis", "Bio", "Ehouppé", "Cablage"]})
+    @staticmethod
+    def configure_compteur(layer_manager):
+        field_name = "COMPTEUR"
+        layer_manager.fields.set_read_only(field_name)
+        layer_manager.fields.set_default_value(field_name, 'count("fid") + 1')
 
-        ## FAVORI
-        arbres.fields.add_value_map('FAVORI', {"FALSE": "FALSE"})
+    @staticmethod
+    def configure_parcelle(layer_manager):
+        field_name = "PARCELLE"
+        layer_manager.fields.set_reuse_last_value(field_name)
+        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
-        ## ID_CODE
-        arbres.fields.set_default_value("ID_CODE", """
-        WITH_VARIABLE(
-            'ess',
-            get_feature(
-                'essences',
-                '_uid_',
-                coalesce(NULLIF("ESSENCE_ID", ''), "ESSENCE_SECONDAIRE_ID")
-            ),
-            concat(
-                "COMPTEUR",
-                ': ',
-                attribute(@ess, 'code'),
-                CASE
-                    WHEN attribute(@ess, 'variation') IS NOT NULL
-                    THEN concat(' ', attribute(@ess, 'variation'))
-                    ELSE ''
-                END,
-                ' D', "DIAMETRE",
-                CASE
-                    WHEN "HAUTEUR" IS NOT NULL AND "HAUTEUR" != ''
-                    THEN concat(' H', "HAUTEUR")
-                    ELSE ''
-                END
+    @staticmethod
+    def configure_diametre(layer_manager, dmin, dmax):
+        field_name = "DIAMETRE"
+        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        layer_manager.fields.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax, 5)]})
+        layer_manager.fields.set_constraint_expression(
+            field_name,
+            '"DIAMETRE" != \'\'',
+            "Le champ DIAMETRE ne peut pas être vide.", 
+            QgsFieldConstraints.ConstraintStrengthHard
             )
-        )
-        """)
 
-        # Labeling
+    @staticmethod
+    def configure_hauteur(layer_manager, hmin, hmax):
+        field_name = "HAUTEUR"
+        layer_manager.fields.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax)]})
+
+    @staticmethod
+    def configure_effectif(layer_manager):
+        field_name = "EFFECTIF"
+        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        layer_manager.fields.add_range('EFFECTIF', {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
+        layer_manager.fields.set_default_value("EFFECTIF", '1', False)
+
+    @staticmethod
+    def configure_observation(layer_manager):
+        field_name = "OBSERVATION"
+        observation_choices = ["Chablis", "Bio", "Ehouppé", "Cablage"]
+        layer_manager.fields.add_value_map(field_name, {'map': [{v: v} for v in observation_choices]})
+
+    @staticmethod
+    def configure_favori(layer_manager):
+        layer_manager.fields.set_default_value("FAVORI", "FALSE")
+
+    @staticmethod
+    def configure_fid_code(layer_manager):
+        field_name = "ID_CODE"
+        layer_manager.fields.set_read_only(field_name)
+        layer_manager.fields.set_default_value(
+            field_name,
+            """
+            WITH_VARIABLE(
+                'ess',
+                get_feature(
+                    'essences',
+                    'fid',
+                    coalesce(NULLIF("ESSENCE_ID", ''), "ESSENCE_SECONDAIRE_ID")
+                ),
+                concat(
+                    "COMPTEUR",
+                    ': ',
+                    attribute(@ess, 'code'),
+                    CASE
+                        WHEN attribute(@ess, 'variation') IS NOT NULL
+                        THEN concat(' ', attribute(@ess, 'variation'))
+                        ELSE ''
+                    END,
+                    ' D', "DIAMETRE",
+                    CASE
+                        WHEN "HAUTEUR" IS NOT NULL AND "HAUTEUR" != ''
+                        THEN concat(' H', "HAUTEUR")
+                        ELSE ''
+                    END
+                )
+            )
+            """
+        )
+
+    @staticmethod
+    def configure_labelling(arbres_manager):
         label_settings = QgsPalLayerSettings()
         label_settings.fieldName = "COMPTEUR"
         text_format = QgsTextFormat()
@@ -241,17 +292,46 @@ class Tree_markingDialog(QDialog):
         text_format.setSize(12)
         label_settings.setFormat(text_format)
         labeling = QgsVectorLayerSimpleLabeling(label_settings)
-        arbres.layer.setLabeling(labeling)
-        arbres.layer.setLabelsEnabled(True)
-        arbres.layer.triggerRepaint()
+        arbres_manager.layer.setLabeling(labeling)
+        arbres_manager.layer.setLabelsEnabled(True)
+        arbres_manager.layer.triggerRepaint()
 
-        # Create form layout
-        form_fields = ["COMPTEUR", "PARCELLE", "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE"]
-        arbres.forms.init_drag_and_drop_form()
-        arbres.forms.add_fields_to_tab(form_fields)
+    def create_tree_marking(self, codes, dmin, dmax, hmin, hmax):
+
+        # 1. Create base geopackage
+        arbre_layer = self.create_arbres_layer()
+        essence_layer = self.essences_layer
+
+        params = {'LAYERS': [arbre_layer, essence_layer], 'OUTPUT': get_path("inventaire"), 'OVERWRITE': True,}
+        processing.run("native:package", params)
+
+        add_layers_from_gpkg(get_path("inventaire"), "essences", "arbres")
+
+        # Load layers using LayerManager
+        arbres_manager = LayerManager("arbres")
+        essences_manager = LayerManager("essences")
+
+        self.configure_form(arbres_manager)
+        
+        self.configure_aliases(arbres_manager)
+
+        self.configure_essence_field(arbres_manager, essences_manager, codes)
+
+        self.configure_fid(arbres_manager)
+        self.configure_uuid(arbres_manager)
+        self.configure_compteur(arbres_manager)
+        self.configure_parcelle(arbres_manager)
+        self.configure_diametre(arbres_manager, dmin, dmax)
+        self.configure_hauteur(arbres_manager, hmin, hmax)
+        self.configure_effectif(arbres_manager)
+        self.configure_observation(arbres_manager)
+        self.configure_favori(arbres_manager)
+        self.configure_fid_code(arbres_manager)
+
+        self.configure_labelling(arbres_manager)
 
         # QField-specific sync setting
-        arbres.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        arbres_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
     def load_selected_rasters(self):
         for logical_key, checkbox in self.raster_checkboxes.items():
@@ -271,8 +351,8 @@ class Tree_markingDialog(QDialog):
                                 "\n\nVeuillez renommer le fichier manquant si l’un d’eux correspond."
                             )
 
-                    QMessageBox.information(self, "Raster manquant", message)
-                    continue
+                        QMessageBox.information(self, "Raster manquant", message)
+                        continue
 
                     layer = QgsRasterLayer(raster_path, logical_key)
                     if not layer.isValid():
@@ -284,9 +364,37 @@ class Tree_markingDialog(QDialog):
                         layer.loadNamedStyle(style_path)
                         layer.triggerRepaint()
                     except (KeyError, ValueError, FileNotFoundError):
-                        pass  # Style is optional and explicitly declared, so silently skip if not found
+                        pass  # Style is optional
 
                     QgsProject.instance().addMapLayer(layer)
 
                 except Exception as e:
-                    QMessageBox.warning(self, "Erreur de chargement", f"Impossible de charger {logical_key} : {str(e)}")
+                    QMessageBox.warning(
+                        self, "Erreur de chargement",
+                        f"Impossible de charger {logical_key} : {str(e)}"
+                    )
+
+    def package_for_qfield():
+        """
+        Packages the current QGIS project for QField without showing the UI.
+        
+        Parameters:
+            export_path (str): Absolute path to save the packaged .qgs file
+        """
+        project = QgsProject.instance()
+        offline_editing = QgsOfflineEditing()
+        export_path = r"C:\Users\PaulCarteron\Desktop\temp\Qfield\test.qgs"
+        get_path()
+        dialog = PackageDialog(iface, project, offline_editing)
+
+        # Set the export path and project title
+        dialog.packagedProjectFileWidget.setFilePath(str(export_path))
+        dialog.packagedProjectTitleLineEdit.setText(project.baseName())
+
+        # Validate the file name (this sets internal flags in the dialog)
+        dialog._validate_packaged_project_filename()
+
+        # Run the packaging process (without showing the UI)
+        dialog.package_project()
+
+        print(f"✅ Project packaged successfully for QField at: {export_path}")

@@ -93,19 +93,27 @@ def add_all_layers_from_gpkg(gpkg_path, styles_directory=None):
                 vlayer.triggerRepaint()
 
 # Fonction comme ci-dessus mais normalement plsu robuste car on évite d'utiliser iface
-def add_layers_from_gpkg(gpkg_path):
+def add_layers_from_gpkg(gpkg_path, *layer_names):
     datasource = ogr.Open(gpkg_path)
     if datasource is None:
-        raise Exception("Failed to open geopackage.")
+        raise Exception("Failed to open GeoPackage.")
+
     available_layers = [layer.GetName() for layer in datasource]
+
+    # If no layer names provided, load all
+    layers_to_load = layer_names or available_layers
+
     for layer in reversed(available_layers):
+        if layer not in layers_to_load:
+            continue
+
         uri = f"{gpkg_path}|layername={layer}"
         vlayer = QgsVectorLayer(uri, layer, 'ogr')
         if vlayer.isValid():
             QgsProject.instance().addMapLayer(vlayer)
-            print(f"Layer {layer} added to project")
+            print(f"✅ Layer '{layer}' added to project")
         else:
-            print(f"Layer {layer} is not valid")
+            print(f"❌ Layer '{layer}' is not valid and was skipped")
 
 # Fonction déplaçant une couche tout en haut
 def move_layer_to_top(layer_name):

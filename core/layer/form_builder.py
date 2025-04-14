@@ -11,12 +11,13 @@ class FormBuilder:
     def __init__(self, layer):
         self.layer = layer
         self.config = self.layer.editFormConfig()
-        self.root = self.config.invisibleRootContainer()
+        self.root = None  # delay initialization until layout is set
 
     def init_drag_and_drop_form(self):
         self.config.setLayout(Qgis.AttributeFormLayout.DragAndDrop)
         self.config.clearTabs()
         self.layer.setEditFormConfig(self.config)
+        self.root = self.config.invisibleRootContainer() 
 
     def add_fields_to_tab(self, field_names, tab_name=None, clear_tab=False):
         tab = self._get_or_create_tab(tab_name, clear_tab)

@@ -80,12 +80,17 @@ def get_style(logical_key, styles_dir=None):
 
     raise KeyError(f"Style key '{logical_key}' not found in sig_structure.yaml")
 
-def find_similar_filenames(expected_path, pattern):
-    """
-    Cherche dans le dossier du raster attendu les fichiers contenant une partie du nom logique (comme 'irc').
-    """
+import os
+
+def find_similar_filenames(expected_path, pattern, extensions=None):
     directory = os.path.dirname(expected_path)
     if not os.path.exists(directory):
         return []
 
-    return [f for f in os.listdir(directory)if pattern.lower() in f.lower()]
+    matches = []
+    for f in os.listdir(directory):
+        if pattern.lower() in f.lower():
+            if extensions is None or any(f.lower().endswith(ext.lower()) for ext in extensions):
+                matches.append(os.path.join(directory, f))
+
+    return matches

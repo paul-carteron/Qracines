@@ -1,4 +1,4 @@
-from qgis.core import QgsDataSourceUri, QgsVectorLayer
+from qgis.core import QgsDataSourceUri, QgsVectorLayer, QgsFeatureRequest
 
 import os
 import json
@@ -29,12 +29,12 @@ class DatabaseManager:
             geometry_column (str): The name of the geometry column (None for non-geometry).
         """
         # Build the query with _uid_
-        sql_query = f"(SELECT row_number() over () AS _uid_,* FROM ({sql_query}) AS _subq_1_ )"
+        sql_query = f"({sql_query})"
 
         # Create the URI
         uri = QgsDataSourceUri()
         uri.setConnection(self.host, self.port, self.database, self.username, self.password)
-        uri.setDataSource("", sql_query, geometry_column, "", "_uid_")
+        uri.setDataSource("", sql_query, geometry_column, "", "fid")
 
         # Create the layer
         layer = QgsVectorLayer(uri.uri(), layer_name, "postgres")
@@ -43,14 +43,33 @@ class DatabaseManager:
     
     @staticmethod
     def q_essences():
-        query = """SELECT e.name AS essence, concat_ws(' ', e.name, ev.variation) AS essence_variation, e.code, ev.variation, ev.ordre, e.type
+        query = """
+        SELECT ev.id as fid,
+            e.name AS essence,
+            concat_ws(' ', e.name, ev.variation) AS essence_variation,
+            e.code,
+            ev.variation,
+            ev.ordre,
+            e.type
         FROM public.gestion_essencevariation AS ev
-        JOIN public.gestion_essence AS e
-        ON ev.essence_id = e.id
+        JOIN public.gestion_essence AS e ON ev.essence_id = e.id
         WHERE concat_ws(' ', e.name, ev.variation) NOT LIKE '%sain%'
         ORDER BY ev.ordre ASC
         """
         return query
   
     def load_essences(self):
-        return self.load_layer_from_query(sql_query = self.q_essences(), layer_name = "essences")
+        layer = self.load_layer_from_query(sql_query=self.q_essences(), layer_name="essences")
+
+        if not layer or not layer.isValid():
+            raise RuntimeError("Failed to load or validate the essences layer")
+
+        # Materialize all features (use `setNoAttributes()` if you only want geometries)
+        request = QgsFeatureRequest().setFilterFids(layer.allFeatureIds())
+        materialized_layer = layer.materialize(request)
+
+        if not materialized_layer or not materialized_layer.isValid():
+            raise RuntimeError("Failed to materialize the essences layer")
+
+        return materialized_layer
+

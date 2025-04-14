@@ -3,6 +3,7 @@ from qgis.utils import *
 from qgis.PyQt.QtCore import *
 import json
 import os
+import processing
 
 # Efface le projet en cours
 def clear_qgis_project():
