@@ -80,7 +80,23 @@ def get_style(logical_key, styles_dir=None):
 
     raise KeyError(f"Style key '{logical_key}' not found in sig_structure.yaml")
 
-import os
+def get_racines_path(site, *args):
+    site_map = {
+        "cartographie": "Cartographie - Documents",
+        "expertise": "Equipe - Expertise",
+        "foret": "Equipe - Forêts",
+        "racines": "Equipe - Racines",
+        "transaction": "Equipe - Transaction",
+    }
+
+    folder = site_map.get(site.lower())
+    if folder is None:
+        raise ValueError(f"Unknown site '{site}'. Must be one of: {', '.join(site_map)}")
+
+    user_path = os.path.expanduser("~")
+    return os.path.join(user_path, "Racines", folder, *args)
+
+
 
 def find_similar_filenames(expected_path, pattern, extensions=None):
     directory = os.path.dirname(expected_path)

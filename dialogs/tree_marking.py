@@ -18,15 +18,16 @@ from qfieldsync.gui.package_dialog import PackageDialog
 import os
 import processing
 import tempfile
+from pathlib import Path
 
 from .tree_marking_dialog import Ui_Tree_markingDialog
 
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
 
-from ..utils.path_manager import get_path, get_style, find_similar_filenames
+from ..utils.path_manager import get_path, get_style, find_similar_filenames, get_racines_path
 from ..utils.qfield_utils import create_memory_layer, zip_folder_contents, add_layers_from_gpkg
-from ..utils.variable_utils import create_new_projet_with_variables
+from ..utils.variable_utils import create_new_projet_with_variables, get_project_variable
 
 class Tree_markingDialog(QDialog):
     def __init__(self, iface, parent=None):
@@ -87,9 +88,9 @@ class Tree_markingDialog(QDialog):
         create_new_projet_with_variables()
 
         selected_essences = [self.ui.listWidget_spiecies_selected.item(i).text() for i in range(self.ui.listWidget_spiecies_selected.count())]
-        selected_codes = [self.essences_lookup[ess] for ess in selected_essences if ess in self.essences_lookup]
+        self.codes = [self.essences_lookup[ess] for ess in selected_essences if ess in self.essences_lookup]
 
-        if not selected_codes:
+        if not self.codes:
             QMessageBox.warning(self, "No species selected", "Please select at least one species.")
             return
 
@@ -101,7 +102,7 @@ class Tree_markingDialog(QDialog):
 
         # Call your core function
         self.create_tree_marking(
-            selected_codes,
+            self.codes,
             dmin,
             dmax,
             hmin,
@@ -318,7 +319,7 @@ class Tree_markingDialog(QDialog):
         
         self.configure_aliases(arbres_manager)
 
-        self.configure_essence_field(arbres_manager, essences_manager, codes)
+        self.configure_essence_field(arbres_manager, essences_manager, self.codes)
 
         self.configure_fid(arbres_manager)
         self.configure_uuid(arbres_manager)
@@ -378,26 +379,31 @@ class Tree_markingDialog(QDialog):
                     )
 
     def package_for_qfield_and_zip(self):
-        """
-        Packages the current QGIS project for QField, zips the result,
-        and saves the zip file to `zip_output_path`.
-        """
         project = QgsProject.instance()
         offline_editing = QgsOfflineEditing()
-        export_path = get_path("inv_qfield")
 
-        # Create a temp folder for the QField package
+        forest_prefix = get_project_variable("forest_prefix")
+        codes = "_".join(self.codes)
+        filename = f"{forest_prefix}_{codes}"
+
+        # Resolve destination folder for zipped project
+        zip_folder = Path(get_racines_path("expertise", "Inventaire"))
+        zip_folder.mkdir(parents=True, exist_ok=True)  # Ensure the folder exists
+
+        # Create a temp directory for the QField project packaging
         with tempfile.TemporaryDirectory() as tmp_dir:
-            # Full path to .qgs file inside the package
-            project_file_path = os.path.join(tmp_dir, f"{project.baseName()}.qgs")
+            tmp_path = Path(tmp_dir)
+            project_file_path = tmp_path / f"{filename}.qgs"
 
+            # Prepare and run the QField packaging dialog
             dialog = PackageDialog(self.iface, project, offline_editing)
-            dialog.packagedProjectFileWidget.setFilePath(project_file_path)
+            dialog.packagedProjectFileWidget.setFilePath(str(project_file_path))
             dialog.packagedProjectTitleLineEdit.setText(project.baseName())
             dialog._validate_packaged_project_filename()
             dialog.package_project()
 
-            # Zip the temp folder contents into a single zip file
-            zip_folder_contents(tmp_dir, export_path)
+            # Create the ZIP file from the temp contents
+            zip_path = zip_folder / f"{filename}.zip"
+            zip_folder_contents(tmp_path, zip_path)
 
-        print(f"✅ Project packaged successfully for QField at: {export_path}")
+        print(f"✅ Project packaged successfully for QField at: {zip_path}")
