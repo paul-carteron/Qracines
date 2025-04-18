@@ -58,8 +58,8 @@ class DatabaseManager:
         """
         return query
   
-    def load_essences(self):
-        layer = self.load_layer_from_query(sql_query=self.q_essences(), layer_name="essences")
+    def load_essences(self, name = "essences"):
+        layer = self.load_layer_from_query(sql_query=self.q_essences(), layer_name = name)
 
         if not layer or not layer.isValid():
             raise RuntimeError("Failed to load or validate the essences layer")

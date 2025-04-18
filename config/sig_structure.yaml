@@ -63,9 +63,21 @@ structure:
       ua_polygon_occup: { filename: UA_polygon.shp, style: UA3_polygon.qml }
       ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml }
       znieff1_polygon: { filename: ZNIEFF1_polygon.shp }
+      placette: {filename: "Placette.shp", style: "Placette.qml"}
+      transect: {filename: "Transect.shp", style: "Transect.qml"}
+      limite: {filename: "Limite.shp", style: "Limite.qml"}
+      picto: {filename: "Picto.shp", style: "Picto.qml"}
+      gha: {filename: "Gha.shp", style: "Gha.qml"}
+      tse: {filename: "Tse.shp", style: "Tse.qml"}
+      reg: {filename: "Reg.shp", style: "Reg.qml"}
+      va_ess: {filename: "Va_ess.shp", style: "Va_ess.qml"}
+      ess: {filename: "Ess.shp", style: "Ess.qml"}
 
   other_folder:
     path: [SIG, 3_OTHER]
     files:
+      parcellaire: { filename: Parcellaire.csv}
       inventaire: { filename: "inventaire.gpkg"}
       inv_qfield: { filename: "inv_qfield.zip"}
+      diagnostic: { filename: "diagnostic.gpkg"}
+      diag_qfield: { filename: "diag_qfield.zip"}
