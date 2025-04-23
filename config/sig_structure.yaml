@@ -2,23 +2,23 @@ structure:
   output_folder:
     path: [SIG, 0_OUTPUT]
     files:
-      amenagements: { filename: AMENAGEMENTS.qgz,}
-      assemblage: { filename: ASSEMBLAGE.qgz,}
-      enjeux_environnementaux: { filename: "ENJEUX ENVIRONNEMENTAUX.qgz",}
-      geologie: { filename: GEOLOGIE.qgz,}
-      peuplements: { filename: PEUPLEMENTS.qgz,}
-      situation: { filename: SITUATION.qgz,}
+      amenagements: { filename: AMENAGEMENTS.qgz, }
+      assemblage: { filename: ASSEMBLAGE.qgz, }
+      enjeux_environnementaux: { filename: "ENJEUX ENVIRONNEMENTAUX.qgz", }
+      geologie: { filename: GEOLOGIE.qgz, }
+      peuplements: { filename: PEUPLEMENTS.qgz, }
+      situation: { filename: SITUATION.qgz, }
 
   raster_folder:
     path: [SIG, 1_RASTER]
     files:
-      mns: { filename: "MNS.tif",}
-      mnt: { filename: "MNT.tif",}
+      mns: { filename: "MNS.tif", }
+      mnt: { filename: "MNT.tif", }
       mnh: { filename: "MNH.tif", style: "MNH.qml" }
-      plt: { filename: "PLT.tif",}
-      plt_anc: { filename: "PLT_ANC.tif",}
-      irc: { filename: "IRC.tif",}
-      rgb: { filename: "RGB.tif",}
+      plt: { filename: "PLT.tif", }
+      plt_anc: { filename: "PLT_ANC.tif", }
+      irc: { filename: "IRC.tif", }
+      rgb: { filename: "RGB.tif", }
       scan25: { filename: "SCAN25.tif", style: "SCAN25.qml"}
 
   vector_folder:
@@ -42,18 +42,18 @@ structure:
       parca_polygon_legend: { filename: PARCA_polygon.shp, style: INFRASTRUCTURE_polygon.qml }
       parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml }
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
-      pf-diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml }
+      pf_diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml }
       pf_line: { filename: PF_line.shp, style: PF_line.qml }
       pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml }
       pn_polygon: { filename: PN_polygon.shp }
-      prop-diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml }
+      prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml }
       prop_line: { filename: PROP_line.shp, style: PROP_line.qml }
       prop_point: { filename: PROP_point.shp, style: PROP_point.qml }
       prop_polygon: { filename: PROP_polygon.shp, style: PROP_polygon.qml }
       road_line: { filename: ROAD_line.shp, style: ROAD_line.qml }
       road_polygon: { filename: ROAD_polygon.shp, style: ROAD_polygon.qml }
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml }
-      sspf-diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml }
+      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml }
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml }
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
@@ -63,21 +63,21 @@ structure:
       ua_polygon_occup: { filename: UA_polygon.shp, style: UA3_polygon.qml }
       ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml }
       znieff1_polygon: { filename: ZNIEFF1_polygon.shp }
-      placette: {filename: "Placette.shp", style: "Placette.qml"}
-      transect: {filename: "Transect.shp", style: "Transect.qml"}
-      limite: {filename: "Limite.shp", style: "Limite.qml"}
-      picto: {filename: "Picto.shp", style: "Picto.qml"}
-      gha: {filename: "Gha.shp", style: "Gha.qml"}
-      tse: {filename: "Tse.shp", style: "Tse.qml"}
-      reg: {filename: "Reg.shp", style: "Reg.qml"}
-      va_ess: {filename: "Va_ess.shp", style: "Va_ess.qml"}
-      ess: {filename: "Ess.shp", style: "Ess.qml"}
+      placette: {filename: Placette.shp, style: Placette.qml}
+      transect: {filename: Transect.shp, style: Transect.qml}
+      limite: {filename: Limite.shp, style: Limite.qml}
+      picto: {filename: Picto.shp, style: Picto.qml}
+      gha: {filename: Gha.shp, style: Gha.qml}
+      tse: {filename: Tse.shp, style: Tse.qml}
+      reg: {filename: Reg.shp, style: Reg.qml}
+      va_ess: {filename: Va_ess.shp, style: Va_ess.qml}
+      ess: {filename: Ess.shp, style: Ess.qml}
 
   other_folder:
     path: [SIG, 3_OTHER]
     files:
-      parcellaire: { filename: Parcellaire.csv}
-      inventaire: { filename: "inventaire.gpkg"}
-      inv_qfield: { filename: "inv_qfield.zip"}
-      diagnostic: { filename: "diagnostic.gpkg"}
-      diag_qfield: { filename: "diag_qfield.zip"}
+      parcellaire: { filename: parcellaire.csv }
+      inventaire: { filename: inventaire.gpkg }
+      inv_qfield: { filename: inv_qfield.zip }
+      diagnostic: { filename: diagnostic.gpkg }
+      diag_qfield: { filename: diag_qfield.zip }

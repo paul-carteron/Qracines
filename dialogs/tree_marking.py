@@ -13,6 +13,7 @@ from qgis.core import (
   QgsOfflineEditing
   )
 
+from qgis.utils import iface
 from qfieldsync.gui.package_dialog import PackageDialog
 
 import os
@@ -30,9 +31,8 @@ from ..utils.qfield_utils import create_memory_layer, zip_folder_contents, add_l
 from ..utils.variable_utils import create_new_projet_with_variables, get_project_variable
 
 class Tree_markingDialog(QDialog):
-    def __init__(self, iface, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.iface = iface
         self.ui = Ui_Tree_markingDialog()
         self.ui.setupUi(self)
 
@@ -396,7 +396,7 @@ class Tree_markingDialog(QDialog):
             project_file_path = tmp_path / f"{filename}.qgs"
 
             # Prepare and run the QField packaging dialog
-            dialog = PackageDialog(self.iface, project, offline_editing)
+            dialog = PackageDialog(iface, project, offline_editing)
             dialog.packagedProjectFileWidget.setFilePath(str(project_file_path))
             dialog.packagedProjectTitleLineEdit.setText(project.baseName())
             dialog._validate_packaged_project_filename()

@@ -97,7 +97,7 @@ def get_racines_path(site, *args):
     return os.path.join(user_path, "Racines", folder, *args)
 
 
-
+# Not sure it's the right place
 def find_similar_filenames(expected_path, pattern, extensions=None):
     directory = os.path.dirname(expected_path)
     if not os.path.exists(directory):

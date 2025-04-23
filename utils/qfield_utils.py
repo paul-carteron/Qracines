@@ -92,6 +92,8 @@ def add_all_layers_from_gpkg(gpkg_path, styles_directory=None):
                 vlayer.loadNamedStyle(style_path)
                 vlayer.triggerRepaint()
 
+# PAUL ------------------
+
 # Fonction comme ci-dessus mais normalement plsu robuste car on évite d'utiliser iface
 def add_layers_from_gpkg(gpkg_path, *layer_names):
     datasource = ogr.Open(gpkg_path)

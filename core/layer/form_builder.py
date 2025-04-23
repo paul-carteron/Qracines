@@ -58,6 +58,3 @@ class FormBuilder:
         new_tab = QgsAttributeEditorContainer(tab_name, self.root)
         self.root.addChildElement(new_tab)
         return new_tab
-
-    def set_display_expression(self, expression):
-        self.layer.setDisplayExpression(expression)

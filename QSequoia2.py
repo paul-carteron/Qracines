@@ -33,6 +33,7 @@ class QSequoia2:
         self.add_data_dialog = None
         self.pedology_dialog = None
         self.tree_marking_dialog = None
+        self.diagnostic_dialog   = None
         self.plugin_name = "QSequoia2"
 
     def initGui(self):
@@ -119,7 +120,7 @@ class QSequoia2:
         
     def open_tree_marking(self):
         if not self.tree_marking_dialog:
-            self.tree_marking_dialog = Tree_markingDialog(iface)
+            self.tree_marking_dialog = Tree_markingDialog()
         self.tree_marking_dialog.exec_()
 
     def unload(self):
