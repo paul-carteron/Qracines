@@ -23,9 +23,7 @@ def set_project_variable(variable_name, value):
 def get_project_variable(variable_name):
     project = QgsProject.instance()
     context = QgsExpressionContextUtils.projectScope(project)
-    exists = context.variable(variable_name)
-    if exists:
-        return context.variable(variable_name)
+    return context.variable(variable_name)
     
 # Fonction pour récupérer un prefixe depuis un répertoire
 def get_prefix_from_directory(path):

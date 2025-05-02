@@ -229,6 +229,30 @@ class DiagnosticService:
 
         # Transect
         transect_mgr = LayerManager('Transect')
+        ## essences_types
+        all_types = [feat["type"] for feat in self.essences_layer.getFeatures()]
+        unique_types = list(dict.fromkeys(all_types))
+
+        transect_mgr.fields.add_value_map(
+            'TR_TYPE_ESS',
+            {'map': [{str(t): str(t)} for t in unique_types]}
+        )
+        tr_ess_config = {
+            'AllowMulti': False,
+            'AllowNull': False,
+            'Description': '',
+            'FilterExpression': ' "type" = current_value(\'TR_TYPE_ESS\')',
+            'Key': 'fid',
+            'Layer': self.essences_layer.id(),
+            'LayerName': self.essences_layer.name(),
+            'NofColumns': 1,
+            'OrderByValue': False,
+            'UseCompleter': False,
+            'Value': 'essence_variation'
+        }
+        transect_mgr.fields.add_value_relation('TR_ESS', tr_ess_config)
+
+
         transect_mgr.fields.add_value_map(
             'TR_DIAM',
             {'map': [{str(d): str(d)} for d in range(self.dmin, self.dmax, 5)]}

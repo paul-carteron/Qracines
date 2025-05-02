@@ -9,6 +9,7 @@ class LayerFactory:
 
     # 1️⃣  Define each layer’s schema in one place:
     LAYERS = {
+        # DIAGNOSTIC
         "Placette": {
             "fields": [
                 # Peuplement
@@ -48,7 +49,7 @@ class LayerFactory:
             ("PLTM_PARC", QVariant.String),
             ("PLTM_GROUPE", QVariant.String),
             ("TR_TYPE_ESS", QVariant.String),
-            ("TR_ESS", QVariant.String),
+            ("TR_ESS",  QVariant.LongLong),
             ("TR_DIAM", QVariant.Int),
             ("TR_EFFECTIF", QVariant.Int),
             ("TR_HAUTEUR", QVariant.Int)
@@ -103,8 +104,26 @@ class LayerFactory:
             ("VA_TX_HA", QVariant.Double),
             ("CUMUL_TX_VA", QVariant.Double)
             ],
-        }
-
+        },
+        # INVENTAIRE
+        "arbres": {
+            "fields": [
+            ("fid", QVariant.Int),
+            ("ID_CODE", QVariant.String),
+            ("UUID", QVariant.String),
+            ("PARCELLE", QVariant.String),
+            ("ESSENCE_ID", QVariant.String),
+            ("ESSENCE_SECONDAIRE_ID", QVariant.String),
+            ("DIAMETRE", QVariant.String),
+            ("EFFECTIF", QVariant.LongLong),
+            ("HAUTEUR", QVariant.String),
+            ("FAVORI", QVariant.Bool),
+            ("OBSERVATION", QVariant.String),
+            ("COMPTEUR", QVariant.LongLong),
+            ],
+            "geometry": "Point"
+        },
+       
     }
 
     @classmethod
