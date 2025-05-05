@@ -59,8 +59,8 @@ class DiagnosticService:
         self._load_and_style_vectors()
         self._load_and_style_rasters()
         self._create_map_themes()
-        self._apply_styles()
         self._create_relations()
+        self._apply_styles()
         self._configure_layers()
         self._package_for_qfield()
 

@@ -86,7 +86,6 @@ class TreeMarkingService:
             return str(self.output_dir)
         return None
 
-
     def _create_and_load_gpkg(self):
         layers = [
             LayerFactory.create("arbres"),

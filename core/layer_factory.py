@@ -123,7 +123,6 @@ class LayerFactory:
             ],
             "geometry": "Point"
         },
-       
     }
 
     @classmethod
