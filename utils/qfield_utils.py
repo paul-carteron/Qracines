@@ -5,9 +5,8 @@ import zipfile
 import json
 import os
 
-# Fonction pour créer des layers
 def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:2154"):
-    # Handle geometry
+
     if geometry:
         crs_obj = QgsCoordinateReferenceSystem(crs)
         geometry_str = f"{geometry}?crs={crs_obj.authid()}"
@@ -75,7 +74,8 @@ def write_layer_to_gpkg(layer, gpkg_path):
 
     if error[0] != QgsVectorFileWriter.NoError:
            raise Exception(f"Error writing layer '{layer.name()}' to GeoPackage: {error[1]}")
- 
+
+
 # Fonction d'ajout de layer à un gpkg
 def add_all_layers_from_gpkg(gpkg_path, styles_directory=None):
     gpkg_data = ogr.Open(gpkg_path)
@@ -91,6 +91,31 @@ def add_all_layers_from_gpkg(gpkg_path, styles_directory=None):
             if os.path.exists(style_path):
                 vlayer.loadNamedStyle(style_path)
                 vlayer.triggerRepaint()
+
+# PAUL ------------------
+
+# Fonction comme ci-dessus mais normalement plsu robuste car on évite d'utiliser iface
+def add_layers_from_gpkg(gpkg_path, *layer_names):
+    datasource = ogr.Open(gpkg_path)
+    if datasource is None:
+        raise Exception("Failed to open GeoPackage.")
+
+    available_layers = [layer.GetName() for layer in datasource]
+
+    # If no layer names provided, load all
+    layers_to_load = layer_names or available_layers
+
+    for layer in reversed(available_layers):
+        if layer not in layers_to_load:
+            continue
+
+        uri = f"{gpkg_path}|layername={layer}"
+        vlayer = QgsVectorLayer(uri, layer, 'ogr')
+        if vlayer.isValid():
+            QgsProject.instance().addMapLayer(vlayer)
+            print(f"✅ Layer '{layer}' added to project")
+        else:
+            print(f"❌ Layer '{layer}' is not valid and was skipped")
 
 # Fonction déplaçant une couche tout en haut
 def move_layer_to_top(layer_name):
@@ -198,3 +223,20 @@ def apply_value_list_to_field(layer_name, field_name, values_list):
 
     # Mise à jour de la couche (optionnel)
     layer.triggerRepaint()
+
+def zip_folder_contents(folder_path, output_zip_path):
+    """
+    Zips all contents (files and subfolders) of folder_path
+    into a zip archive at output_zip_path.
+    
+    The contents will be stored in the zip archive without the top-level folder.
+    """
+    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Walk the folder tree
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Get the relative path to avoid including the top-level folder
+                arcname = os.path.relpath(file_path, folder_path)
+                zipf.write(file_path, arcname)
+    print(f"Created zip archive at {output_zip_path}")
