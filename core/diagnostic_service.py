@@ -1,15 +1,18 @@
 from pathlib import Path
-import os, tempfile, shutil
+import tempfile, shutil, processing
 
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
     QgsRasterLayer,
     QgsFieldConstraints,
-    QgsOfflineEditing
+    QgsOfflineEditing,
+    QgsProcessing,
+    QgsMessageLog,
+    Qgis
 )
+
 from qgis.utils import iface
-import processing
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QCoreApplication
 
@@ -36,7 +39,9 @@ class DiagnosticService:
 
     def __init__(
         self,
-        output_dir: Path,
+        outdir: Path,
+        title: str,
+        package_for_qfield: bool,
         dmin: int,
         dmax: int,
         hmin: int,
@@ -46,7 +51,9 @@ class DiagnosticService:
         self.iface = iface
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
-        self.output_dir = output_dir
+        self.outdir = outdir
+        self.title = title
+        self.package_for_qfield = package_for_qfield
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
         self.raster_choices = raster_choices
@@ -65,12 +72,14 @@ class DiagnosticService:
         self._package_for_qfield()
 
     def _load_parcellaire(self):
-        path = get_path("parcellaire")
-        if not os.path.exists(path):
+        path = Path(get_path("parcellaire"))
+        if not path.exists():
             return None
-        layer = QgsVectorLayer(path, "Parcellaire", "ogr")
+
+        layer = QgsVectorLayer(str(path), "Parcellaire", "ogr")
         if not layer.isValid():
             return None
+
         # collect unique parcel IDs
         self.parcelles = {feat["PARCELLE"] for feat in layer.getFeatures()}
         return layer
@@ -83,14 +92,17 @@ class DiagnosticService:
         parc = self._load_parcellaire()
         if parc:
             layers.append(parc)
-        params = {
-            'LAYERS': layers,
-            'OUTPUT': get_path("diagnostic"),
-            'OVERWRITE': True,
+
+        result = processing.run("native:package", {
+            'LAYERS':      layers,
+            'OUTPUT':      QgsProcessing.TEMPORARY_OUTPUT,
+            'OVERWRITE':   True,
             'SAVE_STYLES': False
-        }
-        processing.run("native:package", params)
-        add_layers_from_gpkg(get_path("diagnostic"))
+        })
+
+        self.gpkg_path = result['OUTPUT']
+
+        add_layers_from_gpkg(self.gpkg_path)
 
     def _load_and_style_vectors(self):
         group = self.root.addGroup("Vector")
@@ -118,42 +130,35 @@ class DiagnosticService:
     def _load_and_style_rasters(self):
         group = self.root.addGroup("Raster")
 
-        for key, enabled in self.raster_choices.items():
-            if not enabled:
+        for key, checkbox in self.raster_choices.items():
+            if not checkbox.isChecked():
                 continue
 
-            raster_path = get_path(key)
-            if not os.path.exists(raster_path):
+            raster_path = Path(get_path(key))
+            if not raster_path.exists():
                 sims = find_similar_filenames(raster_path, key)
                 msg = f"Raster for {key} not found:\n{raster_path}"
                 if sims:
                     msg += "\nSimilar files:\n" + "\n".join(sims)
-                QMessageBox.information(None, "Raster missing", msg)
+                QMessageBox.information(None, "Raster manquant", msg)
                 continue
 
-            layer = QgsRasterLayer(raster_path, key)
+            layer = QgsRasterLayer(str(raster_path), key)
             if not layer.isValid():
-                QMessageBox.warning(None, "Invalid raster", f"Could not load: {raster_path}")
+                QMessageBox.warning(None, "Raster invalide", f"Impossible de charger : {raster_path}")
                 continue
 
-            # --- Optional styling: ---
-            style_path = None
+            # --- Optional styling ---
             try:
                 style_path = get_style(key)
-            except (KeyError, ValueError, FileNotFoundError):
-                pass
-
-            if style_path:
-                try:
-                    layer.loadNamedStyle(style_path)
-                    layer.triggerRepaint()
-                except Exception as e:
-                    # log failures without disturbing the user
-                    QgsMessageLog.logMessage(
-                        f"Failed to apply style for '{key}': {e}",
-                        "Qsequoia2",
-                        Qgis.Warning
-                    )
+                layer.loadNamedStyle(str(Path(style_path)))
+                layer.triggerRepaint()
+            except (KeyError, ValueError, FileNotFoundError, Exception) as e:
+                QgsMessageLog.logMessage(
+                    f"Failed to apply style for '{key}': {e}",
+                    "Qsequoia2",
+                    Qgis.Warning
+                )
 
             self.project.addMapLayer(layer, False)
             group.addLayer(layer)
@@ -277,46 +282,36 @@ class DiagnosticService:
         va_mgr.fields.set_constraint('VA_TX_HA', QgsFieldConstraints.ConstraintNotNull)
 
     def _package_for_qfield(self):
-        prefix = get_project_variable('forest_prefix')
-        offline = QgsOfflineEditing()
-        out_dir = self.output_dir
+        forest_prefix = get_project_variable("forest_prefix")
 
-        if not out_dir.exists():
-            QMessageBox.warning(None, "Missing output folder", "Please choose an output directory.")
-            return
+        filename = self.title if self.title else f"{forest_prefix}_D{self.dmax}H{self.hmax}"
+        
+        if not self.outdir.exists():
+            raise FileNotFoundError(f"Output folder not found: {self.outdir}")
 
-        # 1) Create a temp folder but don’t use the context manager
         tmp_dir = tempfile.mkdtemp()
         tmp_path = Path(tmp_dir)
-        tmp_qgs  = tmp_path / f"{prefix}.qgs"
+        tmp_qgs  = tmp_path / f"{filename}.qgs"
 
         try:
-            # 2) Run the QFieldSync dialog to build the packaged project
-            dlg = PackageDialog(iface, self.project, offline)
+            dlg = PackageDialog(iface, self.project, QgsOfflineEditing())
             dlg.packagedProjectFileWidget.setFilePath(str(tmp_qgs))
             dlg.packagedProjectTitleLineEdit.setText(self.project.baseName())
             dlg._validate_packaged_project_filename()
             dlg.package_project()
-
-            # 3) Close & delete the dialog to drop file handles
             dlg.close()
             dlg.deleteLater()
             QCoreApplication.processEvents()
 
             # 4) Zip up the folder if you still want a .zip
-            zip_path = out_dir / f"{prefix}.zip"
+            zip_path = self.outdir / f"{filename}.zip"
             try:
                 zip_folder_contents(tmp_path, zip_path)
             except PermissionError:
                 # swallow any locked‐file errors, since the .zip itself is valid
                 pass
 
-            QMessageBox.information(
-                None,
-                "Success",
-                f"Project packaged for QField and zipped to:\n{zip_path}"
-            )
-
         finally:
             # 5) Manually remove the temp dir, ignoring any leftover lock errors
             shutil.rmtree(tmp_path, ignore_errors=True)
+

@@ -15,7 +15,6 @@ from qgis.core import (
 
 from qgis.utils import iface
 
-from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QCoreApplication, QVariant
 from PyQt5.QtGui import QFont
 
