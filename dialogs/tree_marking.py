@@ -157,7 +157,7 @@ class Tree_markingDialog(QDialog):
             return
 
         dmin, dmax = self.ui.sp_dmin.value(), self.ui.sp_dmax.value()
-        hmin, hmax  = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
+        hmin, hmax = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
 
         create_new_projet_with_variables()
 
@@ -175,9 +175,9 @@ class Tree_markingDialog(QDialog):
             packaged_dir = svc.run_full_diagnostic()
 
             if packaged_dir:
-                QMessageBox.information(self, "Succès", f"Diagnostic complet !\nProjet packagé dans :\n{packaged_dir}")
+                QMessageBox.information(self, "Succès", f"Inventaire complet !\nProjet packagé dans :\n{packaged_dir}")
             else:
-                QMessageBox.information(self, "Succès", "Diagnostic complet !")
+                QMessageBox.information(self, "Succès", "Inventaire complet !")
 
             self.accept()
 
