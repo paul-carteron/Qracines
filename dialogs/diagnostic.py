@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 from .diagnostic_dialog import Ui_DiagnosticDialog
 from ..core.diagnostic_service import DiagnosticService
 from ..utils.path_manager import get_project_variable, get_racines_path
-from ..utils.variable_utils import create_new_projet_with_variables
+from ..utils.variable_utils import clear_project
 
 class DiagnosticDialog(QDialog):
     def __init__(self, parent=None):
@@ -68,7 +68,7 @@ class DiagnosticDialog(QDialog):
         dmin, dmax = self.ui.sp_dmin.value(), self.ui.sp_dmax.value()
         hmin, hmax  = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
         
-        create_new_projet_with_variables()
+        clear_project()
 
         # 2) call service
         svc = DiagnosticService(

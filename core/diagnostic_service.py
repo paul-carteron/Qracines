@@ -72,7 +72,7 @@ class DiagnosticService:
         self._package_for_qfield()
 
     def _load_parcellaire(self):
-        path = Path(get_path("parcellaire"))
+        path = get_path("parcellaire")
         if not path.exists():
             return None
 
@@ -109,11 +109,11 @@ class DiagnosticService:
         vector_defs = [
             ("prop_line", "Limite de propriété b"),
             ("prop_diag_line", "Limite de propriété w"),
-            ("ua_polygon", "Unité d analyse")
+            ("ua_polygon", "Unité d analyse"),
         ]
         for key, name in vector_defs:
             path = get_path(key)
-            layer = QgsVectorLayer(path, name, "ogr")
+            layer = QgsVectorLayer(str(path), name, "ogr")
             style_path = get_style(key)
             if layer.isValid():
                 layer.setReadOnly(True)

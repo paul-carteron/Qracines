@@ -83,12 +83,12 @@ class GlobalSettingsDialog(QDialog):
     def select_styles_directory(self):
         modeles_path = get_racines_path("cartographie") / "1_MODELES"
 
-        dir_path = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire de travail", modeles_path)
+        dir_path = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire de travail", str(modeles_path))
         if dir_path:
             self.ui.stylesInput.setText(dir_path)
 
     def select_models_directory(self):
         modeles_path = get_racines_path("cartographie") / "1_MODELES"
-        dir_path = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire de travail", modeles_path)
+        dir_path = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire de travail", str(modeles_path))
         if dir_path:
             self.ui.modelsInput.setText(dir_path)

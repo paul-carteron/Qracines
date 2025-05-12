@@ -3,6 +3,8 @@ from qgis.utils import *
 from collections import *
 import geopandas as gpd 
 
+from pathlib import Path
+
 # Fonction pour ajouter une variable globale       
 def set_global_variable(variable_name, value):
     QgsExpressionContextUtils.setGlobalVariable(variable_name, value)
@@ -15,9 +17,7 @@ def get_global_variable(variable_name):
 def set_project_variable(variable_name, value):
     project = QgsProject.instance()
     context = QgsExpressionContextUtils.projectScope(project)
-    exists = context.variable(variable_name)
-    if not exists:
-        QgsExpressionContextUtils.setProjectVariable(project, variable_name, value)
+    QgsExpressionContextUtils.setProjectVariable(project, variable_name, value)
 
 # Fonction pour récupérer une variable projet
 def get_project_variable(variable_name):
@@ -25,10 +25,15 @@ def get_project_variable(variable_name):
     context = QgsExpressionContextUtils.projectScope(project)
     return context.variable(variable_name)
     
-# Fonction pour récupérer un prefixe depuis un répertoire
+# Fonction pour récupérer un le nom de la foret depuis un répertoire
 def get_prefix_from_directory(path):
-    last_part = os.path.basename(path).split('_')[-1]
-    return last_part
+    """
+    Récupère la partie avant le premier '_' dans le nom du dossier.
+    Si aucun '_' n'est trouvé, renvoie une chaîne vide.
+    """
+    name = Path(path).name
+    prefix, sep, suffix = name.partition("_")
+    return suffix if sep else prefix
 
 # Fonction pour City & Owner
 def get_grouped_values_from_shapefile(shapefile_path, value_field, filter_field, surface_field):

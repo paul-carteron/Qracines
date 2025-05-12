@@ -4,6 +4,8 @@ import yaml
 from .variable_utils import get_project_variable, get_global_variable
 from .plugin_path import get_config_path
 
+from pathlib import Path
+
 def load_sig_structure_yaml():
     path = get_config_path("sig_structure.yaml")
     with open(path, "r", encoding="utf-8") as f:
@@ -20,20 +22,22 @@ def get_path(logical_key, forest=None, base_dir=None):
 
     for folder in sig_structure["structure"].values():
         files = folder.get("files", {})
-        if logical_key in files:
-            file_data = files[logical_key]
-            folder_path = folder["path"]
+        if logical_key not in files:
+            continue
 
-            if "filename" not in file_data:
-                raise ValueError(f"Missing 'filename' for key '{logical_key}'")
+        file_data = files[logical_key]
+        if "filename" not in file_data:
+            raise ValueError(f"Missing 'filename' for key '{logical_key}'")
 
-            filename = file_data["filename"]
-            if not filename.startswith(forest):
-                filename = f"{forest}_{filename}"
+        filename = file_data["filename"]
+        if not filename.startswith(forest):
+            filename = f"{forest}_{filename}"
 
-            full_folder = os.path.join(base_dir, *folder_path)
-            os.makedirs(full_folder, exist_ok=True)
-            return os.path.join(full_folder, filename)
+        # build the full folder path
+        full_folder = Path(base_dir, *folder["path"])
+        full_folder.mkdir(parents=True, exist_ok=True)
+
+        return full_folder / filename
 
     raise KeyError(f"File key '{logical_key}' not found in sig_structure.yaml")
 
@@ -80,7 +84,7 @@ def get_style(logical_key, styles_dir=None):
 
     raise KeyError(f"Style key '{logical_key}' not found in sig_structure.yaml")
 
-def get_racines_path(site, *args):
+def get_racines_path(site, *subpaths):
     site_map = {
         "cartographie": "Cartographie - Documents",
         "expertise": "Equipe - Expertise",
@@ -93,8 +97,8 @@ def get_racines_path(site, *args):
     if folder is None:
         raise ValueError(f"Unknown site '{site}'. Must be one of: {', '.join(site_map)}")
 
-    user_path = os.path.expanduser("~")
-    return os.path.join(user_path, "Racines", folder, *args)
+    base = Path.home() / "Racines" / folder
+    return base.joinpath(*subpaths)
 
 
 # Not sure it's the right place

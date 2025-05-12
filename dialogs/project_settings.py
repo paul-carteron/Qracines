@@ -1,23 +1,34 @@
-from PyQt5.QtWidgets import *
+from qgis.PyQt.QtWidgets import QDialog, QFileDialog
+
 from .project_settings_dialog import Ui_ProjectSettingsDialog
-from qgis.core import *
-from qgis.PyQt.QtCore import *
-import os
 
 # Import from utils folder
-from ..utils.variable_utils import *
+from ..utils.variable_utils import (
+    get_global_variable,
+    get_project_variable, 
+    set_project_variable, 
+    get_prefix_from_directory, 
+    get_formated_surface, 
+    get_grouped_values_from_shapefile, 
+    sum_surface_from_shapefile,
+    clear_project,
+    )
 from ..utils.layer_utils import *
+from ..utils.path_manager import get_racines_path, get_path
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.iface = iface
         self.ui = Ui_ProjectSettingsDialog()
         self.ui.setupUi(self)
         
         # Liste des projets possibles
-        self.projects = ["SITUATION", "ASSEMBLAGE", "PEUPLEMENTS", "GEOLOGIE", "ENJEUX"]
-        self.ui.comboBox_projects.addItems(self.projects)
+        projects = ["SITUATION", "ASSEMBLAGE", "PEUPLEMENTS", "GEOLOGIE", "ENJEUX"]
+
+        cb = self.ui.comboBox_projects
+        cb.addItem("") 
+        cb.addItems(projects)
+        cb.setCurrentIndex(0)
         
         # Charger les paramètres existants
         self.load_settings()
@@ -25,60 +36,40 @@ class ProjectSettingsDialog(QDialog):
         # Connecter les boutons
         self.ui.buttonBox.accepted.connect(self.save_settings)
         self.ui.pushButton.clicked.connect(self.select_directory)
-        self.ui.checkBox_domaine.toggled.connect(self.refresh_cartouche)
-        self.ui.checkBox_massif.toggled.connect(self.refresh_cartouche)
-        self.ui.checkBox_foret.toggled.connect(self.refresh_cartouche)
-        self.ui.checkBox_bois.toggled.connect(self.refresh_cartouche)
-        self.ui.pushButton_refresh.clicked.connect(self.get_cartouche)
+
+        # Connection des checkboxes
+        self.nom_checkbox = {
+            self.ui.checkBox_domaine: "Domaine",
+            self.ui.checkBox_massif: "Massif",
+            self.ui.checkBox_foret: "Forêt",
+            self.ui.checkBox_bois: "Bois",
+        }
+        for cb in self.nom_checkbox:
+            cb.toggled.connect(self.update_forest_name)
+
+        self.ui.pushButton_refresh.clicked.connect(self.fill_in_cartouche)
 
     def load_settings(self):
-        # Directory
-        directory = get_project_variable("forest_directory")
-        if directory:
-            self.ui.lineEdit_directory.setText(directory)
-
-        # Prefix
-        prefix = get_project_variable("forest_prefix")
-        if prefix:
-            self.ui.lineEdit_prefixe.setText(prefix)
-        
-        # Name
-        temp_name  = get_project_variable("forest_temp_name")
-        if temp_name:
-            self.ui.lineEdit_name.setText(temp_name)
-        
-        # City
-        city = get_project_variable("forest_city")
-        if city:
-            self.ui.lineEdit_city.setText(city)
-            
-        # owner
-        owner = get_project_variable("forest_owner")
-        if owner:
-            self.ui.lineEdit_owner.setText(owner)
-            
-        # surface
-        surface = get_project_variable("forest_surface")
-        if surface:
-            self.ui.doubleSpinBox.setValue(surface)
-
-        # Charger le projet de carte sélectionné
-        map_project = get_project_variable("forest_map_project")
-        if map_project:
-            self.ui.comboBox_projects.setCurrentText(map_project)
+        self.ui.lineEdit_directory.setText(get_project_variable("forest_directory") or "")
+        self.ui.lineEdit_prefixe.setText(get_project_variable("forest_prefix") or "")
+        self.ui.lineEdit_name.setText(get_project_variable("forest_name") or "")
+        self.ui.lineEdit_city.setText(get_project_variable("forest_city") or "")
+        self.ui.lineEdit_owner.setText(get_project_variable("forest_owner") or "")
+        self.ui.doubleSpinBox.setValue(get_project_variable("forest_surface") or 0)
+        self.ui.comboBox_projects.setCurrentText(get_project_variable("forest_map_project") or "")
 
     def save_settings(self):
       
         # Récupère les paramètres
         directory = self.ui.lineEdit_directory.text()
         prefix = self.ui.lineEdit_prefixe.text()
-        name =  self.ui.lineEdit_name.text()
-        city =  self.ui.lineEdit_city.text()
-        owner =  self.ui.lineEdit_owner.text()
+        name = self.ui.lineEdit_name.text()
+        city = self.ui.lineEdit_city.text()
+        owner = self.ui.lineEdit_owner.text()
         surface = self.ui.doubleSpinBox.value()
-        formated_surface = get_formated_surface(surface*10000)
+        formated_surface = get_formated_surface(surface * 10000)
         map_project = self.ui.comboBox_projects.currentText()
-        
+       
         # Sauvegarder les paramètres
         set_project_variable("forest_directory", directory)
         set_project_variable("forest_prefix", prefix)
@@ -88,92 +79,104 @@ class ProjectSettingsDialog(QDialog):
         set_project_variable("forest_map_project", map_project)
         set_project_variable("forest_surface", surface)
         set_project_variable("forest_formated_surface", formated_surface)
-        
+
         # Lance la création de la map
         self.create_map_project(map_project)
         self.save_current_project(map_project)
 
     def select_directory(self):
-        UserPath = os.path.expanduser("~")
-        StartPath = os.path.join(UserPath, "Racines", "Cartographie - Documents", "2_FORETS")
-        dir_path = QFileDialog.getExistingDirectory(self, "Sélectionner le répertoire de travail", StartPath)
+        # directory is the path to "123456_FORET"
+        default_path = get_racines_path("cartographie") / "2_FORETS"
+        self.directory = QFileDialog.getExistingDirectory(self, "Sélectionner…", str(default_path))
+        if not self.directory:
+            return
         
-        if dir_path:
-            # Directory
-            self.ui.lineEdit_directory.setText(dir_path)
-            
-            # Prefix
-            prefix = get_prefix_from_directory(dir_path)
-            self.ui.lineEdit_prefixe.setText(prefix)
-            
-            self.get_cartouche()
-            
+        self.fill_in_cartouche()
     
-    def get_cartouche(self):
-        directory = self.ui.lineEdit_directory.text()
-        prefix = self.ui.lineEdit_prefixe.text()
-        
-        if directory and prefix:
-            # Nom
-            name = prefix.title()
-            self.ui.lineEdit_name.setText(name)
-            set_project_variable("forest_temp_name", name)
-                
-            # Commune
-            parca_path = get_vector_from_config(directory, "new_directories", prefix, "PARCA_polygon")
-            if parca_path:
-                city = get_grouped_values_from_shapefile(parca_path, "COM_NOM", "DEP_CODE", "SURF_CA")
-                self.ui.lineEdit_city.setText(city)
-                
-            # Surface
-            ua_path = get_vector_from_config(directory, "new_directories", prefix, "UA_polygon")
-            if os.path.exists(ua_path):
-                surface = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
-                self.ui.doubleSpinBox.setValue(surface)
-            elif os.path.exists(parca_path):
-                surface = sum_surface_from_shapefile(parca_path, "SURF_CA", None, None)
-                self.ui.doubleSpinBox.setValue(surface)
-                
-            # Proprietaire
+    def fill_in_cartouche(self):
+        # Compute key paths
+        prefix = get_prefix_from_directory(self.directory)
+        parca_path = get_path("parca_polygon", prefix, self.directory)
+        ua_path = get_path("ua_polygon", prefix, self.directory)
+
+        # fill in cartouche
+        self._set_directory_and_prefix(self.directory, prefix)
+        self._set_name(prefix)
+        self._set_city_and_owner(parca_path)
+        self._set_surface(ua_path, parca_path)
+
+    def _set_directory_and_prefix(self, directory, prefix):
+        self.ui.lineEdit_directory.setText(directory)
+        set_project_variable("forest_directory", directory)
+
+        self.ui.lineEdit_prefixe.setText(prefix)
+        set_project_variable("forest_prefix", prefix)
+
+    def _set_name(self, prefix):
+        self.name = prefix.title() if prefix else ""
+        self.ui.lineEdit_name.setText(self.name)
+        set_project_variable("forest_name", self.name)
+
+    def _set_city_and_owner(self, parca_path):
+        city = owner = ""
+        if parca_path.exists():
+            city = get_grouped_values_from_shapefile(parca_path, "COM_NOM", "DEP_CODE", "SURF_CA")
             owner = get_grouped_values_from_shapefile(parca_path, "PROP", None, "SURF_CA")
-            self.ui.lineEdit_owner.setText(owner)
-        
+
+        self.ui.lineEdit_city.setText(city)
+        set_project_variable("forest_city", city)
+
+        self.ui.lineEdit_owner.setText(owner)
+        set_project_variable("forest_owner", owner)
+
+    def _set_surface(self, ua_path, parca_path):
+        if ua_path.exists():
+            surface = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
+        elif parca_path.exists():
+            surface = sum_surface_from_shapefile(parca_path, "SURF_CA")
+        else:
+            surface = 0
+
+        self.ui.doubleSpinBox.setValue(surface)
+        set_project_variable("forest_surface", surface)
+
+    def update_forest_name(self):
+
+        base = self.name or get_project_variable("forest_name") or ""
+
+        # find the first‐checked box (if any) and grab its label
+        prefix = next((label for cb, label in self.nom_checkbox.items() if cb.isChecked()), "")
+
+        if prefix and base:
+            # plural names take " des "
+            if base.lower().endswith("s"):
+                connector = " des "
+            # then vowel or mute-h → d'
+            elif base[0].lower() in ("a","e","i","o","u","h"):
+                connector = " d'"
+            # otherwise normal " de "
+            else:
+                connector = " de "
+            full = f"{prefix}{connector}{base}"
+        else:
+            full = base
             
-    def refresh_cartouche(self):
-        name= get_project_variable("forest_temp_name")
-        if not name:
-            name = get_project_variable("forest_name")
-        
-        full_name = ""
-        
-        if self.ui.checkBox_domaine.isChecked():
-            full_name = "Domaine de " + name
-        elif  self.ui.checkBox_massif.isChecked():
-            full_name = "Massif de " + name
-        elif  self.ui.checkBox_foret.isChecked():
-            full_name = "Forêt de " + name
-        elif  self.ui.checkBox_bois.isChecked():
-            full_name = "Bois de " + name
-            
-        if not full_name:
-            full_name = name
-        
-        self.ui.lineEdit_name.setText(full_name)
+        self.ui.lineEdit_name.setText(full)
       
     def save_current_project(self, map_project):
         if self.ui.checkBox_saved.isChecked():
-            forest_directory = get_project_variable("forest_directory")
             project = QgsProject.instance()
-            save_path = os.path.join(forest_directory, "SIG", "0_OUTPUT", map_project + ".qgz")
+            save_path = get_path(map_project.lower(), self.name, self.directory)
             project.write(save_path)
-            project.write()
             
     def create_map_project(self, map_project):
-        clear_qgis_project()
+
+        clear_project()
+
         styles_directory = get_global_variable("styles_directory")
         forest_directory = get_project_variable("forest_directory")
         forest_prefix = get_project_variable("forest_prefix")
-        
+
         if map_project == 'SITUATION':
             import_wms_from_config(["Scan25", "Scan1000"], group_name="RASTER")
             

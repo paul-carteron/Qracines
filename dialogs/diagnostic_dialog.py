@@ -180,7 +180,7 @@ class Ui_DiagnosticDialog(object):
 
     def retranslateUi(self, DiagnosticDialog):
         _translate = QtCore.QCoreApplication.translate
-        DiagnosticDialog.setWindowTitle(_translate("DiagnosticDialog", "Martelage"))
+        DiagnosticDialog.setWindowTitle(_translate("DiagnosticDialog", "Diagnostic"))
         self.gb_diag_param.setTitle(_translate("DiagnosticDialog", "Paramétrage Diagnostic"))
         self.label_layers_8.setText(_translate("DiagnosticDialog", "Diamètre maximal"))
         self.label_layers_7.setText(_translate("DiagnosticDialog", "Diamètre minimal"))
