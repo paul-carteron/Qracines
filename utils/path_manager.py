@@ -6,83 +6,89 @@ from .plugin_path import get_config_path
 
 from pathlib import Path
 
-def load_sig_structure_yaml():
-    path = get_config_path("sig_structure.yaml")
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+_SIG_STRUCT: dict | None = None
+
+def _load_sig_structure() -> dict:
+    global _SIG_STRUCT
+    if _SIG_STRUCT is None:
+        cfg_path = get_config_path("sig_structure.yaml")
+        with open(cfg_path, encoding="utf-8") as f:
+            _SIG_STRUCT = yaml.safe_load(f)
+    return _SIG_STRUCT
+
+def _find_entry(logical_key):
+    """
+    Return (entry_dict, folder_path_parts) for this key,
+    or KeyError if missing entirely.
+    """
+    struct = _load_sig_structure()["structure"]
+    for folder in struct.values():
+        files = folder.get("files", {})
+        if logical_key in files:
+            return files[logical_key], folder.get("path", [])
+    raise KeyError(f"No entry for '{logical_key}' in sig_structure.yaml")
 
 def get_path(logical_key, forest=None, base_dir=None):
-    sig_structure = load_sig_structure_yaml()
+    entry, path = _find_entry(logical_key)
+    filename = entry.get("filename")
+    if not filename:
+        raise KeyError(f"Entry for '{logical_key}' missing 'filename'")
 
     forest = forest or get_project_variable("forest_prefix")
     base_dir = base_dir or get_project_variable("forest_directory")
-
     if not forest or not base_dir:
-        raise ValueError("Missing forest or base_dir. Either pass them directly or set them as project variables.")
+        raise ValueError("Must set forest_prefix & forest_directory")
 
-    for folder in sig_structure["structure"].values():
-        files = folder.get("files", {})
-        if logical_key not in files:
-            continue
+    # ensure dir exists
+    folder = Path(base_dir).joinpath(*path)
+    folder.mkdir(parents=True, exist_ok=True)
 
-        file_data = files[logical_key]
-        if "filename" not in file_data:
-            raise ValueError(f"Missing 'filename' for key '{logical_key}'")
+    # prefix if needed
+    if not filename.startswith(forest):
+        filename = f"{forest}_{filename}"
 
-        filename = file_data["filename"]
-        if not filename.startswith(forest):
-            filename = f"{forest}_{filename}"
-
-        # build the full folder path
-        full_folder = Path(base_dir, *folder["path"])
-        full_folder.mkdir(parents=True, exist_ok=True)
-
-        return full_folder / filename
-
-    raise KeyError(f"File key '{logical_key}' not found in sig_structure.yaml")
+    return folder / filename
 
 def get_style(logical_key, styles_dir=None):
-    """
-    Resolve the path to a .qml style file based on the logical key in sig_structure.yaml.
+    entry, _ = _find_entry(logical_key)
+    style_name = entry.get("style")
+    if not style_name:
+        raise KeyError(f"Entry '{logical_key}' missing required 'style'")
 
-    Requires the 'style' key to be defined explicitly in the YAML.
-    Uses get_global_variable("styles_directory") as the root.
-
-    Args:
-        logical_key (str): Key of the style to look up
-        styles_dir (str, optional): Override styles directory
-
-    Returns:
-        str: Full path to the .qml file
-
-    Raises:
-        ValueError: If 'style' or 'filename' is missing
-        FileNotFoundError: If the style file does not exist
-        KeyError: If logical_key is not in YAML
-    """
-    sig_structure = load_sig_structure_yaml()
     styles_dir = styles_dir or get_global_variable("styles_directory")
-
     if not styles_dir:
-        raise ValueError("Global variable 'styles_directory' is not set.")
+        raise ValueError("Global 'styles_directory' is not set")
 
-    for folder in sig_structure["structure"].values():
-        files = folder.get("files", {})
-        if logical_key in files:
-            file_data = files[logical_key]
+    style_path = Path(styles_dir) / style_name
+    if not style_path.exists():
+        raise FileNotFoundError(f"Style file not found: {style_path}")
 
-            if "style" not in file_data:
-                raise ValueError(f"Missing 'style' for key '{logical_key}' in YAML. You must define it explicitly.")
+    return style_path
 
-            style_filename = file_data["style"]
-            style_path = os.path.join(styles_dir, style_filename)
+def get_display_name(logical_key):
+    """
+    Return the display_name for this logical_key,
+    or the key itself if none defined.
+    """
+    entry, _ = _find_entry(logical_key)
+    return entry.get("display_name")
 
-            if not os.path.exists(style_path):
-                raise FileNotFoundError(f"Style file not found: {style_path}")
 
-            return style_path
 
-    raise KeyError(f"Style key '{logical_key}' not found in sig_structure.yaml")
+def get_wms(logical_key):
+    wms_config_path = get_config_path("wms.yaml")
+    with open(wms_config_path, "r", encoding="utf-8") as f:
+        wms_config = yaml.safe_load(f)
+    
+    entry = wms_config.get("wms", {}).get(logical_key)
+    if not entry:
+        raise KeyError(f"No WMS config for key {logical_key}")
+
+    # Extract the two fields
+    display_name = entry.get("display_name")
+    url = entry.get("url")
+
+    return display_name, url
 
 def get_racines_path(site, *subpaths):
     site_map = {

@@ -21,47 +21,50 @@ structure:
       rgb: { filename: "RGB.tif", }
       scan25: { filename: "SCAN25.tif", style: "SCAN25.qml"}
 
+
   vector_folder:
     path: [SIG, 2_VECTOR]
     files:
       ame_polygon: { filename: AME_polygon.shp }
       batica_polygon: { filename: BATICA_polygon.shp }
-      com_line: { filename: COM_line.shp, style: COMS_line.qml }
-      com_point: { filename: COM_point.shp, style: COMS_point.qml }
-      coms_line: { filename: COMS_line.shp, style: COMS_line.qml }
-      coms_point: { filename: COMS_point.shp, style: COMS_point.qml }
+      com_line: { filename: COM_line.shp, style: COMS_line.qml, display_name: "COM_line" }
+      com_point: { filename: COM_point.shp, style: COMS_point.qml, display_name: "COM_point" }
+      coms_line: { filename: COMS_line.shp, style: COMS_line.qml, display_name: "COMS_line" }
+      coms_point: { filename: COMS_point.shp, style: COMS_point.qml, display_name: "COMS_point" }
       coms_polygon: { filename: COMS_polygon.shp }
-      geol_polygon: { filename: GEOL_polygon.shp, style: GEOL_polygon.qml }
-      infra_line: { filename: INFRA_line.shp, style: INFRA_line.qml }
-      infra_point: { filename: INFRA_point.shp, style: INFRA_point.qml }
-      infra_point_acces: { filename: INFRA_point.shp, style: INFRA_point_ACCES.qml }
-      infra_polygon: { filename: INFRA_polygon.shp, style: INFRA_polygon.qml }
-      lieudit_point: { filename: LIEUDIT_point.shp, style: LIEUDIT_point.qml }
+      geol_polygon: { filename: GEOL_polygon.shp, style: GEOL_polygon.qml, display_name: "Géologie"}
+      infra_line: { filename: INFRA_line.shp, style: INFRA_line.qml, display_name: "INFRA_line" }
+      infra_point_acces: { filename: INFRA_point.shp, style: INFRA_point_ACCES.qml, display_name: "INFRA_point_ACCES" }
+      infra_point: { filename: INFRA_point.shp, style: INFRA_point.qml, display_name: "INFRA_point" }
+      infra_polygon: { filename: INFRA_polygon.shp, style: INFRA_polygon.qml, display_name: "INFRA_polygon" }
+      lieudit_point: { filename: LIEUDIT_point.shp, style: LIEUDIT_point.qml, display_name: "LIEUDIT_point" }
       parca_archive_polygon: { filename: PARCA-ARCHIVE_polygon.shp }
-      parca_polygon: { filename: PARCA_polygon.shp, style: PARCA_polygon.qml }
-      parca_polygon_legend: { filename: PARCA_polygon.shp, style: INFRASTRUCTURE_polygon.qml }
-      parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml }
+      parca_polygon: { filename: PARCA_polygon.shp, style: PARCA_polygon.qml, display_name: "Parcelle cadastrale" }
+      parca_polygon_legend: { filename: PARCA_polygon.shp, style: INFRASTRUCTURE_polygon.qml, display_name: "Légende" }
+      parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml, display_name: "Parcelle cadastrale *"}
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
       pf_diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml }
-      pf_line: { filename: PF_line.shp, style: PF_line.qml }
-      pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml }
+      pf_line: { filename: PF_line.shp, style: PF_line.qml, display_name: "Limite de parcelle forestière"}
+      pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"}
       pn_polygon: { filename: PN_polygon.shp }
       prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml }
-      prop_line: { filename: PROP_line.shp, style: PROP_line.qml }
-      prop_point: { filename: PROP_point.shp, style: PROP_point.qml }
-      prop_polygon: { filename: PROP_polygon.shp, style: PROP_polygon.qml }
-      road_line: { filename: ROAD_line.shp, style: ROAD_line.qml }
-      road_polygon: { filename: ROAD_polygon.shp, style: ROAD_polygon.qml }
+      prop_line: { filename: PROP_line.shp, style: PROP_line.qml, display_name: "Limite de propriété" }
+      prop_point: { filename: PROP_point.shp, style: PROP_point.qml, display_name: "Centroid de propriété" }
+      prop_polygon: { filename: PROP_polygon.shp, style: PROP_polygon.qml, display_name : Propriété }
+      road_line: { filename: ROAD_line.shp, style: ROAD_line.qml, display_name: "ROAD_line" }
+      road_polygon: { filename: ROAD_polygon.shp, style: ROAD_polygon.qml, display_name: "ROAD_polygon"}
+      route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml, display_name: "ROUTE_line" }
+      route_polygon: { filename: ROUTE_polygon.shp, style: ROUTE_polygon.qml, display_name: "ROUTE_polygon"}
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml }
-      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml }
-      sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml }
-      sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml }
+      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml}
+      sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle forestière"}
+      sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
       topo_line: { filename: TOPO_line.shp, style: TOPO_line.qml }
-      ua_polygon: { filename: UA_polygon.shp, style: UA_polygon.qml }
-      ua_polygon_ame: { filename: UA_polygon.shp, style: UA2_polygon.qml }
-      ua_polygon_occup: { filename: UA_polygon.shp, style: UA3_polygon.qml }
-      ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml }
+      ua_polygon: { filename: UA_polygon.shp, style: UA_polygon.qml, display_name: "Unité d analyse" }
+      ua_polygon_ame: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Aménagements (UA)" }
+      ua_polygon_occup: { filename: UA_polygon.shp, style: UA3_polygon.qml, display_name: "Occupation du sol"}
+      ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Peuplements (UA)" }
       znieff1_polygon: { filename: ZNIEFF1_polygon.shp }
       placette: {filename: Placette.shp, style: Placette.qml}
       transect: {filename: Transect.shp, style: Transect.qml}

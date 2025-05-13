@@ -1,5 +1,6 @@
 from qgis.PyQt.QtWidgets import QDialog, QFileDialog
-
+from qgis.core import Qgis, QgsProject
+from qgis.utils import iface
 from .project_settings_dialog import Ui_ProjectSettingsDialog
 
 # Import from utils folder
@@ -13,15 +14,16 @@ from ..utils.variable_utils import (
     sum_surface_from_shapefile,
     clear_project,
     )
-from ..utils.layer_utils import *
-from ..utils.path_manager import get_racines_path, get_path
+from ..utils.layer_utils import load_wms, load_vectors, zoom_on_layer, create_map_theme, replier
+from ..utils.path_manager import get_racines_path, get_path, get_wms
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.iface = iface
         self.ui = Ui_ProjectSettingsDialog()
         self.ui.setupUi(self)
-        
+
         # Liste des projets possibles
         projects = ["SITUATION", "ASSEMBLAGE", "PEUPLEMENTS", "GEOLOGIE", "ENJEUX"]
 
@@ -172,121 +174,147 @@ class ProjectSettingsDialog(QDialog):
     def create_map_project(self, map_project):
 
         clear_project()
-
-        styles_directory = get_global_variable("styles_directory")
-        forest_directory = get_project_variable("forest_directory")
-        forest_prefix = get_project_variable("forest_prefix")
+        # I can massively DRY up this part be create a project_factory with a method create_map_project but it's working for now
 
         if map_project == 'SITUATION':
-            import_wms_from_config(["Scan25", "Scan1000"], group_name="RASTER")
-            
-            vector_layers = ['UA_polygon_OCCUP','PROP_polygon','PROP_point','PROP_line','INFRA_point_ACCES', 'COMS_point','COMS_line','PARCA_polygon_LEGEND']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            
-            zoom_on_layer("Légende")
-            
+            # zoom_on_layer should be called before loading wms
+            load_vectors("ua_polygon_occup", "prop_polygon", "prop_point", "prop_line", "infra_point_acces", "coms_point", "coms_line", "parca_polygon_legend")
+            zoom_on_layer("parca_polygon_legend")
+
+            load_wms("scan25", "scan1000", group_name = "RASTER")
+
             map_themes = [("1_SCAN25_all",
-                            ['Propriété', 'INFRA_point', 'COMS_point', 'COMS_line', 'IGN SCAN 25 TOPO (Metropole)'],
-                            ['Occupation du sol', 'Centroid de propriété', 'Limite de propriété', 'Légende', 'IGN SCAN 1000 TOPO (Metropole)']),
+                            ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'scan25'],
+                            ['ua_polygon_occup', 'prop_point', 'prop_line', 'parca_polygon_legend', 'scan1000']),
                           ("2_SCAN25_boisee",
-                            ['Occupation du sol', 'Limite de propriété', 'INFRA_point', 'COMS_point', 'COMS_line', 'IGN SCAN 25 TOPO (Metropole)'], 
-                            ['Propriété', 'Centroid de propriété', 'Légende', 'IGN SCAN 1000 TOPO (Metropole)']),
+                            ['ua_polygon_occup', 'prop_line', 'infra_point_acces', 'coms_point', 'coms_line', 'scan25'], 
+                            ['prop_polygon', 'prop_point', 'parca_polygon_legend', 'scan1000']),
                           ("3_SCAN1000",
-                            ['Centroid de propriété', 'IGN SCAN 1000 TOPO (Metropole)'],
-                            ['Occupation du sol', 'Propriété', 'Limite de propriété', 'INFRA_point', 'COMS_point', 'COMS_line', 'Légende', 'IGN SCAN 25 TOPO (Métropole)'])]
+                            ['prop_point', 'scan1000'],
+                            ['ua_polygon_occup', 'prop_polygon', 'prop_line', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_legend', 'scan25'])]
             for theme in map_themes:
                 create_map_theme(*theme)
-                
-            self.iface.messageBar().pushMessage("QSequoia2", "SITUATION généré avec succès", level=Qgis.Success, duration=10)
+            
+
+            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
           
         if map_project == 'ASSEMBLAGE':
-            import_wms_from_config(["Scan25_gray", "Scan100", "Scan1000", "PCI", "IRC", "RGB"], group_name="RASTER")
-            customize('IGN SCAN 25 TOPO (Metropole) gray')
+            # zoom_on_layer should be called before loading wms
+            load_vectors(
+                'ua_polygon_occup', 'parca_polygon_occup', 'parca_polygon', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 
+                'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend'
+            )
+            zoom_on_layer("parca_polygon_legend")
+
+            load_wms("scan25_grey", "scan100", "scan1000", "pci", "irc", "rgb", group_name="RASTER")
             
-            vector_layers = ['UA_polygon_OCCUP', 'PARCA_polygon_OCCUP', 'PARCA_polygon', 'PROP_line', 'ROAD_polygon', 'ROAD_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'PARCA_polygon_LEGEND']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            
-            zoom_on_layer("Légende")
-            replier()
+            # little customization
+            wms_display_name,_ = get_wms("scan25_grey")
+            layer = QgsProject.instance().mapLayersByName(wms_display_name)[0]
+            layer.setOpacity(0.5)
+
             
             map_themes = [("1_Vector_all",
-                            ['Parcelle cadastrale', 'Limite de propriété', 'ROAD_polygon', 'ROAD_polygon', 'ROAD_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line'],
-                            ['Occupation du sol', 'Parcelle cadastrale *', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['parca_polygon', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line'],
+                            ['ua_polygon_occup', 'parca_polygon_occup', 'parca_polygon_legend', 'scan25_grey', 'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
                           ("2_Vector_boisee",
-                            ['Occupation du sol', 'Parcelle cadastrale *', 'Limite de propriété', 'ROAD_polygon', 'ROAD_polygon', 'ROAD_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line'],
-                            ['Parcelle cadastrale', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line'],
+                            ['parca_polygon', 'parca_polygon_legend', 'scan25_grey', 'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
                           ("3_Raster_all",
-                            ['Parcelle cadastrale', 'Limite de propriété', 'ROAD_polygon', 'ROAD_polygon', 'ROAD_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'IGN SCAN 25 TOPO (Metropole) gray'],
-                            ['Occupation du sol', 'Parcelle cadastrale *', 'Légende', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['parca_polygon', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan25_grey'],
+                            ['ua_polygon_occup', 'parca_polygon_occup', 'parca_polygon_legend', 'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
                           ("4_Raster_boisee",
-                            ['Occupation du sol', 'Parcelle cadastrale *', 'Limite de propriété', 'ROAD_polygon', 'ROAD_polygon', 'ROAD_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'IGN SCAN 25 TOPO (Metropole) gray'],
-                            ['Parcelle cadastrale', 'Légende', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image'])]
+                            ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan25_grey'],
+                            ['parca_polygon', 'parca_polygon_legend', 'scan100', 'scan1000', 'irc', 'rgb', 'pci'])]
             for theme in map_themes:
                 create_map_theme(*theme)
-            
-            self.iface.messageBar().pushMessage("QSequoia2", "ASSEMBLAGE généré avec succès", level=Qgis.Success, duration=10)
+
+            replier()      
+
+            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
             
         if map_project == 'PEUPLEMENTS':
-            import_wms_from_config(["Scan25_gray", "Scan100", "Scan1000", "PCI", "IRC", "RGB"], group_name="RASTER")
-            customize('IGN SCAN 25 TOPO (Metropole) gray')
-            
-            vector_layers = ['UA_polygon_AME', 'UA_polygon_OCCUP', 'UA_polygon_PLT', 'UA_polygon', 'PARCA_polygon_OCCUP', 'SSPF_polygon_PLT', 'SSPF_polygon', 'PF_polygon', 'PF_line', 'PROP_line', 'ROUTE_polygon', 'ROUTE_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'PARCA_polygon_LEGEND']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            
-            zoom_on_layer("Légende")
-            replier()
-            
+            # zoom_on_layer should be called before loading wms
+            load_vectors(
+                'ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'sspf_polygon_plt', 'sspf_polygon', 
+                'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 
+                'com_point', 'com_line', 'parca_polygon_legend'
+            )
+            zoom_on_layer("parca_polygon_legend")
+
+            load_wms("scan25_grey", "scan100", "scan1000", "pci", "irc", "rgb", group_name="RASTER")
+            # little customization
+            wms_display_name,_ = get_wms("scan25_grey")
+            layer = QgsProject.instance().mapLayersByName(wms_display_name)[0]
+            layer.setOpacity(0.5)
+
             map_themes = [("0_work",
-                            ['Unité d analyse', 'Parcelle cadastrale *', 'Limite de propriété', 'ROUTE_polygon', 'ROUTE_line', 'IGN BDORTHO IRC 20cm'],
-                            ['Aménagements (UA)', 'Occupation du sol', 'Peuplements (UA)', 'Sous-parcelle forestière', 'Parcelle forestière', 'Limite de parcelle forestière', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['ua_polygon', 'parca_polygon_occup', 'prop_line', 'route_polygon', 'route_line', 'irc'],
+                            ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'sspf_polygon', 'pf_polygon', 'pf_line', 'lieudit_point', 'infra_point', 
+                             'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'scan25_grey', 'scan100', 'scan1000', 'rgb', 'pci']),
                           ("1_Vector_plt",
-                            ['Peuplements (SSPF)', 'Sous-parcelle forestière', 'Parcelle forestière', 'Limite de parcelle forestière', 'Limite de propriété', 'ROUTE_polygon', 'ROUTE_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line'],
-                            ['Aménagements (UA)', 'Occupation du sol', 'Peuplements (UA)', 'Unité d analyse', 'Parcelle cadastrale *', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['sspf_polygon_plt', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
+                             'infra_polygon', 'infra_line', 'com_point', 'com_line'],
+                            ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'parca_polygon_legend', 'scan25_grey', 
+                             'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
                           ("2_Vector_ame",
-                            ['Aménagements (UA)', 'Sous-parcelle forestière', 'Parcelle forestière', 'Limite de parcelle forestière', 'Limite de propriété', 'ROUTE_polygon', 'ROUTE_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line'],
-                            ['Occupation du sol', 'Peuplements (UA)', 'Unité d analyse', 'Parcelle cadastrale *', 'Peuplements (SSPF)', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 100 TOPO (Metropole)', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['ua_polygon_ame', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
+                             'infra_polygon', 'infra_line', 'com_point', 'com_line'],
+                            ['ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'scan25_grey', 
+                             'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
                           ("3_Raster_plt",
-                            ['Peuplements (SSPF)', 'Sous-parcelle forestière', 'Parcelle forestière', 'Limite de parcelle forestière', 'Limite de propriété', 'ROUTE_polygon', 'ROUTE_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'IGN SCAN 100 TOPO (Metropole)'],
-                            ['Aménagements (UA)', 'Occupation du sol', 'Peuplements (UA)', 'Unité d analyse', 'Parcelle cadastrale *', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image']),
+                            ['sspf_polygon_plt', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
+                             'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan100'],
+                            ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'parca_polygon_legend', 'scan25_grey', 
+                             'scan1000', 'irc', 'rgb', 'pci']),
                           ("4_Raster_ame",
-                            ['Aménagements (UA)', 'Sous-parcelle forestière', 'Parcelle forestière', 'Limite de parcelle forestière', 'Limite de propriété', 'ROUTE_polygon', 'ROUTE_line', 'LIEUDIT_point', 'INFRA_point', 'INFRA_polygon', 'INFRA_line', 'COM_point', 'COM_line', 'IGN SCAN 100 TOPO (Metropole)'],
-                            ['Occupation du sol', 'Peuplements (UA)', 'Unité d analyse', 'Parcelle cadastrale *', 'Peuplements (SSPF)', 'Légende', 'IGN SCAN 25 TOPO (Metropole) gray', 'IGN SCAN 1000 TOPO (Metropole)', 'IGN BDORTHO IRC 20cm', 'IGN BDORTHO RGB 20cm', 'IGN Parcellaire Image'])]
+                            ['ua_polygon_ame', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
+                             'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan100'],
+                            ['ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'scan25_grey', 
+                             'scan1000', 'irc', 'rgb', 'pci'])]
+            
             for theme in map_themes:
                 create_map_theme(*theme)
-            
-            self.iface.messageBar().pushMessage("QSequoia2", "PEUPLEMENTS généré avec succès", level=Qgis.Success, duration=10)
+
+            replier()  
+
+            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
             
         if map_project == 'GEOLOGIE':
-            import_wms_from_config(["GEOL"])
-            
-            vector_layers = ['GEOL_polygon', 'UA_polygon', 'PF_polygon', 'PF_line', 'PROP_line', 'PARCA_polygon_LEGEND']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            
-            zoom_on_layer("Légende")
-            replier()
-            
+            # zoom_on_layer should be called before loading wms
+            load_vectors('geol_polygon', 'ua_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'parca_polygon_legend')
+            zoom_on_layer("parca_polygon_legend")
+
+            load_wms("geol")
+
             map_themes = [("0_Geol",
-                            ['Géologie', 'Parcelle cadastrale *', 'Parcelle forestière', 'Limite de parcelle forestière', 'Limite de propriété', "BRGM BD Scan-Geol-50"],
-                            ['Unité d analyse', 'Légende'])]
+                            ['geol_polygon', 'parca_polygon_occup', 'pf_polygon', 'pf_line', 'prop_line', "geol"],
+                            ['ua_polygon', 'parca_polygon_legend'])]
+            
             for theme in map_themes:
                 create_map_theme(*theme)
+
+            replier()
             
-            self.iface.messageBar().pushMessage("QSequoia2", "GEOLOGIE généré avec succès", level=Qgis.Success, duration=10)
+            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
             
         if map_project == 'ENJEUX':
-            import_wms_from_config(["Scan25_gray"])
-            customize('IGN SCAN 25 TOPO (Metropole) gray')
-            
-            vector_layers = ['PF_polygon', 'PF_line', 'PROP_line', 'PARCA_polygon_LEGEND']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            
-            zoom_on_layer("Légende")
-            replier()
+            # zoom_on_layer should be called before loading wms
+            load_vectors('pf_polygon', 'pf_line', 'prop_line', 'parca_polygon_legend')
+            zoom_on_layer("parca_polygon_legend")
+
+            load_wms("scan25_grey")
+            # little customization
+            wms_display_name, _ = get_wms("scan25_grey")
+            layer = QgsProject.instance().mapLayersByName(wms_display_name)[0]
+            layer.setOpacity(0.5)
             
             map_themes = [("1_Enjeux",
-                            ['Parcelle forestière', 'Limite de parcelle forestière', 'Limite de propriété', 'IGN SCAN 25 TOPO (Metropole) gray'],
-                            ['Légende'])]
+                            ['pf_polygon', 'pf_line', 'prop_line', 'scan25_grey'],
+                            ['parca_polygon_legend'])]
             for theme in map_themes:
                 create_map_theme(*theme)
+
+            replier()
             
-            self.iface.messageBar().pushMessage("QSequoia2", "ENJEUX généré avec succès", level=Qgis.Success, duration=10)
+            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
