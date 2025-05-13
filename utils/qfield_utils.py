@@ -5,6 +5,8 @@ import zipfile
 import json
 import os
 
+from ..utils.path_manager import get_display_name
+
 def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:2154"):
 
     if geometry:
@@ -159,8 +161,9 @@ def create_relation(parent_name, child_name, parent_field, child_field, relation
           QgsProject.instance().relationManager().addRelation(relation)
           
 # Fonction verouillant les modifications des couches Vecteurs
-def set_layers_readonly(layer_names):
-    for name in layer_names:
+def set_layers_readonly(*keys):
+    for key in keys:
+        name = get_display_name(key)
         layer = QgsProject.instance().mapLayersByName(name)
         if layer:
             vector_layer = layer[0]

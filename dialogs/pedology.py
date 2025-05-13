@@ -1,144 +1,112 @@
-from PyQt5.QtWidgets import *
 from .pedology_dialog import Ui_PedologyDialog
-from qgis.core import *
+from qgis.core import QgsProcessing, QgsProject, Qgis
+from qgis.utils import iface
 
-# Import from utils folder
-from ..utils.variable_utils import *
-from ..utils.layer_utils import *
-from ..utils.qfield_utils import *
+from ..utils.path_manager import get_guides, get_style, get_stations, get_path
+from ..utils.variable_utils import clear_project, get_project_variable
+from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme
+from ..utils.qfield_utils import add_layers_from_gpkg, create_relation, set_layers_readonly, create_qfield_package
+
+from ..core.layer_factory import LayerFactory
+from ..core.layer import LayerManager
+
+import processing
 
 class PedologyDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.iface = iface
         self.ui = Ui_PedologyDialog()
         self.ui.setupUi(self)
         
-        # Liste des projets possibles
-        guides = get_list_from_config("stations")
+        # Liste des guides possibles
+        guides = get_guides()
         self.ui.comboBox.addItems(guides)
         
         self.ui.buttonBox.clicked.connect(self.create_pedology)
-
-    def check_variables(self):
-        styles_directory = get_global_variable("styles_directory")
-        forest_directory = get_project_variable("forest_directory")
-        forest_prefix = get_project_variable("forest_prefix")
-        
-        if not styles_directory or not forest_directory or not forest_prefix:
-            iface.messageBar().pushMessage("QSequoia2", "Dossier Sequoia non paramêtrée", level=Qgis.Critical, duration=10)
-            return False
-        return True
         
     def create_pedology(self):
-        if not self.check_variables():
-            return
+
+        clear_project()
         
-        # Initialisation
-        create_new_projet_with_variables()
-        
-        styles_directory = get_global_variable("styles_directory")
-        forest_directory = get_project_variable("forest_directory")
-        forest_prefix = get_project_variable("forest_prefix")
         guide = self.ui.comboBox.currentText()
+        stations = get_stations(guide)
         
         # Vector import
-        vector_layers = ['PROP_line', 'PROP-Diag_line', 'PF_line', 'PF-Diag_line', 'PF_polygon', 'SSPF_polygon', 'SSPF-Diag_polygon', 'UA_polygon']
-        import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers, group_name="VECTOR")
-        
+        load_vectors('prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon')
+    
         # Raster import
-        raster_layers = ['PLT','PLT-ANC','IRC','RGB','MNH','SCAN25']
-        import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
+        load_rasters('plt','plt_anc','irc','rgb','mnh','scan25')
         replier()
         
-        # Creation de la couche sondage
-        sondage_fields = [("fid", QVariant.Int), 
-              ("uuid", QVariant.String), 
-              ("humus", QVariant.String), 
-              ("topographie", QVariant.String),
-              ("exposition", QVariant.String), 
-              ("station", QVariant.String), 
-              ("arret", QVariant.String), 
-              ("photo", QVariant.String)]
-        sondage_layer = create_memory_layer('sondage', sondage_fields, 'Point')
-        
-        # Creation de la couche horizons
-        horizons_fields = [("fid", QVariant.Int), 
-              ("sondage", QVariant.String), 
-              ("type", QVariant.String), 
-              ("epaisseur", QVariant.String),
-              ("humidite", QVariant.String), 
-              ("texture", QVariant.String), 
-              ("couleur", QVariant.String), 
-              ("structure", QVariant.String),
-              ("compacite", QVariant.String),
-              ("eg", QVariant.Bool),
-              ("eg_taille", QVariant.String),
-              ("eg_proportion", QVariant.Double),
-              ("hm", QVariant.Bool),
-              ("hm_tache", QVariant.String),
-              ("hm_proportion", QVariant.Double),
-              ("car", QVariant.Bool),
-              ("car_localisation", QVariant.String),
-              ("car_puissance", QVariant.String),
-              ("profondeur", QVariant.String)]
-        horizons_layer = create_memory_layer('horizons', horizons_fields)
-        
-        # Creation du gpkg
-        gpkg_path = get_gpkg_path(styles_directory, forest_directory, "new_directories", forest_prefix, "pedology")
-    
-        if not os.path.exists(gpkg_path):
-            layers = [sondage_layer, horizons_layer]
-            for layer in layers:
-                write_layer_to_gpkg(layer, gpkg_path)
-        
-        # Import du gpkg
-        add_all_layers_from_gpkg(gpkg_path, styles_directory)
-        move_layer_to_top('sondage')
-    
+        layers = [
+            LayerFactory.create("sondage"),
+            LayerFactory.create("horizons"),
+            self.essences_layer
+        ]
+
+        result = processing.run("native:package", {
+            'LAYERS':      layers,
+            'OUTPUT':      QgsProcessing.TEMPORARY_OUTPUT,
+            'OVERWRITE':   True,
+            'SAVE_STYLES': False
+        })
+
+        self.gpkg_path = result['OUTPUT']
+        add_layers_from_gpkg(self.gpkg_path)
+
         # Création de la relation
         create_relation('sondage', 'horizons', 'uuid', 'sondage', 'sondage_horizons','sondage')
         
         # Actulisation du style
-        style_on_layers(["sondage", "horizons"], styles_directory)
-        stations = get_list_from_config("stations", guide)
-        apply_value_list_to_field("sondage", "station", stations)
+        for key in ("sondage", "horizons"):
+            layers = self.project.mapLayersByName(key)
+            if not layers:
+                continue
+            layer = layers[0]
+            style_path = get_style(key)
+            if layer.loadNamedStyle(style_path):
+                layer.triggerRepaint()
+
+        sondage_mgr = LayerManager('sondage')
+        sondage_mgr.fields.add_value_map('station', {'map': [{str(s): str(s)} for s in stations]})
         
-        # Création des thêmes
+        # Création des thèmes
         map_themes = [
                 ("1_PLT",
-                 ['PLT', 'Limite de propriété b', 'Limite de parcelle b', 'Parcelle forestière', 'Sous-parcelle forestière b', 'Unité d analyse'],
-                 ['PLT-ANC', 'IRC', 'RGB', 'MNH', 'SCAN25', 'Limite de propriété w', 'Limite de parcelle w', 'Sous-parcelle forestière w']),
+                 ['plt', 'prop_line', 'pf_line', 'pf_polygon', 'sspf_polygon', 'ua_polygon'],
+                 ['plt_anc', 'irc', 'rgb', 'mnh', 'scan25', 'prop_diag_line', 'pf_diag_line', 'sspf_diag_polygon']),
                 ("2_PLT-ANC",
-                 ['PLT-ANC', 'Limite de propriété b', 'Limite de parcelle b', 'Parcelle forestière'], 
-                 ['PLT', 'IRC', 'RGB', 'MNH', 'SCAN25', 'Limite de propriété w', 'Limite de parcelle w', 'Sous-parcelle forestière b', 'Sous-parcelle forestière w', 'Unité d analyse']),
+                 ['plt_anc', 'prop_line', 'pf_line', 'pf_polygon'], 
+                 ['plt', 'irc', 'rgb', 'mnh', 'scan25', 'prop_diag_line', 'pf_diag_line', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon']),
                 ("3_IRC",
-                 ['IRC', 'Limite de propriété w', 'Limite de parcelle w', 'Parcelle forestière', 'Sous-parcelle forestière w', 'Unité d analyse'],
-                 ['PLT', 'PLT-ANC', 'RGB', 'MNH', 'SCAN25', 'Limite de propriété b', 'Limite de parcelle b', 'Sous-parcelle forestière b']),
+                 ['irc', 'prop_diag_line', 'pf_diag_line', 'pf_polygon', 'sspf_diag_polygon', 'ua_polygon'],
+                 ['plt', 'plt_anc', 'rgb', 'mnh', 'scan25', 'prop_line', 'pf_line', 'sspf_polygon']),
                 ("4_RGB",
-                 ['RGB', 'Limite de propriété w', 'Limite de parcelle w', 'Parcelle forestière', 'Sous-parcelle forestière w', 'Unité d analyse'],
-                 ['PLT', 'PLT-ANC', 'IRC', 'MNH', 'SCAN25', 'Limite de propriété b', 'Limite de parcelle b', 'Sous-parcelle forestière b']),
+                 ['rgb', 'prop_diag_line', 'pf_diag_line', 'pf_polygon', 'sspf_diag_polygon', 'ua_polygon'],
+                 ['plt', 'plt_anc', 'irc', 'mnh', 'scan25', 'prop_line', 'pf_line', 'sspf_polygon']),
                 ("5_MNH",
-                 ['MNH', 'Limite de propriété b', 'Limite de parcelle b', 'Parcelle forestière', 'Sous-parcelle forestière b', 'Unité d analyse'],
-                 ['PLT', 'PLT-ANC', 'IRC', 'RGB', 'SCAN25', 'Limite de propriété w', 'Limite de parcelle w', 'Sous-parcelle forestière w']),
+                 ['mnh', 'prop_line', 'pf_line', 'pf_polygon', 'sspf_polygon', 'ua_polygon'],
+                 ['plt', 'plt_anc', 'irc', 'rgb', 'scan25', 'prop_diag_line', 'pf_diag_line', 'sspf_diag_polygon']),
                 ("6_SCAN25",
-                 ['SCAN25', 'Limite de propriété b', 'Limite de parcelle b', 'Parcelle forestière', 'Sous-parcelle forestière b', 'Unité d analyse'],
-                 ['PLT', 'PLT-ANC', 'IRC', 'RGB', 'MNH', 'Limite de propriété w', 'Limite de parcelle w', 'Sous-parcelle forestière w'])
+                 ['scan25', 'prop_line', 'pf_line', 'pf_polygon', 'sspf_polygon', 'ua_polygon'],
+                 ['plt', 'plt_anc', 'irc', 'rgb', 'mnh', 'prop_diag_line', 'pf_diag_line', 'sspf_diag_polygon'])
                 ]
         for theme in map_themes:
             create_map_theme(*theme)
             
         # Verrouillage des couches
-        layer_names = ['Limite de propriété b', 'Limite de propriété w', 'Limite de parcelle b', 'Limite de parcelle w',
-                       'Parcelle forestière', 'Sous-parcelle forestière b', 'Sous-parcelle forestière w', 'Unité d analyse']
+        layer_names = ['prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon']
         set_layers_readonly(layer_names)
         
         # Enregistrement du projet
         project = QgsProject.instance()
-        save_path = os.path.join(forest_directory, "SIG", "0_OUTPUT", "PEDOLOGY.qgz")
+        save_path = get_path("pedology")
         project.write(save_path)
-        project.write()
-        iface.messageBar().pushMessage("QSequoia2", "PEDOLOGY généré avec succès", level=Qgis.Success, duration=10)
+        
+        self.iface.messageBar().pushMessage("QSequoia2", "PEDOLOGY généré avec succès", level=Qgis.Success, duration=10)
         
         # Création du paquet
+        forest_directory = get_project_variable("forest_directory")
         create_qfield_package(forest_directory, save_path)
         project.write()

@@ -123,6 +123,43 @@ class LayerFactory:
             ],
             "geometry": "Point"
         },
+        # PEDOLOGY
+        "sondage": {
+            "fields": [
+                ("fid", QVariant.Int),
+                ("uuid", QVariant.String),
+                ("humus", QVariant.String),
+                ("topographie", QVariant.String),
+                ("exposition", QVariant.String),
+                ("station", QVariant.String),
+                ("arret", QVariant.String),
+                ("photo", QVariant.String)
+            ],
+            "geometry": "Point"
+        },
+        "horizons": {
+            "fields": [
+                ("fid", QVariant.Int),
+                ("sondage", QVariant.String),
+                ("type", QVariant.String),
+                ("epaisseur", QVariant.String),
+                ("humidite", QVariant.String),
+                ("texture", QVariant.String),
+                ("couleur", QVariant.String),
+                ("structure", QVariant.String),
+                ("compacite", QVariant.String),
+                ("eg", QVariant.Bool),
+                ("eg_taille", QVariant.String),
+                ("eg_proportion", QVariant.Double),
+                ("hm", QVariant.Bool),
+                ("hm_tache", QVariant.String),
+                ("hm_proportion", QVariant.Double),
+                ("car", QVariant.Bool),
+                ("car_localisation", QVariant.String),
+                ("car_puissance", QVariant.String),
+                ("profondeur", QVariant.String)
+            ]
+        }
     }
 
     @classmethod

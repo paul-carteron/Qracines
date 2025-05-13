@@ -6,6 +6,8 @@ from .plugin_path import get_config_path
 
 from pathlib import Path
 
+# region SIG_STRUCTURE
+
 _SIG_STRUCT: dict | None = None
 
 def _load_sig_structure() -> dict:
@@ -73,7 +75,9 @@ def get_display_name(logical_key):
     entry, _ = _find_entry(logical_key)
     return entry.get("display_name")
 
+# endregion
 
+# region WMS
 
 def get_wms(logical_key):
     wms_config_path = get_config_path("wms.yaml")
@@ -89,6 +93,10 @@ def get_wms(logical_key):
     url = entry.get("url")
 
     return display_name, url
+
+# endregion
+
+# region RACINES
 
 def get_racines_path(site, *subpaths):
     site_map = {
@@ -106,6 +114,44 @@ def get_racines_path(site, *subpaths):
     base = Path.home() / "Racines" / folder
     return base.joinpath(*subpaths)
 
+# endregion
+
+# region PEDOLOGY
+_PEDOLOGY_CONFIG: dict | None = None
+
+def _load_pedology_config() -> dict:
+    global _PEDOLOGY_CONFIG
+    if _PEDOLOGY_CONFIG is None:
+        pedology_config_path = get_config_path("pedology.yaml")
+        with open(pedology_config_path, encoding="utf-8") as f:
+            _PEDOLOGY_CONFIG = yaml.safe_load(f)
+    return _PEDOLOGY_CONFIG
+
+def get_guides():
+    """
+    Return the list of guide names defined under 'guides' in stations.yaml.
+    """
+    pedology_config = _load_pedology_config()
+    guides = pedology_config.get("guides")
+    if not isinstance(guides, dict):
+        raise KeyError("Missing or invalid top‐level 'guides' mapping in stations.yaml")
+    return list(guides.keys())
+
+def get_stations(guide):
+    """
+    Given a guide name, return its list of station codes.
+    Raises KeyError if the guide is not defined.
+    """
+    pedology_config = _load_pedology_config()
+    guides = pedology_config.get("guides")
+    if not isinstance(guides, dict) or guide not in guides:
+        raise KeyError(f"guide '{guide}' not found in stations.yaml")
+    stations = guides[guide]
+    if not isinstance(stations, list):
+        raise ValueError(f"Expected a list of stations for '{guide}', got {type(stations).__name__}")
+    return stations
+
+# endregion
 
 # Not sure it's the right place
 def find_similar_filenames(expected_path, pattern, extensions=None):

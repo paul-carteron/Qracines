@@ -8,18 +8,19 @@ structure:
       geologie: { filename: GEOLOGIE.qgz, }
       peuplements: { filename: PEUPLEMENTS.qgz, }
       situation: { filename: SITUATION.qgz, }
+      pedology: { filename: PEDOLOGY.qgz, }
 
   raster_folder:
     path: [SIG, 1_RASTER]
     files:
-      mns: { filename: "MNS.tif", }
-      mnt: { filename: "MNT.tif", }
-      mnh: { filename: "MNH.tif", style: "MNH.qml" }
-      plt: { filename: "PLT.tif", }
-      plt_anc: { filename: "PLT_ANC.tif", }
-      irc: { filename: "IRC.tif", }
-      rgb: { filename: "RGB.tif", }
-      scan25: { filename: "SCAN25.tif", style: "SCAN25.qml"}
+      mns: { filename: "MNS.tif", display_name: Modèle Numérique de Surface }
+      mnt: { filename: "MNT.tif", display_name: Modèle Numérique de Terrain }
+      mnh: { filename: "MNH.tif", style: "MNH.qml", display_name: Modèle Numérique de Hauteur }
+      plt: { filename: "PLT.tif", display_name: "Carte des Peuplements" }
+      plt_anc: { filename: "PLT_ANC.tif", display_name: "Carte des Peuplements Ancienne" }
+      irc: { filename: "IRC.tif", display_name: "BD ORTHO - Infra-rouge couleur" }
+      rgb: { filename: "RGB.tif", display_name: "BD ORTHO - Couleur"}
+      scan25: { filename: "SCAN25.tif", style: "SCAN25.qml", display_name: "Scan 25"}
 
 
   vector_folder:
@@ -43,11 +44,11 @@ structure:
       parca_polygon_legend: { filename: PARCA_polygon.shp, style: INFRASTRUCTURE_polygon.qml, display_name: "Légende" }
       parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml, display_name: "Parcelle cadastrale *"}
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
-      pf_diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml }
+      pf_diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml, display_name: "Limite de parcelle w" }
       pf_line: { filename: PF_line.shp, style: PF_line.qml, display_name: "Limite de parcelle forestière"}
       pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"}
       pn_polygon: { filename: PN_polygon.shp }
-      prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml }
+      prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml, display_name: "Limite de propriété w"}
       prop_line: { filename: PROP_line.shp, style: PROP_line.qml, display_name: "Limite de propriété" }
       prop_point: { filename: PROP_point.shp, style: PROP_point.qml, display_name: "Centroid de propriété" }
       prop_polygon: { filename: PROP_polygon.shp, style: PROP_polygon.qml, display_name : Propriété }
@@ -56,7 +57,7 @@ structure:
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml, display_name: "ROUTE_line" }
       route_polygon: { filename: ROUTE_polygon.shp, style: ROUTE_polygon.qml, display_name: "ROUTE_polygon"}
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml }
-      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml}
+      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, displaay_name: "Sous-parcelle forestière w"}
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle forestière"}
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
@@ -75,6 +76,8 @@ structure:
       reg: {filename: Reg.shp, style: Reg.qml}
       va_ess: {filename: Va_ess.shp, style: Va_ess.qml}
       ess: {filename: Ess.shp, style: Ess.qml}
+      sondage: {filename: sondage.shp, style: sondage.qml}
+      horizons: {filename: horizons.shp, style: horizons.qml}
 
   other_folder:
     path: [SIG, 3_OTHER]
