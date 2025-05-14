@@ -6,6 +6,8 @@ from .plugin_path import get_config_path
 
 from pathlib import Path
 
+from qgis.PyQt.QtWidgets import QMessageBox
+
 # region SIG_STRUCTURE
 
 _SIG_STRUCT: dict | None = None
@@ -39,7 +41,8 @@ def get_path(logical_key, forest=None, base_dir=None):
     forest = forest or get_project_variable("forest_prefix")
     base_dir = base_dir or get_project_variable("forest_directory")
     if not forest or not base_dir:
-        raise ValueError("Must set forest_prefix & forest_directory")
+        QMessageBox.critical(None, "Configuration Error", "Veuillez sélectionner une forêt dans 'project_settings'.")
+        return None
 
     # ensure dir exists
     folder = Path(base_dir).joinpath(*path)

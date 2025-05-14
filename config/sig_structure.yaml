@@ -57,7 +57,7 @@ structure:
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml, display_name: "ROUTE_line" }
       route_polygon: { filename: ROUTE_polygon.shp, style: ROUTE_polygon.qml, display_name: "ROUTE_polygon"}
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml }
-      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, displaay_name: "Sous-parcelle forestière w"}
+      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, display_name: "Sous-parcelle forestière w"}
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle forestière"}
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
@@ -87,3 +87,4 @@ structure:
       inv_qfield: { filename: inv_qfield.zip }
       diagnostic: { filename: diagnostic.gpkg }
       diag_qfield: { filename: diag_qfield.zip }
+      pedology_qfield: { filename: pedology.zip }

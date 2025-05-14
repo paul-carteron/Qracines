@@ -1,49 +1,83 @@
+from pathlib import Path
+import tempfile, shutil, processing
+
+from qgis.PyQt.QtWidgets import QDialog
 from .pedology_dialog import Ui_PedologyDialog
-from qgis.core import QgsProcessing, QgsProject, Qgis
+from qgis.core import (
+  QgsProcessing,
+  QgsOfflineEditing,
+  QgsProject
+)
+from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QCoreApplication
 from qgis.utils import iface
 
 from ..utils.path_manager import get_guides, get_style, get_stations, get_path
 from ..utils.variable_utils import clear_project, get_project_variable
-from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme
-from ..utils.qfield_utils import add_layers_from_gpkg, create_relation, set_layers_readonly, create_qfield_package
+from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer
+from ..utils.qfield_utils import add_layers_from_gpkg, create_relation, set_layers_readonly, zip_folder_contents
 
 from ..core.layer_factory import LayerFactory
 from ..core.layer import LayerManager
 
-import processing
+from qfieldsync.gui.package_dialog import PackageDialog
 
 class PedologyDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.iface = iface
+        self.project = QgsProject.instance()
         self.ui = Ui_PedologyDialog()
         self.ui.setupUi(self)
         
-        # Liste des guides possibles
+        # --- initialise forest name ---
+        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
+
+        # --- Connect checkbox package_for_qfield ---
+        self.ui.cb_package_for_qfield.toggled.connect(self.toggle_fw_editability)
+
+        # --- Populate cob_stations with guides ---
         guides = get_guides()
-        self.ui.comboBox.addItems(guides)
+        self.ui.cob_stations.addItems(guides)
         
-        self.ui.buttonBox.clicked.connect(self.create_pedology)
-        
+        # --- Connect OK and REJECT button ---
+        self.ui.buttonBox.accepted.connect(self.create_pedology)
+        self.ui.buttonBox.rejected.connect(self.reject)
+    
+    # Override exec_() so i can check that a forest is selected before loading the dialog (see self.pedology_dialog.exec_() in Qsequoia2.py)
+    def exec_(self):
+        pedology_path = get_path("pedology_qfield")
+        if not pedology_path:
+            return QDialog.Rejected
+
+        default_dir = pedology_path.parent
+        default_dir.mkdir(parents=True, exist_ok=True)
+        self.ui.fw_package_outdir.setFilePath(str(default_dir))
+        self.ui.fw_package_outdir.setStorageMode(self.ui.fw_package_outdir.GetDirectory)
+
+        return super().exec_()
+
+    def toggle_fw_editability(self, checked):
+        self.ui.fw_package_outdir.setEnabled(checked)
+        self.ui.le_package_title.setEnabled(checked)
+
     def create_pedology(self):
 
         clear_project()
         
-        guide = self.ui.comboBox.currentText()
+        guide = self.ui.cob_stations.currentText()
         stations = get_stations(guide)
         
         # Vector import
         load_vectors('prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon')
-    
+        zoom_on_layer('prop_line')
+
         # Raster import
-        load_rasters('plt','plt_anc','irc','rgb','mnh','scan25')
+        load_rasters('plt','plt_anc','irc','rgb','mnh','scan25', group_name="RASTER")
+
         replier()
         
-        layers = [
-            LayerFactory.create("sondage"),
-            LayerFactory.create("horizons"),
-            self.essences_layer
-        ]
+        layers = [LayerFactory.create("sondage"), LayerFactory.create("horizons")]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
@@ -58,14 +92,14 @@ class PedologyDialog(QDialog):
         # Création de la relation
         create_relation('sondage', 'horizons', 'uuid', 'sondage', 'sondage_horizons','sondage')
         
-        # Actulisation du style
+        # Application du style aux couches créées
         for key in ("sondage", "horizons"):
             layers = self.project.mapLayersByName(key)
             if not layers:
                 continue
             layer = layers[0]
             style_path = get_style(key)
-            if layer.loadNamedStyle(style_path):
+            if layer.loadNamedStyle(str(style_path)):
                 layer.triggerRepaint()
 
         sondage_mgr = LayerManager('sondage')
@@ -97,16 +131,45 @@ class PedologyDialog(QDialog):
             
         # Verrouillage des couches
         layer_names = ['prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon']
-        set_layers_readonly(layer_names)
+        set_layers_readonly(*layer_names)
+    
+        if self.ui.cb_package_for_qfield.isChecked():
+            self._package_for_qfield()
+
+    def _package_for_qfield(self):
+        forest_prefix = get_project_variable("forest_prefix")
+
+        outdir = Path(self.ui.fw_package_outdir.filePath())
+        if not outdir.exists():
+            QMessageBox.warning(self, "Invalid folder", "Please choose a valid directory.")
+            return
         
-        # Enregistrement du projet
-        project = QgsProject.instance()
-        save_path = get_path("pedology")
-        project.write(save_path)
+        custom_title = self.ui.le_package_title.text()
+        filename = custom_title if custom_title else f"{forest_prefix}_pedology"
         
-        self.iface.messageBar().pushMessage("QSequoia2", "PEDOLOGY généré avec succès", level=Qgis.Success, duration=10)
-        
-        # Création du paquet
-        forest_directory = get_project_variable("forest_directory")
-        create_qfield_package(forest_directory, save_path)
-        project.write()
+        tmp_dir = tempfile.mkdtemp()
+        tmp_path = Path(tmp_dir)
+        tmp_qgs  = tmp_path / f"{filename}.qgs"
+        print(tmp_qgs)
+        try:
+            dlg = PackageDialog(iface, self.project, QgsOfflineEditing())
+            dlg.packagedProjectFileWidget.setFilePath(str(tmp_qgs))
+            dlg.packagedProjectTitleLineEdit.setText(self.project.baseName())
+            dlg._validate_packaged_project_filename()
+            dlg.package_project()
+            dlg.close()
+            dlg.deleteLater()
+            QCoreApplication.processEvents()
+
+            # 4) Zip up the folder if you still want a .zip
+            zip_path = outdir / f"{filename}.zip"
+            try:
+                zip_folder_contents(tmp_path, zip_path)
+            except PermissionError:
+                # swallow any locked‐file errors, since the .zip itself is valid
+                pass
+
+        finally:
+            # 5) Manually remove the temp dir, ignoring any leftover lock errors
+            shutil.rmtree(tmp_path, ignore_errors=True)
+
