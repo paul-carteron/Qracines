@@ -11,9 +11,9 @@ from .tree_marking_dialog import Ui_Tree_markingDialog
 from ..core.db.manager import DatabaseManager
 from ..core.tree_marking_service import TreeMarkingService
 
-from ..utils.path_manager import get_path, get_style, find_similar_filenames, get_racines_path
-from ..utils.qfield_utils import create_memory_layer, zip_folder_contents, add_layers_from_gpkg
-from ..utils.variable_utils import create_new_projet_with_variables, get_project_variable
+from ..utils.path_manager import get_path, get_style, get_racines_path
+from ..utils.variable_utils import clear_project, get_project_variable
+from ..utils.layer_utils import load_rasters
 
 class Tree_markingDialog(QDialog):
     def __init__(self, parent=None):
@@ -109,45 +109,8 @@ class Tree_markingDialog(QDialog):
         return codes
 
     def _load_selected_rasters(self):
-        project = QgsProject.instance()
-        root = project.layerTreeRoot()
-
-        for logical_key, checkbox in self.raster_checkboxes.items():
-            if checkbox.isChecked():
-                try:
-                    # Get and check raster path
-                    raster_path = Path(get_path(logical_key))
-                    if not raster_path.exists():
-                        QMessageBox.information(
-                            self, "Raster manquant",
-                            f"Le fichier raster pour {logical_key} est introuvable :\n{raster_path}"
-                        )
-                        continue
-
-                    # Load raster layer
-                    layer = QgsRasterLayer(str(raster_path), logical_key)
-                    if not layer.isValid():
-                        raise Exception(f"Raster invalide : {raster_path}")
-
-                    # Optionally load style
-                    try:
-                        style_path = Path(get_style(logical_key))
-                        layer.loadNamedStyle(str(style_path))
-                        layer.triggerRepaint()
-                    except (KeyError, ValueError, FileNotFoundError):
-                        pass  # Style is optional
-
-                    # Add layer and move it to the bottom of the layer tree
-                    project.addMapLayer(layer, addToLegend=True)
-                    layer_node = root.findLayer(layer.id())
-                    if layer_node:
-                        root.insertChildNode(-1, root.takeChildNode(root.children().index(layer_node)))
-
-                except Exception as e:
-                    QMessageBox.warning(
-                        self, "Erreur de chargement",
-                        f"Impossible de charger {logical_key} : {str(e)}"
-                    )
+        keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
+        load_rasters(*keys, group_name="RASTER")
 
     def _on_accept(self):
         # 1) collect inputs
@@ -159,7 +122,7 @@ class Tree_markingDialog(QDialog):
         dmin, dmax = self.ui.sp_dmin.value(), self.ui.sp_dmax.value()
         hmin, hmax = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
 
-        create_new_projet_with_variables()
+        clear_project()
 
         # 2) call service
         svc = TreeMarkingService(
@@ -171,7 +134,7 @@ class Tree_markingDialog(QDialog):
         )
 
         try:
-            self.load_selected_rasters()
+            self._load_selected_rasters()
             packaged_dir = svc.run_full_diagnostic()
 
             if packaged_dir:

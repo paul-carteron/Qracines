@@ -1,11 +1,10 @@
 from pathlib import Path
-import tempfile, shutil, processing
+import processing
 
 from qgis.core import (
     QgsProject,
     QgsProcessing,
     QgsFieldConstraints,
-    QgsOfflineEditing,
     QgsFeatureRequest,
     QgsExpression,
     QgsPalLayerSettings,
@@ -15,16 +14,15 @@ from qgis.core import (
 
 from qgis.utils import iface
 
-from PyQt5.QtCore import QCoreApplication, QVariant
+from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QFont
 
 from ..core.layer_factory import LayerFactory
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
-from ..utils.qfield_utils import zip_folder_contents, add_layers_from_gpkg
-
+from ..utils.layer_utils import add_layers_from_gpkg
+from ..utils.qfield_utils import package_for_qfield
 from ..utils.variable_utils import get_project_variable
-from qfieldsync.gui.package_dialog import PackageDialog
 
 
 class TreeMarkingService:
@@ -268,34 +266,7 @@ class TreeMarkingService:
     def _package_for_qfield(self):
         forest_prefix = get_project_variable("forest_prefix")
         codes = "_".join(self.codes)
-
         filename = f"{forest_prefix}_D{self.dmax}H{self.hmax}_{codes}" if forest_prefix else f"D{self.dmax}H{self.hmax}_{codes}"
         
-        if not self.output_dir.exists():
-            raise FileNotFoundError(f"Output folder not found: {self.output_dir}")
+        package_for_qfield(iface, self.project, self.output_dir, filename)
 
-        tmp_dir = tempfile.mkdtemp()
-        tmp_path = Path(tmp_dir)
-        tmp_qgs  = tmp_path / f"{filename}.qgs"
-
-        try:
-            dlg = PackageDialog(iface, self.project, QgsOfflineEditing())
-            dlg.packagedProjectFileWidget.setFilePath(str(tmp_qgs))
-            dlg.packagedProjectTitleLineEdit.setText(self.project.baseName())
-            dlg._validate_packaged_project_filename()
-            dlg.package_project()
-            dlg.close()
-            dlg.deleteLater()
-            QCoreApplication.processEvents()
-
-            # 4) Zip up the folder if you still want a .zip
-            zip_path = self.output_dir / f"{filename}.zip"
-            try:
-                zip_folder_contents(tmp_path, zip_path)
-            except PermissionError:
-                # swallow any locked‐file errors, since the .zip itself is valid
-                pass
-
-        finally:
-            # 5) Manually remove the temp dir, ignoring any leftover lock errors
-            shutil.rmtree(tmp_path, ignore_errors=True)

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from qgis.PyQt.QtWidgets import QDialog, QFileDialog
 from qgis.core import Qgis, QgsProject
 from qgis.utils import iface
@@ -5,10 +7,8 @@ from .project_settings_dialog import Ui_ProjectSettingsDialog
 
 # Import from utils folder
 from ..utils.variable_utils import (
-    get_global_variable,
     get_project_variable, 
     set_project_variable, 
-    get_prefix_from_directory, 
     get_formated_surface, 
     get_grouped_values_from_shapefile, 
     sum_surface_from_shapefile,
@@ -97,7 +97,7 @@ class ProjectSettingsDialog(QDialog):
     
     def fill_in_cartouche(self):
         # Compute key paths
-        prefix = get_prefix_from_directory(self.directory)
+        prefix = self._get_prefix_from_directory(self.directory)
         parca_path = get_path("parca_polygon", prefix, self.directory)
         ua_path = get_path("ua_polygon", prefix, self.directory)
 
@@ -106,6 +106,17 @@ class ProjectSettingsDialog(QDialog):
         self._set_name(prefix)
         self._set_city_and_owner(parca_path)
         self._set_surface(ua_path, parca_path)
+        
+    @staticmethod
+    def _get_prefix_from_directory(path):
+        """
+        Récupère la partie avant le premier '_' dans le nom du dossier.
+        Si aucun '_' n'est trouvé, renvoie une chaîne vide.
+        """
+        name = Path(path).name
+        prefix, sep, suffix = name.partition("_")
+        return suffix if sep else prefix
+
 
     def _set_directory_and_prefix(self, directory, prefix):
         self.ui.lineEdit_directory.setText(directory)

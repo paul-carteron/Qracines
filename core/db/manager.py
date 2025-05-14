@@ -2,7 +2,7 @@ from qgis.core import QgsDataSourceUri, QgsVectorLayer, QgsFeatureRequest
 
 import os
 import json
-from ...utils.plugin_path import get_config_path
+from ...utils.path_manager import get_config_path
 
 class DatabaseManager:
     def __init__(self):

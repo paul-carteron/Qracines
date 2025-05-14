@@ -1,12 +1,25 @@
-import os
 import yaml
-
-from .variable_utils import get_project_variable, get_global_variable
-from .plugin_path import get_config_path
-
 from pathlib import Path
 
 from qgis.PyQt.QtWidgets import QMessageBox
+
+from .variable_utils import get_project_variable, get_global_variable
+
+# region PLUGON PATH
+
+def get_plugin_root() -> Path:
+    """
+    Returns the root directory of the plugin (two levels up from this file).
+    """
+    return Path(__file__).resolve().parent.parent
+
+def get_config_path(filename: str) -> Path:
+    """
+    Returns the full path to a file under the plugin's 'config' folder.
+    """
+    return get_plugin_root() / "config" / filename
+
+# endregion
 
 # region SIG_STRUCTURE
 
@@ -155,17 +168,3 @@ def get_stations(guide):
     return stations
 
 # endregion
-
-# Not sure it's the right place
-def find_similar_filenames(expected_path, pattern, extensions=None):
-    directory = os.path.dirname(expected_path)
-    if not os.path.exists(directory):
-        return []
-
-    matches = []
-    for f in os.listdir(directory):
-        if pattern.lower() in f.lower():
-            if extensions is None or any(f.lower().endswith(ext.lower()) for ext in extensions):
-                matches.append(os.path.join(directory, f))
-
-    return matches

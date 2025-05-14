@@ -1,8 +1,11 @@
-# layer_factory.py
-
-from pathlib import Path
 from qgis.PyQt.QtCore import QVariant
-from ..utils.qfield_utils import create_memory_layer
+
+from qgis.core import (
+    QgsVectorLayer,
+    QgsFields,
+    QgsField,
+    QgsCoordinateReferenceSystem,
+)
 
 class LayerFactory:
     """Create any of the plugin’s in-memory layers by name."""
@@ -168,4 +171,28 @@ class LayerFactory:
         cfg = cls.LAYERS.get(name)
         if cfg is None:
             raise ValueError(f"Unknown layer type: {name}")
-        return create_memory_layer(name, cfg["fields"], cfg.get("geometry"))
+        return cls.create_memory_layer(name, cfg["fields"], cfg.get("geometry"))
+
+    @staticmethod
+    def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:2154"):
+
+        if geometry:
+            crs_obj = QgsCoordinateReferenceSystem(crs)
+            geometry_str = f"{geometry}?crs={crs_obj.authid()}"
+        else:
+            geometry_str = "None"
+
+        # Create the layer
+        layer = QgsVectorLayer(geometry_str, layer_name, "memory")
+        if not layer.isValid():
+            print("Failed to create the layer!")
+            return False
+
+        # Add fields to the layer
+        fields = QgsFields()
+        for field_name, field_type in fields_list:
+            fields.append(QgsField(field_name, field_type))
+        layer.dataProvider().addAttributes(fields)
+        layer.updateFields()
+
+        return layer

@@ -5,35 +5,49 @@ import geopandas as gpd
 
 from pathlib import Path
 
-# Fonction pour ajouter une variable globale       
+
 def set_global_variable(variable_name, value):
     QgsExpressionContextUtils.setGlobalVariable(variable_name, value)
 
-# Fonction pour récupérer une variable globale
 def get_global_variable(variable_name):
     return QgsExpressionContextUtils.globalScope().variable(variable_name)
   
-# Fonction pour ajouter une variable projet
 def set_project_variable(variable_name, value):
     project = QgsProject.instance()
     context = QgsExpressionContextUtils.projectScope(project)
     QgsExpressionContextUtils.setProjectVariable(project, variable_name, value)
 
-# Fonction pour récupérer une variable projet
 def get_project_variable(variable_name):
     project = QgsProject.instance()
     context = QgsExpressionContextUtils.projectScope(project)
     return context.variable(variable_name)
     
-# Fonction pour récupérer un le nom de la foret depuis un répertoire
-def get_prefix_from_directory(path):
-    """
-    Récupère la partie avant le premier '_' dans le nom du dossier.
-    Si aucun '_' n'est trouvé, renvoie une chaîne vide.
-    """
-    name = Path(path).name
-    prefix, sep, suffix = name.partition("_")
-    return suffix if sep else prefix
+def clear_project(keep_variable = True):
+    if keep_variable:
+        variables = [
+            "forest_city",
+            "forest_directory",
+            "forest_formated_surface",
+            "forest_name",
+            "forest_owner",
+            "forest_prefix",
+            "forest_surface",
+        ]
+
+        # Sauvegarde des valeurs
+        values = {var: get_project_variable(var) for var in variables}
+
+    # Nouveau projet
+    QgsProject.instance().clear()
+    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(2154))
+    
+    if keep_variable:
+    # Restauration des variables
+        for var, value in values.items():
+            set_project_variable(var, value)
+
+
+# Ces fonctions devraient plutôt être dans projet_settings dialog car spécifiques à ce module
 
 # Fonction pour City & Owner
 def get_grouped_values_from_shapefile(shapefile_path, value_field, filter_field, surface_field):
@@ -117,49 +131,6 @@ def get_formated_surface(surface):
     formatted_surface = f"Surface totale: {hectares} ha {ares:02} a {centiares:02} ca"
     return formatted_surface
   
-# Fonction pour lancer un nouveai projet tout en conservant les variables
-def create_new_projet_with_variables():
-  
-    # Récupération des variables
-    forest_city = get_project_variable("forest_city")
-    forest_directory = get_project_variable("forest_directory")
-    forest_formated_surface = get_project_variable("forest_formated_surface")
-    forest_name = get_project_variable("forest_name")
-    forest_owner = get_project_variable("forest_owner")
-    forest_prefix = get_project_variable("forest_prefix")
-    forest_surface = get_project_variable("forest_surface")
-    
-    # Nouveau projet
-    QgsProject.instance().clear()
-    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(2154))
-    
-    # Déclaration des variables
-    set_project_variable("forest_city", forest_city)
-    set_project_variable("forest_directory", forest_directory)
-    set_project_variable("forest_formated_surface", forest_formated_surface)
-    set_project_variable("forest_name", forest_name)
-    set_project_variable("forest_owner", forest_owner)
-    set_project_variable("forest_prefix", forest_prefix)
-    set_project_variable("forest_surface", forest_surface)
 
-def clear_project():
-    variables = [
-        "forest_city",
-        "forest_directory",
-        "forest_formated_surface",
-        "forest_name",
-        "forest_owner",
-        "forest_prefix",
-        "forest_surface",
-    ]
 
-    # Sauvegarde des valeurs
-    values = {var: get_project_variable(var) for var in variables}
 
-    # Nouveau projet
-    QgsProject.instance().clear()
-    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(2154))
-    
-    # Restauration des variables
-    for var, value in values.items():
-        set_project_variable(var, value)

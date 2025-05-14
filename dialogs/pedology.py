@@ -1,26 +1,22 @@
 from pathlib import Path
-import tempfile, shutil, processing
+import processing
 
 from qgis.PyQt.QtWidgets import QDialog
 from .pedology_dialog import Ui_PedologyDialog
 from qgis.core import (
   QgsProcessing,
-  QgsOfflineEditing,
   QgsProject
 )
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QCoreApplication
+
 from qgis.utils import iface
 
 from ..utils.path_manager import get_guides, get_style, get_stations, get_path
 from ..utils.variable_utils import clear_project, get_project_variable
-from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer
-from ..utils.qfield_utils import add_layers_from_gpkg, create_relation, set_layers_readonly, zip_folder_contents
-
+from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer, add_layers_from_gpkg, create_relation, set_layers_readonly
+from ..utils.qfield_utils import package_for_qfield
 from ..core.layer_factory import LayerFactory
 from ..core.layer import LayerManager
-
-from qfieldsync.gui.package_dialog import PackageDialog
 
 class PedologyDialog(QDialog):
     def __init__(self, parent=None):
@@ -147,29 +143,4 @@ class PedologyDialog(QDialog):
         custom_title = self.ui.le_package_title.text()
         filename = custom_title if custom_title else f"{forest_prefix}_pedology"
         
-        tmp_dir = tempfile.mkdtemp()
-        tmp_path = Path(tmp_dir)
-        tmp_qgs  = tmp_path / f"{filename}.qgs"
-        print(tmp_qgs)
-        try:
-            dlg = PackageDialog(iface, self.project, QgsOfflineEditing())
-            dlg.packagedProjectFileWidget.setFilePath(str(tmp_qgs))
-            dlg.packagedProjectTitleLineEdit.setText(self.project.baseName())
-            dlg._validate_packaged_project_filename()
-            dlg.package_project()
-            dlg.close()
-            dlg.deleteLater()
-            QCoreApplication.processEvents()
-
-            # 4) Zip up the folder if you still want a .zip
-            zip_path = outdir / f"{filename}.zip"
-            try:
-                zip_folder_contents(tmp_path, zip_path)
-            except PermissionError:
-                # swallow any locked‐file errors, since the .zip itself is valid
-                pass
-
-        finally:
-            # 5) Manually remove the temp dir, ignoring any leftover lock errors
-            shutil.rmtree(tmp_path, ignore_errors=True)
-
+        package_for_qfield(iface, self.project, outdir, filename)

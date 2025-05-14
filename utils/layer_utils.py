@@ -5,11 +5,17 @@ from qgis.core import (
     QgsMessageLog,
     Qgis,
     QgsLayerTreeGroup,
-    QgsMapThemeCollection
+    QgsMapThemeCollection,
+    QgsCoordinateReferenceSystem,
+    QgsFields,
+    QgsRelation
 )
 from qgis.utils import iface
+from osgeo import ogr
 
 from .path_manager import get_wms, get_style, get_path, get_display_name, get_wms
+
+# region LOAD LAYERS
 
 def load_wms(*wms_keys, group_name = None):
     """
@@ -105,16 +111,14 @@ def load_rasters(*raster_keys, group_name = None):
         except Exception as e:
             QgsMessageLog.logMessage(f"Could not style '{key}': {e}", "Qsequoia2", Qgis.Warning)
 
+# endregion
 
-
-# Fonction zoom sur emprise
 def zoom_on_layer(key):
     layer = QgsProject.instance().mapLayersByName(get_display_name(key))[0]
     canvas = iface.mapCanvas()
     extent = layer.extent()
     canvas.setExtent(extent)
-  
-# Fonctions de visibilité des couches
+
 def _set_layer_visibility(layer_name, visible):
     project = QgsProject.instance()
     layers = project.mapLayersByName(layer_name)
@@ -126,7 +130,6 @@ def _set_layer_visibility(layer_name, visible):
     if node:
         node.setItemVisibilityChecked(visible)
 
-# Fonction de création de thème
 def create_map_theme(theme_name, visible_keys, invisible_keys):
     def _resolve_name(key):
         try:
@@ -150,7 +153,6 @@ def create_map_theme(theme_name, visible_keys, invisible_keys):
     map_theme = QgsMapThemeCollection.createThemeFromCurrentState(root, iface.layerTreeView().layerTreeModel())
     project.mapThemeCollection().insert(theme_name, map_theme)
          
-# Réduire les couches  
 def replier():
     root = QgsProject.instance().layerTreeRoot()
     for node in root.children():
@@ -159,3 +161,49 @@ def replier():
             for enfant in node.children():
                 enfant.setExpanded(False)
 
+def add_layers_from_gpkg(gpkg_path, *layer_names):
+    datasource = ogr.Open(gpkg_path)
+    if datasource is None:
+        raise Exception("Failed to open GeoPackage.")
+
+    available_layers = [layer.GetName() for layer in datasource]
+
+    # If no layer names provided, load all
+    layers_to_load = layer_names or available_layers
+
+    for layer in reversed(available_layers):
+        if layer not in layers_to_load:
+            continue
+
+        uri = f"{gpkg_path}|layername={layer}"
+        vlayer = QgsVectorLayer(uri, layer, 'ogr')
+        if vlayer.isValid():
+            QgsProject.instance().addMapLayer(vlayer)
+            print(f"✅ Layer '{layer}' added to project")
+        else:
+            print(f"❌ Layer '{layer}' is not valid and was skipped")
+
+def create_relation(parent_name, child_name, parent_field, child_field, relation_id, relation_name):
+    parent_layer = QgsProject.instance().mapLayersByName(parent_name)[0]
+    child_layer = QgsProject.instance().mapLayersByName(child_name)[0]
+    
+    if parent_layer and child_layer:
+       relation = QgsRelation()
+       relation.setId(relation_id)
+       relation.setName(relation_name)
+       relation.setReferencedLayer(parent_layer.id())
+       relation.setReferencingLayer(child_layer.id())
+       relation.addFieldPair(child_field, parent_field)
+       relation.setStrength(QgsRelation.Composition)
+       
+       if relation.isValid():
+          QgsProject.instance().relationManager().addRelation(relation)
+
+def set_layers_readonly(*keys):
+    for key in keys:
+        name = get_display_name(key)
+        layer = QgsProject.instance().mapLayersByName(name)
+        if layer:
+            vector_layer = layer[0]
+            if isinstance(vector_layer, QgsVectorLayer):
+                vector_layer.setReadOnly(True)

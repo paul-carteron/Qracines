@@ -1,30 +1,22 @@
 from pathlib import Path
-import tempfile, shutil, processing
+import processing
 
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
-    QgsRasterLayer,
     QgsFieldConstraints,
-    QgsOfflineEditing,
-    QgsProcessing,
-    QgsMessageLog,
-    Qgis
+    QgsProcessing
 )
 
 from qgis.utils import iface
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QCoreApplication
 
 from ..core.layer_factory import LayerFactory
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
-from ..utils.path_manager import get_path, get_style, find_similar_filenames
-from ..utils.qfield_utils import zip_folder_contents, add_layers_from_gpkg, create_relation
-from ..utils.layer_utils import create_map_theme
-
+from ..utils.path_manager import get_path, get_style
+from ..utils.qfield_utils import package_for_qfield
+from ..utils.layer_utils import create_map_theme, add_layers_from_gpkg, load_vectors, load_rasters, create_relation
 from ..utils.variable_utils import get_project_variable
-from qfieldsync.gui.package_dialog import PackageDialog
 
 
 class DiagnosticService:
@@ -105,84 +97,33 @@ class DiagnosticService:
         add_layers_from_gpkg(self.gpkg_path)
 
     def _load_and_style_vectors(self):
-        group = self.root.addGroup("Vector")
-        vector_defs = [
-            ("prop_line", "Limite de propriété b"),
-            ("prop_diag_line", "Limite de propriété w"),
-            ("ua_polygon", "Unité d analyse"),
-        ]
-        for key, name in vector_defs:
-            path = get_path(key)
-            layer = QgsVectorLayer(str(path), name, "ogr")
-            style_path = get_style(key)
-            if layer.isValid():
-                layer.setReadOnly(True)
-                self.project.addMapLayer(layer, False)
-                group.addLayer(layer)
-                try:
-                    layer.loadNamedStyle(style_path)
-                    layer.triggerRepaint()
-                except (FileNotFoundError, KeyError):
-                    pass
-            else:
-                print(f"Failed to load vector layer: {name}")
+        load_vectors("prop_line", "prop_diag_line", "pf_line", "pf_diag_line", "ua_polygon", group_name= "VECTOR")
 
     def _load_and_style_rasters(self):
-        group = self.root.addGroup("Raster")
-
-        for key, checkbox in self.raster_choices.items():
-            if not checkbox.isChecked():
-                continue
-
-            raster_path = Path(get_path(key))
-            if not raster_path.exists():
-                sims = find_similar_filenames(raster_path, key)
-                msg = f"Raster for {key} not found:\n{raster_path}"
-                if sims:
-                    msg += "\nSimilar files:\n" + "\n".join(sims)
-                QMessageBox.information(None, "Raster manquant", msg)
-                continue
-
-            layer = QgsRasterLayer(str(raster_path), key)
-            if not layer.isValid():
-                QMessageBox.warning(None, "Raster invalide", f"Impossible de charger : {raster_path}")
-                continue
-
-            # --- Optional styling ---
-            try:
-                style_path = get_style(key)
-                layer.loadNamedStyle(str(Path(style_path)))
-                layer.triggerRepaint()
-            except (KeyError, ValueError, FileNotFoundError, Exception) as e:
-                QgsMessageLog.logMessage(
-                    f"Failed to apply style for '{key}': {e}",
-                    "Qsequoia2",
-                    Qgis.Warning
-                )
-
-            self.project.addMapLayer(layer, False)
-            group.addLayer(layer)
+        keys = [key for key, cb in self.raster_choices.items() if cb.isChecked()]
+        if keys:
+            load_rasters(*keys, group_name="RASTER")
 
     def _create_map_themes(self):
         themes = [
             ("1_plt",
-             ['plt', 'Limite de propriété b', 'Limite de parcelle b', 'Unité d’analyse'],
-             ['plt_anc', 'irc', 'rgb', 'mnh', 'scan25', 'Limite de propriété w', 'Limite de parcelle w']),
+             ['plt', 'prop_line', 'pf_line', 'ua_polygon'],
+             ['plt_anc', 'irc', 'rgb', 'mnh', 'scan25', 'prop_diag_line', 'pf_diag_line']),
             ("2_plt_anc",
-             ['plt_anc', 'Limite de propriété b', 'Limite de parcelle b'],
-             ['plt', 'irc', 'rgb', 'mnh', 'scan25', 'Limite de propriété w', 'Limite de parcelle w', 'Unité d’analyse']),
+             ['plt_anc', 'prop_line', 'pf_line'],
+             ['plt', 'irc', 'rgb', 'mnh', 'scan25', 'prop_diag_line', 'pf_diag_line', 'ua_polygon']),
             ("3_irc",
-             ['irc', 'Limite de propriété w', 'Limite de parcelle w', 'Unité d’analyse'],
-             ['plt', 'plt_anc', 'rgb', 'mnh', 'scan25', 'Limite de propriété b', 'Limite de parcelle b']),
+             ['irc', 'prop_diag_line', 'pf_diag_line', 'ua_polygon'],
+             ['plt', 'plt_anc', 'rgb', 'mnh', 'scan25', 'prop_line', 'pf_line']),
             ("4_rgb",
-             ['rgb', 'Limite de propriété w', 'Limite de parcelle w', 'Unité d’analyse'],
-             ['plt', 'plt_anc', 'irc', 'mnh', 'scan25', 'Limite de propriété b', 'Limite de parcelle b']),
+             ['rgb', 'prop_diag_line', 'pf_diag_line', 'ua_polygon'],
+             ['plt', 'plt_anc', 'irc', 'mnh', 'scan25', 'prop_line', 'pf_line']),
             ("5_mnh",
-             ['mnh', 'Limite de propriété b', 'Limite de parcelle b', 'Unité d’analyse'],
-             ['plt', 'plt_anc', 'irc', 'rgb', 'scan25', 'Limite de propriété w', 'Limite de parcelle w']),
+             ['mnh', 'prop_line', 'pf_line', 'ua_polygon'],
+             ['plt', 'plt_anc', 'irc', 'rgb', 'scan25', 'prop_diag_line', 'pf_diag_line']),
             ("6_scan25",
-             ['scan25', 'Limite de propriété b', 'Limite de parcelle b', 'Unité d’analyse'],
-             ['plt', 'plt_anc', 'irc', 'rgb', 'mnh', 'Limite de propriété w', 'Limite de parcelle w'])
+             ['scan25', 'prop_line', 'pf_line', 'ua_polygon'],
+             ['plt', 'plt_anc', 'irc', 'rgb', 'mnh', 'prop_diag_line', 'pf_diag_line'])
         ]
         for theme in themes:
             create_map_theme(*theme)
@@ -204,7 +145,7 @@ class DiagnosticService:
                 continue
             layer = layers[0]
             style_path = get_style(key)
-            if layer.loadNamedStyle(style_path):
+            if layer.loadNamedStyle(str(style_path)):
                 layer.triggerRepaint()
 
     def _create_relations(self):
@@ -283,35 +224,7 @@ class DiagnosticService:
 
     def _package_for_qfield(self):
         forest_prefix = get_project_variable("forest_prefix")
-
         filename = self.title if self.title else f"{forest_prefix}_D{self.dmax}H{self.hmax}"
         
-        if not self.outdir.exists():
-            raise FileNotFoundError(f"Output folder not found: {self.outdir}")
-
-        tmp_dir = tempfile.mkdtemp()
-        tmp_path = Path(tmp_dir)
-        tmp_qgs  = tmp_path / f"{filename}.qgs"
-
-        try:
-            dlg = PackageDialog(iface, self.project, QgsOfflineEditing())
-            dlg.packagedProjectFileWidget.setFilePath(str(tmp_qgs))
-            dlg.packagedProjectTitleLineEdit.setText(self.project.baseName())
-            dlg._validate_packaged_project_filename()
-            dlg.package_project()
-            dlg.close()
-            dlg.deleteLater()
-            QCoreApplication.processEvents()
-
-            # 4) Zip up the folder if you still want a .zip
-            zip_path = self.outdir / f"{filename}.zip"
-            try:
-                zip_folder_contents(tmp_path, zip_path)
-            except PermissionError:
-                # swallow any locked‐file errors, since the .zip itself is valid
-                pass
-
-        finally:
-            # 5) Manually remove the temp dir, ignoring any leftover lock errors
-            shutil.rmtree(tmp_path, ignore_errors=True)
+        package_for_qfield(iface, self.project, self.outdir, filename)
 
