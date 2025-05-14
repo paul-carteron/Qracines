@@ -3,7 +3,7 @@ from .add_data_dialog import Ui_AddDataDialog
 from qgis.core import QgsSettings
 
 # Import from utils folder
-from ..utils.variable_utils import *
+from ..utils.variable_utils import get_global_variable, get_project_variable, get_project_variable
 from ..utils.layer_utils import *
 
 class AddDataDialog(QDialog):
@@ -13,162 +13,79 @@ class AddDataDialog(QDialog):
         self.ui = Ui_AddDataDialog()
         self.ui.setupUi(self)
         
-        self.ui.buttonBox.clicked.connect(self.add_data_selected)
-        
-    def check_variables(self):
+        self.VECTOR_CHECKBOX_KEY_MAP = {
+            self.ui.checkBox_ROUTE: ['route_polygon', 'route_line'],
+            self.ui.checkBox_PF: ['pf_polygon', 'pf_line'],
+            self.ui.checkBox_SSPF: ['sspf_polygon', 'sspf_line'],
+            self.ui.checkBox_UA: ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon'],
+            self.ui.checkBox_TOPO: ['topo_line'],
+        }
+
+        self.RASTER_CHECKBOX_KEY_MAP = {
+            self.ui.checkBox_PLT: "plt",
+            self.ui.checkBox_PLTANC: "plt_anc",
+            self.ui.checkBox_IRC: "irc",
+            self.ui.checkBox_RGB: "rgb",
+            self.ui.checkBox_MNH: "mnh",
+            self.ui.checkBox_MNT: "mnt",
+            self.ui.checkBox_SCAN: "scan25",
+        }
+
+        self.WMS_CHECKBOX_KEY_MAP = {
+            # SCAN
+            self.ui.checkBox_SCAN1000: "scan1000",
+            self.ui.checkBox_SCAN100: "scan100",
+            self.ui.checkBox_SCAN25: "scan25",
+            self.ui.checkBox_SCAN25G: "scan25_grey",
+            # ORTHO
+            self.ui.checkBox_IRCW: "irc",
+            self.ui.checkBox_RGBW: "rgb",
+            self.ui.checkBox_SPOT: "spot_2023",
+            # ORTHOHISTO
+            self.ui.checkBox_50: "histo_1950",
+            self.ui.checkBox_65: "histo_1965",
+            self.ui.checkBox_80: "histo_1980",
+            self.ui.checkBox_00: "histo_2000", 
+            self.ui.checkBox_06: "histo_2006",
+            self.ui.checkBox_11: "histo_2011",
+            # AUTRES
+            self.ui.checkBox_GEOL: "geol",
+            self.ui.checkBox_PCI: "pci",
+        }
+
+        self.ui.buttonBox.clicked.connect(self.add_data)
+    
+    def add_data(self):
+        self._check_variables()
+        self._add_vector()
+        self._add_raster()
+        self._add_wms()
+
+    def _check_variables(self):
         styles_directory = get_global_variable("styles_directory")
         forest_directory = get_project_variable("forest_directory")
         forest_prefix = get_project_variable("forest_prefix")
         
-        if not styles_directory or not forest_directory or not forest_prefix:
+        if not (styles_directory and forest_directory and forest_prefix):
             self.iface.messageBar().pushMessage("Sequoia2", "Dossier Sequoia non paramêtrée", level=Qgis.Critical, duration=10)
             return False
         return True
-        
-    def add_data_selected(self):
-        # Wms
-            
-        if self.ui.checkBox_SCAN25G.isChecked():
-            server_names = ['Scan25_gray']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_SCAN25.isChecked():
-            server_names = ['Scan25']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_SCAN100.isChecked():
-            server_names = ['Scan100']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-        
-        if self.ui.checkBox_SCAN1000.isChecked():
-            server_names = ['Scan1000']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_IRCW.isChecked():
-            server_names = ['IRC']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_RGBW.isChecked():
-            server_names = ['RGB']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_SPOT.isChecked():
-            server_names = ['SPOT']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_00.isChecked():
-            server_names = ['00']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_06.isChecked():
-            server_names = ['06']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_11.isChecked():
-            server_names = ['11']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_50.isChecked():
-            server_names = ['50']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-            
-        if self.ui.checkBox_65.isChecked():
-            server_names = ['65']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_80.isChecked():
-            server_names = ['80']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_PCI.isChecked():
-            server_names = ['PCI']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-            
-        if self.ui.checkBox_GEOL.isChecked():
-            server_names = ['GEOL']
-            import_wms_from_config(server_names, group_name="RASTER")
-            replier()
-      
-        
-        # Vérification Vecteur + Raster
-        if not self.check_variables():
-            return
-          
-        styles_directory = get_global_variable("styles_directory")
-        forest_directory = get_project_variable("forest_directory")
-        forest_prefix = get_project_variable("forest_prefix")
-        
-        # Vecteur
-        
-        if self.ui.checkBox_UA.isChecked():
-            vector_layers = ['UA_polygon_AME', 'UA_polygon_OCCUP', 'UA_polygon_PLT', 'UA_polygon']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-        
-        if self.ui.checkBox_SSPF.isChecked():
-            vector_layers = ['SSPF_polygon', 'SSPF_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-            
-        if self.ui.checkBox_PF.isChecked():
-            vector_layers = ['PF_polygon', 'PF_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-        
-        if self.ui.checkBox_ROUTE.isChecked():
-            vector_layers = ['ROUTE_polygon', 'ROUTE_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-        
-        if self.ui.checkBox_TOPO.isChecked():
-            vector_layers = ['TOPO_line']
-            import_vectors_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, vector_layers)
-            replier()
-            
-        # Raster    
-            
-        if self.ui.checkBox_MNT.isChecked():
-            raster_layers = ['MNT']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()
-            
-        if self.ui.checkBox_MNH.isChecked():
-            raster_layers = ['MNH']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()  
-            
-        if self.ui.checkBox_RGB.isChecked():
-            raster_layers = ['RGB']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier() 
-            
-        if self.ui.checkBox_IRC.isChecked():
-            raster_layers = ['IRC']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier() 
-            
-        if self.ui.checkBox_PLTANC.isChecked():
-            raster_layers = ['PLT-ANC']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()
-            
-        if self.ui.checkBox_PLT.isChecked():
-            raster_layers = ['PLT']
-            import_rasters_from_config(styles_directory, forest_directory, "new_directories", forest_prefix, raster_layers, "RASTER")
-            replier()  
-            
+    
+    def _add_vector(self):
+        # flatten list of list
+        vector_keys = [
+            key
+            for cb, key_list in self.VECTOR_CHECKBOX_KEY_MAP.items() if cb.isChecked()
+            for key in key_list
+        ]
+        load_vectors(*vector_keys, group_name="VECTOR")
+
+    def _add_raster(self):
+        # flatten list of list
+        raster_keys = [key for cb, key in self.RASTER_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
+        load_rasters(*raster_keys, group_name="RASTER")
+
+    def _add_wms(self):
+        # flatten list of list
+        wms_keys = [key for cb, key in self.WMS_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
+        load_wms(*wms_keys, group_name="WMS")

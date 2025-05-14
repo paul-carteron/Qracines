@@ -57,7 +57,7 @@ class ProjectSettingsDialog(QDialog):
         self.ui.lineEdit_name.setText(get_project_variable("forest_name") or "")
         self.ui.lineEdit_city.setText(get_project_variable("forest_city") or "")
         self.ui.lineEdit_owner.setText(get_project_variable("forest_owner") or "")
-        self.ui.doubleSpinBox.setValue(get_project_variable("forest_surface") or 0)
+        self.ui.doubleSpinBox.setValue(float(get_project_variable("forest_surface")) or 0)
         self.ui.comboBox_projects.setCurrentText(get_project_variable("forest_map_project") or "")
 
     def save_settings(self):

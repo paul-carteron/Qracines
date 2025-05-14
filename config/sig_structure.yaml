@@ -56,7 +56,6 @@ structure:
       road_polygon: { filename: ROAD_polygon.shp, style: ROAD_polygon.qml, display_name: "ROAD_polygon"}
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml, display_name: "ROUTE_line" }
       route_polygon: { filename: ROUTE_polygon.shp, style: ROUTE_polygon.qml, display_name: "ROUTE_polygon"}
-      route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml }
       sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, display_name: "Sous-parcelle forestière w"}
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle forestière"}
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
