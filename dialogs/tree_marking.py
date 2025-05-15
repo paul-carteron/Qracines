@@ -110,7 +110,8 @@ class Tree_markingDialog(QDialog):
 
     def _load_selected_rasters(self):
         keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
-        load_rasters(*keys, group_name="RASTER")
+        if keys:
+            load_rasters(*keys, group_name="RASTER")
 
     def _on_accept(self):
         # 1) collect inputs

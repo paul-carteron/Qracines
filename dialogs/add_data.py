@@ -78,14 +78,17 @@ class AddDataDialog(QDialog):
             for cb, key_list in self.VECTOR_CHECKBOX_KEY_MAP.items() if cb.isChecked()
             for key in key_list
         ]
-        load_vectors(*vector_keys, group_name="VECTOR")
+        if vector_keys:
+            load_vectors(*vector_keys, group_name="VECTOR")
 
     def _add_raster(self):
         # flatten list of list
         raster_keys = [key for cb, key in self.RASTER_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
-        load_rasters(*raster_keys, group_name="RASTER")
+        if raster_keys:
+            load_rasters(*raster_keys, group_name="RASTER")
 
     def _add_wms(self):
         # flatten list of list
         wms_keys = [key for cb, key in self.WMS_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
-        load_wms(*wms_keys, group_name="WMS")
+        if wms_keys:
+            load_wms(*wms_keys, group_name="WMS")
