@@ -39,10 +39,10 @@
        transform="matrix(1.0333333,0,0,1.0333333,-0.51111062,-0.5333329)"
        style="stroke-width:0.967742"><path
          id="path2"
-         style="fill:#008080;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-miterlimit:3.3;paint-order:fill markers stroke"
+         style="fill:#80CC28;fill-opacity:1;stroke:#ffffff;stroke-width:0;stroke-miterlimit:3.3;paint-order:fill markers stroke"
          d="M 15.333334,1.0000002 C 7.0490625,1.0000009 0.33333394,7.7157295 0.33333394,16 c 0,8.284271 6.71572856,14.999999 15.00000006,15 8.284271,-1e-6 15,-6.715729 15,-15 0,-8.2842706 -6.715729,-14.9999991 -15,-14.9999998 z"
          sodipodi:nodetypes="sssss" /><ellipse
-         style="fill:#008080;stroke:#ffffff;stroke-width:2.03226;stroke-miterlimit:3.3;stroke-dasharray:none;paint-order:fill markers stroke"
+         style="fill:#80CC28;stroke:#ffffff;stroke-width:2.03226;stroke-miterlimit:3.3;stroke-dasharray:none;paint-order:fill markers stroke"
          id="path3"
          cx="10.412066"
          cy="11.140022"
