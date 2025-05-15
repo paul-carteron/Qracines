@@ -201,11 +201,11 @@ class DiagnosticService:
 
         transect_mgr.fields.add_value_map(
             'TR_DIAM',
-            {'map': [{str(d): str(d)} for d in range(self.dmin, self.dmax, 5)]}
+            {'map': [{str(d): str(d)} for d in range(self.dmin, self.dmax + 1, 5)]}
         )
         transect_mgr.fields.add_value_map(
             'TR_HAUTEUR',
-            {'map': [{str(h): str(h)} for h in range(self.hmin, self.hmax)]}
+            {'map': [{str(h): str(h)} for h in range(self.hmin, self.hmax + 1)]}
         )
         if self.parcelles:
             transect_mgr.fields.add_value_map(
@@ -227,4 +227,3 @@ class DiagnosticService:
         filename = self.title if self.title else f"{forest_prefix}_D{self.dmax}H{self.hmax}"
         
         package_for_qfield(iface, self.project, self.outdir, filename)
-

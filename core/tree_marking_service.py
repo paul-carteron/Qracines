@@ -186,7 +186,7 @@ class TreeMarkingService:
     def _configure_diametre(layer_manager, dmin, dmax):
         field_name = "DIAMETRE"
         layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        layer_manager.fields.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax, 5)]})
+        layer_manager.fields.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax + 1, 5)]})
         layer_manager.fields.set_constraint_expression(
             field_name,
             '"DIAMETRE" != \'\'',
@@ -197,7 +197,7 @@ class TreeMarkingService:
     @staticmethod
     def _configure_hauteur(layer_manager, hmin, hmax):
         field_name = "HAUTEUR"
-        layer_manager.fields.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax)]})
+        layer_manager.fields.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax + 1)]})
 
     @staticmethod
     def _configure_effectif(layer_manager):

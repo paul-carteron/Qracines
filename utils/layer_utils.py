@@ -6,8 +6,6 @@ from qgis.core import (
     Qgis,
     QgsLayerTreeGroup,
     QgsMapThemeCollection,
-    QgsCoordinateReferenceSystem,
-    QgsFields,
     QgsRelation
 )
 from qgis.utils import iface
