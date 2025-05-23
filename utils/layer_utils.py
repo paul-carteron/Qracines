@@ -31,6 +31,10 @@ def load_wms(*wms_keys, group_name = None):
 
     for key in wms_keys:
         display_name, url = get_wms(key)
+        if project.mapLayersByName(display_name):
+            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
+            continue
+
         layer = QgsRasterLayer(str(url), display_name, "wms")
 
         if not layer.isValid():
@@ -57,8 +61,12 @@ def load_vectors(*vector_keys, group_name = None):
         group = root.findGroup(group_name) or root.addGroup(group_name)
     
     for key in vector_keys:
-        path = get_path(key)
         display_name = get_display_name(key)
+        if project.mapLayersByName(display_name):
+            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
+            continue
+
+        path = get_path(key)
         layer = QgsVectorLayer(str(path), display_name, "ogr")
 
         if not layer.isValid():
@@ -90,8 +98,12 @@ def load_rasters(*raster_keys, group_name = None):
         group = root.findGroup(group_name) or root.addGroup(group_name)
     
     for key in raster_keys:
-        path = get_path(key)
         display_name = get_display_name(key)
+        if project.mapLayersByName(display_name):
+            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
+            continue
+        
+        path = get_path(key)
         layer = QgsRasterLayer(str(path), display_name)
 
         if not layer.isValid():
