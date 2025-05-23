@@ -15,7 +15,7 @@ from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
 from ..utils.path_manager import get_path, get_style
 from ..utils.qfield_utils import package_for_qfield
-from ..utils.layer_utils import create_map_theme, add_layers_from_gpkg, load_vectors, load_rasters, create_relation
+from ..utils.layer_utils import create_map_theme, add_layers_from_gpkg, load_vectors, load_rasters, create_relation, zoom_on_layer
 from ..utils.variable_utils import get_project_variable
 
 
@@ -98,6 +98,7 @@ class DiagnosticService:
 
     def _load_and_style_vectors(self):
         load_vectors("prop_line", "prop_diag_line", "pf_line", "pf_diag_line", "ua_polygon", group_name= "VECTOR")
+        zoom_on_layer("ua_polygon")
 
     def _load_and_style_rasters(self):
         keys = [key for key, cb in self.raster_choices.items() if cb.isChecked()]
