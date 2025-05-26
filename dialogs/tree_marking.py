@@ -11,7 +11,7 @@ from .tree_marking_dialog import Ui_Tree_markingDialog
 from ..core.db.manager import DatabaseManager
 from ..core.tree_marking_service import TreeMarkingService
 
-from ..utils.path_manager import get_racines_path
+from ..utils.path_manager import get_racines_path, get_display_name
 from ..utils.variable_utils import clear_project, get_project_variable
 from ..utils.layer_utils import load_rasters, zoom_on_layer
 
@@ -109,10 +109,14 @@ class Tree_markingDialog(QDialog):
         return codes
 
     def _load_selected_rasters(self):
-        keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
-        if keys:
-            load_rasters(*keys, group_name="RASTER")
-            zoom_on_layer("plt_anc")
+        asked_keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
+        if not asked_keys:
+            return
+
+        loaded_keys = load_rasters(*asked_keys, group_name="RASTER")
+        if loaded_keys:
+            zoom_on_layer(loaded_keys[0])
+
 
     def _on_accept(self):
         # 1) collect inputs

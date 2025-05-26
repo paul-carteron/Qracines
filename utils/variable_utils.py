@@ -39,7 +39,7 @@ def clear_project(keep_variable = True):
 
     # Nouveau projet
     QgsProject.instance().clear()
-    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(2154))
+    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
     
     if keep_variable:
     # Restauration des variables

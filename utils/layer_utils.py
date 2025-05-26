@@ -47,21 +47,20 @@ def load_wms(*wms_keys, group_name = None):
         if group:
             group.addLayer(layer)
 
-def load_vectors(*vector_keys, group_name = None):
+def load_vectors(*vector_keys, group_name=None):
     """
-    Load vector layers by key (from sig_structure.yaml) into the project.
-    If group_name is given, layers go into that group (hidden at root);
-    otherwise they appear at the root legend. Styles (if defined) are applied.
+    Load vector layers by key into the project. Create group only if at least one is valid.
+    Returns a list of successfully loaded keys.
     """
     project = QgsProject.instance()
     root = project.layerTreeRoot()
-
     group = None
-    if group_name:
-        group = root.findGroup(group_name) or root.addGroup(group_name)
-    
+    loaded_keys = []
+
     for key in vector_keys:
         display_name = get_display_name(key)
+
+        # Skip if already loaded
         if project.mapLayersByName(display_name):
             QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
             continue
@@ -69,9 +68,14 @@ def load_vectors(*vector_keys, group_name = None):
         path = get_path(key)
         layer = QgsVectorLayer(str(path), display_name, "ogr")
 
+        # Skip invalid layers
         if not layer.isValid():
             QgsMessageLog.logMessage(f"Failed to load vector '{key}' from {path}", "Qsequoia2", Qgis.Warning)
             continue
+
+        # Create group only if a layer will be added
+        if group_name and group is None:
+            group = root.findGroup(group_name) or root.addGroup(group_name)
 
         project.addMapLayer(layer, not bool(group))
         if group:
@@ -80,54 +84,76 @@ def load_vectors(*vector_keys, group_name = None):
         try:
             style_path = get_style(key)
             layer.loadNamedStyle(str(style_path))
-            layer.triggerRepaint()
         except Exception as e:
             QgsMessageLog.logMessage(f"Could not style '{key}': {e}", "Qsequoia2", Qgis.Warning)
 
-def load_rasters(*raster_keys, group_name = None):
+        layer.triggerRepaint()
+        loaded_keys.append(key)
+
+    return loaded_keys
+
+def load_rasters(*raster_keys, group_name=None):
     """
-    Load raster layers by key (from sig_structure.yaml) into the project.
-    If group_name is given, layers go into that group (hidden at root);
-    otherwise they appear at the root legend. Styles (if defined) are applied.
+    Load raster layers by key into the project. Create group only if at least one is valid.
     """
     project = QgsProject.instance()
     root = project.layerTreeRoot()
-
     group = None
-    if group_name:
-        group = root.findGroup(group_name) or root.addGroup(group_name)
-    
+    loaded_keys = []
+
     for key in raster_keys:
         display_name = get_display_name(key)
+
+        # Skip already loaded
         if project.mapLayersByName(display_name):
             QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
             continue
-        
+
         path = get_path(key)
         layer = QgsRasterLayer(str(path), display_name)
 
+        # Skip invalid layers
         if not layer.isValid():
-            QgsMessageLog.logMessage(f"Failed to load vector '{key}' from {path}", "Qsequoia2", Qgis.Warning)
+            QgsMessageLog.logMessage(f"Invalid raster '{key}' at {path}", "Qsequoia2", Qgis.Warning)
             continue
+        
+        loaded_keys.append(key)
+
+        # Create group only when actually needed
+        if group_name and group is None:
+            group = root.findGroup(group_name) or root.addGroup(group_name)
 
         project.addMapLayer(layer, not bool(group))
         if group:
             group.addLayer(layer)
 
+        # Try styling
         try:
             style_path = get_style(key)
             layer.loadNamedStyle(str(style_path))
-            layer.triggerRepaint()
         except Exception as e:
-            QgsMessageLog.logMessage(f"Could not style '{key}': {e}", "Qsequoia2", Qgis.Warning)
+            QgsMessageLog.logMessage(f"Styling failed for '{key}': {e}", "Qsequoia2", Qgis.Warning)
+
+        layer.triggerRepaint()
+
+    return loaded_keys
 
 # endregion
 
 def zoom_on_layer(key):
-    layer = QgsProject.instance().mapLayersByName(get_display_name(key))[0]
+    layers = QgsProject.instance().mapLayersByName(get_display_name(key))
+    if not layers:
+        QgsMessageLog.logMessage(f"Layer '{key}' not found. Zoom skipped.", "Qsequoia2", Qgis.Warning)
+        return
+
+    layer = layers[0]
+    if not layer.isValid():
+        QgsMessageLog.logMessage(f"Layer '{key}' is not valid. Zoom skipped.", "Qsequoia2", Qgis.Warning)
+        return
+
     canvas = iface.mapCanvas()
-    extent = layer.extent()
-    canvas.setExtent(extent)
+    canvas.setExtent(layer.extent())
+    canvas.refresh()
 
 def _set_layer_visibility(layer_name, visible):
     project = QgsProject.instance()

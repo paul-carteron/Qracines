@@ -61,7 +61,13 @@ class DiagnosticService:
         self._create_relations()
         self._apply_styles()
         self._configure_layers()
-        self._package_for_qfield()
+        
+        # Run packaging if needed
+        if self.package_for_qfield:
+            self._package_for_qfield()
+            # signal back that packaging happened
+            return str(self.outdir)
+        return None
 
     def _load_parcellaire(self):
         path = get_path("parcellaire")
