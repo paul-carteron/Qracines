@@ -31,6 +31,8 @@ def clear_project(keep_variable = True):
             "forest_name",
             "forest_owner",
             "forest_prefix",
+            "forest_wooded_surface",
+            "forest_unwooded_surface",
             "forest_surface",
         ]
 
@@ -124,11 +126,23 @@ def sum_surface_from_shapefile(shapefile_path, surface_field, filter_field=None,
         # Si la valeur n'existe pas dans les indices, retourner None
         return None
   
-def get_formated_surface(surface):
-    hectares = round(surface // 10000)
-    ares = round((surface % 10000) // 100)
-    centiares = round(surface % 100)
-    formatted_surface = f"Surface totale: {hectares} ha {ares:02} a {centiares:02} ca"
+def get_formated_surface(surface_boisee, surface_non_boisee):
+    surface_totale = surface_boisee + surface_non_boisee
+
+    if surface_non_boisee > 0:
+        surface_totale_ha = round(surface_totale / 10000, 4)
+        surface_boisee_ha = round(surface_boisee / 10000, 4)
+        formatted_surface = (
+            f"Surface totale: {surface_totale_ha:.4f} ha | Surface boisée: {surface_boisee_ha:.4f} ha"
+        )
+    else:
+        hectares = round(surface_boisee // 10000)
+        ares = round((surface_boisee % 10000) // 100)
+        centiares = round(surface_boisee % 100)
+        formatted_surface = (
+            f"Surface totale: {hectares} ha {ares:02} a {centiares:02} ca"
+        )
+
     return formatted_surface
   
 

@@ -4,7 +4,9 @@ structure:
     files:
       amenagements: { filename: AMENAGEMENTS.qgz, }
       assemblage: { filename: ASSEMBLAGE.qgz, }
-      enjeux: { filename: "ENJEUX.qgz", }
+      enjeux_environnementaux: { filename: ENJEUX_ENVIRONNEMENTAUX.qgz, }
+      enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, }
+      enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, }
       geologie: { filename: GEOLOGIE.qgz, }
       peuplements: { filename: PEUPLEMENTS.qgz, }
       situation: { filename: SITUATION.qgz, }

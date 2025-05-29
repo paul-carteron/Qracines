@@ -57,7 +57,8 @@ class ProjectSettingsDialog(QDialog):
         self.ui.lineEdit_name.setText(get_project_variable("forest_name") or "")
         self.ui.lineEdit_city.setText(get_project_variable("forest_city") or "")
         self.ui.lineEdit_owner.setText(get_project_variable("forest_owner") or "")
-        self.ui.doubleSpinBox.setValue(float(get_project_variable("forest_surface") or 0))
+        self.ui.doubleSpinBox_1.setValue(float(get_project_variable("forest_wooded_surface") or 0))
+        self.ui.doubleSpinBox_2.setValue(float(get_project_variable("forest_unwooded_surface") or 0))
         self.ui.comboBox_projects.setCurrentText(get_project_variable("forest_map_project") or "")
 
     def save_settings(self):
@@ -68,8 +69,10 @@ class ProjectSettingsDialog(QDialog):
         name = self.ui.lineEdit_name.text()
         city = self.ui.lineEdit_city.text()
         owner = self.ui.lineEdit_owner.text()
-        surface = self.ui.doubleSpinBox.value()
-        formated_surface = get_formated_surface(surface * 10000)
+        surface_boisee = self.ui.doubleSpinBox_1.value()
+        surface_non_boisee = self.ui.doubleSpinBox_2.value()
+        surface_totale = surface_boisee+surface_non_boisee
+        formated_surface = get_formated_surface(surface_boisee * 10000, surface_non_boisee * 10000)
         map_project = self.ui.comboBox_projects.currentText()
        
         # Sauvegarder les paramètres
@@ -79,7 +82,9 @@ class ProjectSettingsDialog(QDialog):
         set_project_variable("forest_city", city)
         set_project_variable("forest_owner", owner)
         set_project_variable("forest_map_project", map_project)
-        set_project_variable("forest_surface", surface)
+        set_project_variable("forest_wooded_surface", surface_boisee)
+        set_project_variable("forest_unwooded_surface", surface_non_boisee)
+        set_project_variable("forest_surface", surface_totale)
         set_project_variable("forest_formated_surface", formated_surface)
 
         # Lance la création de la map
@@ -144,14 +149,26 @@ class ProjectSettingsDialog(QDialog):
 
     def _set_surface(self, ua_path, parca_path):
         if ua_path.exists():
-            surface = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
+            surface_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
+            surface_non_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "NON BOISEE")
+            if surface_non_boisee is None:
+              surface_non_boisee = 0
+              
         elif parca_path.exists():
-            surface = sum_surface_from_shapefile(parca_path, "SURF_CA")
+            surface_boisee = sum_surface_from_shapefile(parca_path, "SURF_CA")
+            surface_non_boisee = 0
         else:
-            surface = 0
-
-        self.ui.doubleSpinBox.setValue(surface)
-        set_project_variable("forest_surface", surface)
+            surface_boisee = 0
+            surface_non_boisee = 0
+        
+        self.ui.doubleSpinBox_1.setValue(surface_boisee)
+        set_project_variable("forest_wooded_surface", surface_boisee)
+        
+        self.ui.doubleSpinBox_2.setValue(surface_non_boisee)
+        set_project_variable("forest_unwooded_surface", surface_non_boisee)
+        
+        surface_totale = surface_boisee+surface_non_boisee
+        set_project_variable("forest_surface", surface_totale)
 
     def update_forest_name(self):
 
