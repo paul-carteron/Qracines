@@ -14,8 +14,8 @@ from ..utils.variable_utils import (
     sum_surface_from_shapefile,
     clear_project,
     )
-from ..utils.layer_utils import load_wms, load_vectors, zoom_on_layer, create_map_theme, replier
-from ..utils.path_manager import get_racines_path, get_path, get_wms
+from ..utils.layer_utils import load_wms, load_vectors, zoom_on_layer, create_map_theme, replier, create_map_project
+from ..utils.path_manager import get_racines_path, get_path, get_wms, get_config_path
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, parent=None):
@@ -74,6 +74,11 @@ class ProjectSettingsDialog(QDialog):
         surface_totale = surface_boisee+surface_non_boisee
         formated_surface = get_formated_surface(surface_boisee * 10000, surface_non_boisee * 10000)
         map_project = self.ui.comboBox_projects.currentText()
+        
+        if surface_non_boisee >0:
+            type_project = "unwooded"
+        else:
+            type_project = "wooded"
        
         # Sauvegarder les paramètres
         set_project_variable("forest_directory", directory)
@@ -86,9 +91,10 @@ class ProjectSettingsDialog(QDialog):
         set_project_variable("forest_unwooded_surface", surface_non_boisee)
         set_project_variable("forest_surface", surface_totale)
         set_project_variable("forest_formated_surface", formated_surface)
+        set_project_variable("forest_type_project", type_project)
 
         # Lance la création de la map
-        self.create_map_project(map_project)
+        self.create_map_project(map_project, type_project)
         self.save_current_project(map_project)
 
     def select_directory(self):
@@ -148,17 +154,16 @@ class ProjectSettingsDialog(QDialog):
         set_project_variable("forest_owner", owner)
 
     def _set_surface(self, ua_path, parca_path):
+        surface_boisee = surface_non_boisee = 0
+        
         if ua_path.exists():
             surface_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
             surface_non_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "NON BOISEE")
-            if surface_non_boisee is None:
-              surface_non_boisee = 0
+            if not surface_non_boisee:
+                surface_non_boisee = 0
               
-        elif parca_path.exists():
-            surface_boisee = sum_surface_from_shapefile(parca_path, "SURF_CA")
-            surface_non_boisee = 0
         else:
-            surface_boisee = 0
+            surface_boisee = sum_surface_from_shapefile(parca_path, "SURF_CA")
             surface_non_boisee = 0
         
         self.ui.doubleSpinBox_1.setValue(surface_boisee)
@@ -199,150 +204,8 @@ class ProjectSettingsDialog(QDialog):
             save_path = get_path(map_project.lower(), self.name, self.directory)
             project.write(save_path)
             
-    def create_map_project(self, map_project):
+    def create_map_project(self, map_project, type_project):
 
         clear_project()
-        # I can massively DRY up this part be create a project_factory with a method create_map_project but it's working for now
-
-        if map_project == 'SITUATION':
-            # zoom_on_layer should be called before loading wms
-            load_vectors("ua_polygon_occup", "prop_polygon", "prop_point", "prop_line", "infra_point_acces", "coms_point", "coms_line", "parca_polygon_legend")
-            zoom_on_layer("parca_polygon_legend")
-
-            load_wms("scan25", "scan1000", group_name = "RASTER")
-
-            map_themes = [("1_SCAN25_all",
-                            ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'scan25'],
-                            ['ua_polygon_occup', 'prop_point', 'prop_line', 'parca_polygon_legend', 'scan1000']),
-                          ("2_SCAN25_boisee",
-                            ['ua_polygon_occup', 'prop_line', 'infra_point_acces', 'coms_point', 'coms_line', 'scan25'], 
-                            ['prop_polygon', 'prop_point', 'parca_polygon_legend', 'scan1000']),
-                          ("3_SCAN1000",
-                            ['prop_point', 'scan1000'],
-                            ['ua_polygon_occup', 'prop_polygon', 'prop_line', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_legend', 'scan25'])]
-            for theme in map_themes:
-                create_map_theme(*theme)
-            
-
-            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
-          
-        if map_project == 'ASSEMBLAGE':
-            # zoom_on_layer should be called before loading wms
-            load_vectors(
-                'ua_polygon_occup', 'parca_polygon_occup', 'parca_polygon', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 
-                'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend'
-            )
-            zoom_on_layer("parca_polygon_legend")
-
-            load_wms("scan25_grey", "scan100", "scan1000", "pci", "irc", "rgb", group_name="RASTER")
-            
-            # little customization
-            wms_display_name,_ = get_wms("scan25_grey")
-            layer = QgsProject.instance().mapLayersByName(wms_display_name)[0]
-            layer.setOpacity(0.5)
-
-            
-            map_themes = [("1_Vector_all",
-                            ['parca_polygon', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line'],
-                            ['ua_polygon_occup', 'parca_polygon_occup', 'parca_polygon_legend', 'scan25_grey', 'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
-                          ("2_Vector_boisee",
-                            ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line'],
-                            ['parca_polygon', 'parca_polygon_legend', 'scan25_grey', 'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
-                          ("3_Raster_all",
-                            ['parca_polygon', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan25_grey'],
-                            ['ua_polygon_occup', 'parca_polygon_occup', 'parca_polygon_legend', 'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
-                          ("4_Raster_boisee",
-                            ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan25_grey'],
-                            ['parca_polygon', 'parca_polygon_legend', 'scan100', 'scan1000', 'irc', 'rgb', 'pci'])]
-            for theme in map_themes:
-                create_map_theme(*theme)
-
-            replier()      
-
-            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
-            
-        if map_project == 'PEUPLEMENTS':
-            # zoom_on_layer should be called before loading wms
-            load_vectors(
-                'ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'sspf_polygon_plt', 'sspf_polygon', 
-                'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 
-                'com_point', 'com_line', 'parca_polygon_legend'
-            )
-            zoom_on_layer("parca_polygon_legend")
-
-            load_wms("scan25_grey", "scan100", "scan1000", "pci", "irc", "rgb", group_name="RASTER")
-            # little customization
-            wms_display_name,_ = get_wms("scan25_grey")
-            layer = QgsProject.instance().mapLayersByName(wms_display_name)[0]
-            layer.setOpacity(0.5)
-
-            map_themes = [("0_work",
-                            ['ua_polygon', 'parca_polygon_occup', 'prop_line', 'route_polygon', 'route_line', 'irc'],
-                            ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'sspf_polygon', 'pf_polygon', 'pf_line', 'lieudit_point', 'infra_point', 
-                             'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'scan25_grey', 'scan100', 'scan1000', 'rgb', 'pci']),
-                          ("1_Vector_plt",
-                            ['sspf_polygon_plt', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
-                             'infra_polygon', 'infra_line', 'com_point', 'com_line'],
-                            ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'parca_polygon_legend', 'scan25_grey', 
-                             'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
-                          ("2_Vector_ame",
-                            ['ua_polygon_ame', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
-                             'infra_polygon', 'infra_line', 'com_point', 'com_line'],
-                            ['ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'scan25_grey', 
-                             'scan100', 'scan1000', 'irc', 'rgb', 'pci']),
-                          ("3_Raster_plt",
-                            ['sspf_polygon_plt', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
-                             'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan100'],
-                            ['ua_polygon_ame', 'ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'parca_polygon_legend', 'scan25_grey', 
-                             'scan1000', 'irc', 'rgb', 'pci']),
-                          ("4_Raster_ame",
-                            ['ua_polygon_ame', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'route_polygon', 'route_line', 'lieudit_point', 'infra_point', 
-                             'infra_polygon', 'infra_line', 'com_point', 'com_line', 'scan100'],
-                            ['ua_polygon_occup', 'ua_polygon_plt', 'ua_polygon', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'scan25_grey', 
-                             'scan1000', 'irc', 'rgb', 'pci'])]
-            
-            for theme in map_themes:
-                create_map_theme(*theme)
-
-            replier()  
-
-            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
-            
-        if map_project == 'GEOLOGIE':
-            # zoom_on_layer should be called before loading wms
-            load_vectors('geol_polygon', 'ua_polygon', 'pf_polygon', 'pf_line', 'prop_line', 'parca_polygon_legend')
-            zoom_on_layer("parca_polygon_legend")
-
-            load_wms("geol")
-
-            map_themes = [("0_Geol",
-                            ['geol_polygon', 'parca_polygon_occup', 'pf_polygon', 'pf_line', 'prop_line', "geol"],
-                            ['ua_polygon', 'parca_polygon_legend'])]
-            
-            for theme in map_themes:
-                create_map_theme(*theme)
-
-            replier()
-            
-            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
-            
-        if map_project == 'ENJEUX':
-            # zoom_on_layer should be called before loading wms
-            load_vectors('pf_polygon', 'pf_line', 'prop_line', 'parca_polygon_legend')
-            zoom_on_layer("parca_polygon_legend")
-
-            load_wms("scan25_grey")
-            # little customization
-            wms_display_name, _ = get_wms("scan25_grey")
-            layer = QgsProject.instance().mapLayersByName(wms_display_name)[0]
-            layer.setOpacity(0.5)
-            
-            map_themes = [("1_Enjeux",
-                            ['pf_polygon', 'pf_line', 'prop_line', 'scan25_grey'],
-                            ['parca_polygon_legend'])]
-            for theme in map_themes:
-                create_map_theme(*theme)
-
-            replier()
-            
-            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
+        create_map_project(map_project.lower(), type_project)
+        self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)

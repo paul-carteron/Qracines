@@ -33,24 +33,24 @@ class AddDataDialog(QDialog):
 
         self.WMS_CHECKBOX_KEY_MAP = {
             # SCAN
-            self.ui.checkBox_SCAN1000: "scan1000",
-            self.ui.checkBox_SCAN100: "scan100",
-            self.ui.checkBox_SCAN25: "scan25",
-            self.ui.checkBox_SCAN25G: "scan25_grey",
+            self.ui.checkBox_SCAN1000: "wms_scan1000",
+            self.ui.checkBox_SCAN100: "wms_scan100",
+            self.ui.checkBox_SCAN25: "wms_scan25",
+            self.ui.checkBox_SCAN25G: "wms_scan25_grey",
             # ORTHO
-            self.ui.checkBox_IRCW: "irc",
-            self.ui.checkBox_RGBW: "rgb",
-            self.ui.checkBox_SPOT: "spot_2023",
+            self.ui.checkBox_IRCW: "wms_irc",
+            self.ui.checkBox_RGBW: "wms_rgb",
+            self.ui.checkBox_SPOT: "wms_spot_2023",
             # ORTHOHISTO
-            self.ui.checkBox_50: "histo_1950",
-            self.ui.checkBox_65: "histo_1965",
-            self.ui.checkBox_80: "histo_1980",
-            self.ui.checkBox_00: "histo_2000", 
-            self.ui.checkBox_06: "histo_2006",
-            self.ui.checkBox_11: "histo_2011",
+            self.ui.checkBox_50: "wms_histo_1950",
+            self.ui.checkBox_65: "wms_histo_1965",
+            self.ui.checkBox_80: "wms_histo_1980",
+            self.ui.checkBox_00: "wms_histo_2000", 
+            self.ui.checkBox_06: "wms_histo_2006",
+            self.ui.checkBox_11: "wms_histo_2011",
             # AUTRES
-            self.ui.checkBox_GEOL: "geol",
-            self.ui.checkBox_PCI: "pci",
+            self.ui.checkBox_GEOL: "wms_geol",
+            self.ui.checkBox_PCI: "wms_pci",
         }
 
         self.ui.buttonBox.clicked.connect(self.add_data)
@@ -79,16 +79,16 @@ class AddDataDialog(QDialog):
             for key in key_list
         ]
         if vector_keys:
-            load_vectors(*vector_keys, group_name="VECTOR")
+            load_vectors(*vector_keys, group_name="added_vector")
 
     def _add_raster(self):
         # flatten list of list
         raster_keys = [key for cb, key in self.RASTER_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
         if raster_keys:
-            load_rasters(*raster_keys, group_name="RASTER")
+            load_rasters(*raster_keys, group_name="added_raster")
 
     def _add_wms(self):
         # flatten list of list
         wms_keys = [key for cb, key in self.WMS_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
         if wms_keys:
-            load_wms(*wms_keys, group_name="WMS")
+            load_wms(*wms_keys, group_name="added_wms")
