@@ -18,7 +18,6 @@ map_project:
         visible: ['prop_point', 'wms_scan1000']
         hidden: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_legend', 'wms_scan25']
 
-
   situation_unwooded:
     vector:
       group_name: vector
@@ -60,7 +59,6 @@ map_project:
         visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
         hidden: ['road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
 
-
   assemblage_unwooded:
     vector:
       group_name: vector
@@ -83,7 +81,6 @@ map_project:
         visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
         hidden: ['road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
 
-
   peuplements_wooded:
     vector:
       group_name: vector
@@ -97,7 +94,7 @@ map_project:
       layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
     themes:
       - name: 1_vector+sequoia
-        visible: [ 'ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
+        visible: ['ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
         hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
       - name: 2_vector+sequoia+wms
         visible: ['ua_polygon',  'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
@@ -105,7 +102,6 @@ map_project:
       - name: 3_sequoia+wms
         visible: ['ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
         hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-
 
   geologie_wooded:
     vector:
@@ -123,7 +119,6 @@ map_project:
         visible: ['geol_polygon', 'pf_polygon', 'pf_line', 'prop_line', geol]
         hidden: ['parca_polygon_legend']
         
-
   enjeux_wooded:
     vector:
       group_name: vector

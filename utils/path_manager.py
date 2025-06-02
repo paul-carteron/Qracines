@@ -5,7 +5,7 @@ from qgis.PyQt.QtWidgets import QMessageBox
 
 from .variable_utils import get_project_variable, get_global_variable
 
-# region PLUGON PATH
+# region PLUGIN PATH
 
 def get_plugin_root() -> Path:
     """
@@ -111,6 +111,17 @@ def get_wms(logical_key):
     return display_name, url
 
 # endregion
+
+# region MAP_PROJECT
+_MAP_PROJECT: dict | None = None
+
+def _load_map_project() -> dict:
+    global _MAP_PROJECT
+    if _MAP_PROJECT is None:
+        cfg_path = get_config_path("map_project.yaml")
+        with open(cfg_path, encoding="utf-8") as f:
+            _MAP_PROJECT = yaml.safe_load(f)
+    return _MAP_PROJECT
 
 # region RACINES
 
