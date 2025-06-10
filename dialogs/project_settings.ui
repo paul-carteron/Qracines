@@ -57,19 +57,6 @@
      <string>...</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_directory">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>30</y>
-      <width>301</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="acceptDrops">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
@@ -104,6 +91,19 @@
     </property>
     <property name="text">
      <string>Répertoire de travail</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="forest_path">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>30</y>
+      <width>301</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
