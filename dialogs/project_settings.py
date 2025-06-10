@@ -64,34 +64,34 @@ class ProjectSettingsDialog(QDialog):
     def save_settings(self):
       
         # Récupère les paramètres
-        directory = self.ui.lineEdit_directory.text()
-        prefix = self.ui.lineEdit_prefixe.text()
-        name = self.ui.lineEdit_name.text()
-        city = self.ui.lineEdit_city.text()
-        owner = self.ui.lineEdit_owner.text()
-        surface_boisee = self.ui.doubleSpinBox_1.value()
-        surface_non_boisee = self.ui.doubleSpinBox_2.value()
-        surface_totale = surface_boisee+surface_non_boisee
-        formated_surface = get_formated_surface(surface_boisee * 10000, surface_non_boisee * 10000)
-        map_project = self.ui.comboBox_projects.currentText()
-        
-        if surface_non_boisee >0:
-            type_project = "unwooded"
-        else:
-            type_project = "wooded"
-       
-        # Sauvegarder les paramètres
-        set_project_variable("forest_directory", directory)
-        set_project_variable("forest_prefix", prefix)
-        set_project_variable("forest_name", name)
-        set_project_variable("forest_city", city)
-        set_project_variable("forest_owner", owner)
-        set_project_variable("forest_map_project", map_project)
-        set_project_variable("forest_wooded_surface", surface_boisee)
-        set_project_variable("forest_unwooded_surface", surface_non_boisee)
-        set_project_variable("forest_surface", surface_totale)
-        set_project_variable("forest_formated_surface", formated_surface)
-        set_project_variable("forest_type_project", type_project)
+        directory = self.ui.lineEdit_directory.text(),
+        prefix = self.ui.lineEdit_prefixe.text(),
+        name = self.ui.lineEdit_name.text(),
+        city = self.ui.lineEdit_city.text(),
+        owner = self.ui.lineEdit_owner.text(),
+        surface_boisee = self.ui.doubleSpinBox_1.value(),
+        surface_non_boisee = self.ui.doubleSpinBox_2.value(),
+        surface_totale = surface_boisee + surface_non_boisee,
+        formated_surface = get_formated_surface(surface_boisee * 10000, surface_non_boisee * 10000),
+        map_project = self.ui.comboBox_projects.currentText(),   
+        type_project = "wooded" if surface_non_boisee < 0 else "unwooded"
+
+        settings = {
+            "directory": directory,
+            "prefix": prefix,
+            "name": name,
+            "city": city,
+            "owner": owner,
+            "surface_boisee": surface_boisee,
+            "surface_non_boisee": surface_non_boisee,
+            "surface_totale": surface_totale,
+            "formated_surface": formated_surface,
+            "map_project": map_project,
+            "type_project": type_project
+        }
+
+        for key, value in settings.items():
+            set_project_variable(f"forest_{key}", value)
 
         # Lance la création de la map
         self.create_map_project(map_project, type_project)
@@ -128,7 +128,6 @@ class ProjectSettingsDialog(QDialog):
         prefix, sep, suffix = name.partition("_")
         return suffix if sep else prefix
 
-
     def _set_directory_and_prefix(self, directory, prefix):
         self.ui.lineEdit_directory.setText(directory)
         set_project_variable("forest_directory", directory)
@@ -154,26 +153,21 @@ class ProjectSettingsDialog(QDialog):
         set_project_variable("forest_owner", owner)
 
     def _set_surface(self, ua_path, parca_path):
-        surface_boisee = surface_non_boisee = 0
-        
         if ua_path.exists():
             surface_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
-            surface_non_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "NON BOISEE")
-            if not surface_non_boisee:
-                surface_non_boisee = 0
-              
+            surface_non_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "NON BOISEE") or 0
         else:
             surface_boisee = sum_surface_from_shapefile(parca_path, "SURF_CA")
             surface_non_boisee = 0
-        
+
+        surface_totale = surface_boisee + surface_non_boisee
+        set_project_variable("forest_surface", surface_totale)
+
         self.ui.doubleSpinBox_1.setValue(surface_boisee)
         set_project_variable("forest_wooded_surface", surface_boisee)
-        
+
         self.ui.doubleSpinBox_2.setValue(surface_non_boisee)
         set_project_variable("forest_unwooded_surface", surface_non_boisee)
-        
-        surface_totale = surface_boisee+surface_non_boisee
-        set_project_variable("forest_surface", surface_totale)
 
     def update_forest_name(self):
 
