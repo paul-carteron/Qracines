@@ -18,6 +18,7 @@ class LayerFactory:
                 # Peuplement
                 ("PLACETTE", QVariant.String),
                 ("PLTM_PARC", QVariant.String),
+                ("PLTM_STRATE", QVariant.String),
                 ("PLTM_TYPE", QVariant.String),
                 ("PLTM_RICH", QVariant.String),
                 ("PLTM_STADE", QVariant.String),
