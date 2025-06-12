@@ -11,6 +11,7 @@ from .dialogs.add_data import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
 from .dialogs.tree_marking import *
+from .dialogs.expertise import *
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -26,14 +27,17 @@ class QSequoia2:
         self.diagnostic_action = None
         self.pedology_action = None
         self.tree_marking_action = None
+        self.expertise_action = None
         
         self.toolbar = None
         self.global_dialog = None
         self.project_dialog = None
         self.add_data_dialog = None
+        self.diagnostic_dialog = None
         self.pedology_dialog = None
         self.tree_marking_dialog = None
-        self.diagnostic_dialog   = None
+        self.expertise_dialog = None
+
         self.plugin_name = "QSequoia2"
 
     def initGui(self):
@@ -93,6 +97,14 @@ class QSequoia2:
             self.toolbar.addAction(self.tree_marking_action)
             self.iface.addPluginToMenu(self.plugin_name, self.tree_marking_action)
 
+        # Add expertise action
+        if self.expertise_action is None:
+            project_icon = os.path.join(plugin_dir, "icons", "expertise.svg")
+            self.expertise_action = QAction(QIcon(project_icon), "Expertise", self.iface.mainWindow())
+            self.expertise_action.triggered.connect(self.open_expertise)
+            self.toolbar.addAction(self.expertise_action)
+            self.iface.addPluginToMenu(self.plugin_name, self.expertise_action)
+
     def open_global_settings(self):
         if not self.global_dialog:
             self.global_dialog = GlobalSettingsDialog()
@@ -122,6 +134,11 @@ class QSequoia2:
         if not self.tree_marking_dialog:
             self.tree_marking_dialog = Tree_markingDialog()
         self.tree_marking_dialog.exec_()
+
+    def open_expertise(self):
+        if not self.expertise_dialog:
+            self.expertise_dialog = ExpertiseDialog()
+        self.expertise_dialog.exec_()
 
     def unload(self):
         
@@ -161,6 +178,12 @@ class QSequoia2:
             self.toolbar.removeAction(self.tree_marking_action)
             self.tree_marking_action.deleteLater()  # Ensure the action is deleted
             self.tree_marking_action = None
+
+        if self.expertise_action:
+            self.iface.removePluginMenu(self.plugin_name, self.expertise_action)
+            self.toolbar.removeAction(self.expertise_action)
+            self.expertise_action.deleteLater()  # Ensure the action is deleted
+            self.expertise_action = None
 
         # Remove the toolbar if it exists
         if self.toolbar:

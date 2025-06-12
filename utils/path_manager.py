@@ -179,3 +179,26 @@ def get_stations(guide):
     return stations
 
 # endregion
+
+# region PEUPLEMENT
+_PEUPLEMENT_CONFIG: dict | None = None
+
+def _load_peuplement_config() -> dict:
+    global _PEUPLEMENT_CONFIG
+    if _PEUPLEMENT_CONFIG is None:
+        peuplement_config_path = get_config_path("peuplement.yaml")
+        with open(peuplement_config_path, encoding="utf-8") as f:
+            _PEUPLEMENT_CONFIG = yaml.safe_load(f)
+    return _PEUPLEMENT_CONFIG
+
+def get_peuplements():
+    """
+    Return the list of guide names defined under 'guides' in stations.yaml.
+    """
+    peuplement_config = _load_peuplement_config()
+    peuplements = peuplement_config.get("peuplement")
+    if not isinstance(peuplements, dict):
+        raise KeyError("Missing or invalid top‐level 'guides' mapping in stations.yaml")
+    return peuplements
+
+# endregion

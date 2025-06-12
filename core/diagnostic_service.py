@@ -85,7 +85,7 @@ class DiagnosticService:
     def _create_and_load_gpkg(self):
         # Create memory layers
         names = ["Placette", "Transect", "Limite", "Picto", "Gha", "Tse", "Reg", "Va_ess"]
-        layers = [LayerFactory.create(name) for name in names]
+        layers = [LayerFactory.create(name, "DIAGNOSTIC") for name in names]
         layers.append(self.essences_layer)
         parc = self._load_parcellaire()
         if parc:
@@ -223,9 +223,7 @@ class DiagnosticService:
         # Va_ess
         va_mgr = LayerManager('Va_ess')
         va_mgr.forms.init_drag_and_drop_form()
-        va_mgr.forms.add_fields_to_tab([
-            'VA_ESS','VA_STADE','VA_AGE_APP','VA_HT','VA_ELAG','VA_TX_HA','CUMUL_TX_VA'
-        ])
+        va_mgr.forms.add_fields_to_tab('VA_ESS','VA_STADE','VA_AGE_APP','VA_HT','VA_ELAG','VA_TX_HA','CUMUL_TX_VA')
         # set hard/soft constraints and defaults as needed
         va_mgr.fields.set_constraint('VA_TX_HA', QgsFieldConstraints.ConstraintNotNull)
 

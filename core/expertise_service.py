@@ -20,32 +20,36 @@ from PyQt5.QtGui import QFont
 from ..core.layer_factory import LayerFactory
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
-from ..utils.layer_utils import add_layers_from_gpkg
+from ..utils.path_manager import get_peuplements
+from ..utils.layer_utils import add_layers_from_gpkg, create_relation
 from ..utils.qfield_utils import package_for_qfield
 from ..utils.variable_utils import get_project_variable
 
 
-class TreeMarkingService:
+class ExpertiseService:
 
     def __init__(
         self,
         output_dir: Path,
         package_for_qfield: bool,
         codes: list,
+        codes_taillis: list,
         dmin: int,
         dmax: int,
         hmin: int,
         hmax: int,
+        essences_layer: dict
     ):
         self.iface = iface
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.output_dir = output_dir
         self.package_for_qfield = package_for_qfield
-        self.codes = codes
+        self.codes = codes,
+        self.codes_taills = codes_taillis,
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
-        self.essences_layer = DatabaseManager().load_essences("essences")
+        self.essences_layer = essences_layer
 
     def run_full_diagnostic(self):
         """
@@ -55,26 +59,10 @@ class TreeMarkingService:
         """
         self._create_and_load_gpkg()
 
-        arbres_manager = LayerManager("arbres")
-        essences_manager = LayerManager("essences")
-
-        self._init_form(arbres_manager)
-
-        self._configure_essence_field(arbres_manager, essences_manager, self.codes)
-        self._configure_aliases(arbres_manager)
-        self._configure_fid(arbres_manager)
-        self._configure_uuid(arbres_manager)
-        self._configure_compteur(arbres_manager)
-        self._configure_parcelle(arbres_manager)
-        self._configure_diametre(arbres_manager, self.dmin, self.dmax)
-        self._configure_hauteur(arbres_manager, self.hmin, self.hmax)
-        self._configure_effectif(arbres_manager)
-        self._configure_observation(arbres_manager)
-        self._configure_favori(arbres_manager)
-        self._configure_fid_code(arbres_manager)
-        self._configure_labelling(arbres_manager)
-
-        arbres_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        placette_manager = LayerManager("placette")
+        self._create_relations()
+        self._init_form(placette_manager)
+        self._configure_placette(placette_manager)
 
         # Run packaging if needed
         if self.package_for_qfield:
@@ -84,8 +72,14 @@ class TreeMarkingService:
         return None
 
     def _create_and_load_gpkg(self):
+
         layers = [
-            LayerFactory.create("arbres", "INVENTAIRE"),
+            LayerFactory.create("placette", "EXPERTISE"),
+            LayerFactory.create("transect", "EXPERTISE"),
+            LayerFactory.create("gha", "EXPERTISE"),
+            LayerFactory.create("tse", "EXPERTISE"),
+            LayerFactory.create("reg", "EXPERTISE"),
+            LayerFactory.create("va_ess", "EXPERTISE"),
             self.essences_layer
         ]
 
@@ -101,12 +95,76 @@ class TreeMarkingService:
         # 5) load it back into the project
         add_layers_from_gpkg(self.gpkg_path)
 
-    @staticmethod
-    def _init_form(arbres_manager):
-        form_fields = ["COMPTEUR", "PARCELLE", "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE"]
-        arbres_manager.forms.init_drag_and_drop_form()
-        arbres_manager.forms.add_fields_to_tab(*form_fields)
+    def _create_relations(self):
+        pairs = [
+            ('placette', 'gha'),
+            ('placette', 'tse'),
+            ('placette', 'reg'),
+            ('placette', 'va_ess')
+        ]
+        for parent, child in pairs:
+            create_relation(
+                parent_name = parent, child_name = child,
+                parent_field = 'UUID', child_field = 'UUID',
+                relation_id = f'{parent}_{child}',
+                relation_name = child
+            )
     
+    @staticmethod
+    def _init_form(placette_manager):
+        placette_manager.forms.init_drag_and_drop_form()
+        placette_manager.forms.add_fields_to_tab("fid")
+        placette_manager.forms.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
+        placette_manager.forms.add_fields_to_tab("PLTM_TYPE")
+
+        # ve: stand for visibility_expression
+        gha_ve = """left("PLTM_TYPE",2)='FR' OR left("PLTM_TYPE",2)='FI' OR left("PLTM_TYPE",2)='MF' OR left("PLTM_TYPE",2)='PE'"""
+        tse_ve = """"PLTM_TYPE"<>''"""
+        reg_ve = """"PLTM_TYPE"<>''"""
+        va_ve = """left("PLTM_TYPE",2)='FR' OR left("PLTM_TYPE",2)='FI' OR left("PLTM_TYPE",2)='PE'"""
+
+        placette_manager.forms.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
+        placette_manager.forms.add_relation_to_tab("tse", tab_name="Taillis", visibility_expression = tse_ve)
+        placette_manager.forms.add_fields_to_tab("VA_TX_TROUEE", tab_name="Valeur d'avenir", visibility_expression = reg_ve)
+        placette_manager.forms.add_relation_to_tab("va_ess", tab_name="Valeur d'avenir")
+        placette_manager.forms.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = va_ve)
+    
+    @staticmethod
+    def _configure_placette(placette_manager):
+        # ALIASES
+        aliases = [
+            ("fid", "Placette"),
+            ("PLTM_PARCELLE", "Parcelle"),
+            ("PLTM_STRATE", "Strate"),
+            ("PLTM_TYPE", "Type de peuplement"),
+            ("VA_TX_TROUEE", "Taux trouée [%]")]
+        
+        for field, alias in aliases:
+            placette_manager.fields.set_alias(field, alias)
+
+        # FID
+        placette_manager.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1 ,maximum("fid") + 1)')
+
+        # UUID
+        field_name = "UUID"
+        placette_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
+        placette_manager.fields.set_default_value(field_name, "uuid()")
+        placette_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+
+        # PLTM_PARCELLE & PLTM_STRATE
+        expression = '"PLTM_PARCELLE" is not NULL OR "PLTM_STRATE" is not NULL'
+        description = "Ajouter une parcelle ou une strate si l'inventaire n'utilise pas de carto"
+        placette_manager.fields.set_constraint_expression("PLTM_PARCELLE", expression, description)
+        placette_manager.fields.set_constraint_expression("PLTM_STRATE", expression, description)
+
+        # PLTM_TYPE
+        peuplements = get_peuplements()
+        placette_manager.fields.add_value_map('PLTM_TYPE', {'map': [{str(name): str(code)} for code, name in peuplements.items()]})
+
+        # VA_TX_TROUEE
+        placette_manager.fields.add_range("VA_TX_TROUEE", {'AllowNull': True, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
+
+
     @staticmethod
     def _configure_essence_field( arbres_manager, essences_manager, codes):
         # 1. Build value map for main ESSENCE_ID field
@@ -147,40 +205,7 @@ class TreeMarkingService:
         msg = "Veuillez sélectionner une valeur pour ESSENCE ou ESSENCE_SECONDAIRE (mais pas les deux)."
         arbres_manager.fields.set_constraint_expression('ESSENCE_ID', ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
 
-    @staticmethod
-    def _configure_aliases(layer_manager):
-        aliases = [
-            ("ID_CODE", "CODE"),
-            ("ESSENCE_ID", "ESSENCE"),
-            ("ESSENCE_SECONDAIRE_ID", "ESSENCE SECONDAIRE"),
-            ("FAVORI", "⭐"),
-            ("COMPTEUR", "ID")]
-        
-        for field, alias in aliases:
-            layer_manager.fields.set_alias(field, alias)
 
-    @staticmethod
-    def _configure_fid(layer_manager):
-        layer_manager.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1 ,maximum("fid") + 1)')
-
-    @staticmethod
-    def _configure_uuid(layer_manager):
-        field_name = "UUID"
-        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
-        layer_manager.fields.set_default_value(field_name, "uuid()")
-        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-
-    @staticmethod
-    def _configure_compteur(layer_manager):
-        field_name = "COMPTEUR"
-        layer_manager.fields.set_read_only(field_name)
-        layer_manager.fields.set_default_value(field_name, 'count("fid") + 1')
-
-    @staticmethod
-    def _configure_parcelle(layer_manager):
-        field_name = "PARCELLE"
-        layer_manager.fields.set_reuse_last_value(field_name)
-        layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
     @staticmethod
     def _configure_diametre(layer_manager, dmin, dmax):
