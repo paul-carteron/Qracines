@@ -198,15 +198,17 @@ class LayerFactory:
             "gha": {
                 "fields": [
                 ("UUID", QVariant.String),
-                ("RES_ESS", QVariant.String),
-                ("RES_G", QVariant.Int),
+                ("GHA_ESSENCE_ID", QVariant.String),
+                ("GHA_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                ("GHA_G", QVariant.Int),
                 ],
             },
             "tse": {
                 "fields": [
                 ("UUID", QVariant.String),
-                ("TSE_ESS", QVariant.String),
-                ("TSE_DM", QVariant.String),
+                ("TSE_ESSENCE_ID", QVariant.String),
+                ("TSE_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                ("TSE_DIAMETRE", QVariant.String),
                 ],
             },
             "reg": {

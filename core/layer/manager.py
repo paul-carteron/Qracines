@@ -14,3 +14,7 @@ class LayerManager:
         node = QgsProject.instance().layerTreeRoot().findLayer(self.layer.id())
         if node:
             node.setItemVisibilityChecked(visible)
+
+    def set_display_expression(self, expression):
+        self.layer.setDisplayExpression(expression)
+    
