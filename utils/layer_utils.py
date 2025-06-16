@@ -7,7 +7,8 @@ from qgis.core import (
     Qgis,
     QgsLayerTreeGroup,
     QgsMapThemeCollection,
-    QgsRelation
+    QgsRelation,
+    QgsEditorWidgetSetup
 )
 from qgis.utils import iface
 from osgeo import ogr
@@ -227,20 +228,61 @@ def add_layers_from_gpkg(gpkg_path, *layer_names):
             print(f"❌ Layer '{layer}' is not valid and was skipped")
 
 def create_relation(parent_name, child_name, parent_field, child_field, relation_id, relation_name):
-    parent_layer = QgsProject.instance().mapLayersByName(parent_name)[0]
-    child_layer = QgsProject.instance().mapLayersByName(child_name)[0]
-    
-    if parent_layer and child_layer:
-       relation = QgsRelation()
-       relation.setId(relation_id)
-       relation.setName(relation_name)
-       relation.setReferencedLayer(parent_layer.id())
-       relation.setReferencingLayer(child_layer.id())
-       relation.addFieldPair(child_field, parent_field)
-       relation.setStrength(QgsRelation.Composition)
-       
-       if relation.isValid():
-          QgsProject.instance().relationManager().addRelation(relation)
+    """
+    Crée une relation de composition et configure le champ child_field pour RelationReference.
+    Version simple sans gestion d'exception.
+    """
+    proj = QgsProject.instance()
+    parent_layers = proj.mapLayersByName(parent_name)
+    child_layers = proj.mapLayersByName(child_name)
+    if not parent_layers or not child_layers:
+        print(f"Couche parent '{parent_name}' ou enfant '{child_name}' introuvable")
+        return False
+    parent_layer = parent_layers[0]
+    child_layer = child_layers[0]
+
+    # Création de la relation
+    relation = QgsRelation()
+    relation.setId(relation_id)
+    relation.setName(relation_name)
+    relation.setReferencedLayer(parent_layer.id())
+    relation.setReferencingLayer(child_layer.id())
+    relation.addFieldPair(child_field, parent_field)
+    relation.setStrength(QgsRelation.Composition)
+
+    if not relation.isValid():
+        print(f"Relation invalide pour ID '{relation_id}'")
+        return False
+
+    proj.relationManager().addRelation(relation)
+
+    # Configuration du widget RelationReference
+    child_layer.updateFields()
+    idx = child_layer.fields().indexOf(child_field)
+    if idx == -1:
+        print(f"Champ '{child_field}' introuvable dans la couche '{child_name}'")
+        return True  # relation créée, mais widget non configuré
+
+    config = {
+        'Relation': relation_id,
+        'AllowAddFeatures': False,
+        'AllowNULL': False,
+        'FetchLimitActive': True,
+        'FetchLimitNumber': 100,
+        'MapIdentification': False,
+        'ReadOnly': False,
+        'ReferencedLayerDataSource': parent_layer.source(),
+        'ReferencedLayerId': parent_layer.id(),
+        'ReferencedLayerName': parent_layer.name(),
+        'ReferencedLayerProviderKey': parent_layer.providerType(),
+        'ShowForm': False,
+        'ShowOpenFormButton': True
+    }
+    setup = QgsEditorWidgetSetup('RelationReference', config)
+    child_layer.setEditorWidgetSetup(idx, setup)
+
+    print(f"Relation '{relation_id}' créée et widget configuré sur '{child_name}.{child_field}'")
+    return True
 
 def set_layers_readonly(*keys):
     for key in keys:

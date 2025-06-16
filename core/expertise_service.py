@@ -65,25 +65,42 @@ class ExpertiseService:
         placette_manager = LayerManager("placette")
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
+        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 13)
 
         # TRANSECT
         transect_manager = LayerManager("transect")
         self._init_transect_form(transect_manager)
         self._configure_transect(transect_manager, self.dmin, self.dmax, self.hmin, self.hmax)
         self._configure_essence_field(transect_manager, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = True)
+        transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # GHA
         gha_manager = LayerManager("gha")
         self._init_gha_form(gha_manager)  
         self._configure_gha(gha_manager)  
         self._configure_essence_field(gha_manager, "GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
+        gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
-        # GHA
+        # TAILLIS
         tse_manager = LayerManager("tse")
         self._init_tse_form(tse_manager)  
         self._configure_tse(tse_manager)  
         self._configure_essence_field(tse_manager, "TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes_taillis, with_variation = False, selected_field = "selected_taillis")
+        tse_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
+        # VALEUR AVENIR
+        va_manager = LayerManager("va")
+        self._init_va_form(va_manager)  
+        self._configure_va(va_manager)  
+        self._configure_essence_field(va_manager, "VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
+        va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        # REGENERATION
+        reg_manager = LayerManager("reg")
+        self._init_reg_form(reg_manager)  
+        self._configure_reg(reg_manager)  
+        self._configure_essence_field(reg_manager, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
+        reg_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # Run packaging if needed
         if self.package_for_qfield:
@@ -100,7 +117,7 @@ class ExpertiseService:
             LayerFactory.create("gha", "EXPERTISE"),
             LayerFactory.create("tse", "EXPERTISE"),
             LayerFactory.create("reg", "EXPERTISE"),
-            LayerFactory.create("va_ess", "EXPERTISE"),
+            LayerFactory.create("va", "EXPERTISE"),
             self.essences_layer
         ]
 
@@ -121,7 +138,7 @@ class ExpertiseService:
             ('placette', 'gha'),
             ('placette', 'tse'),
             ('placette', 'reg'),
-            ('placette', 'va_ess')
+            ('placette', 'va')
         ]
         for parent, child in pairs:
             create_relation(
@@ -134,7 +151,7 @@ class ExpertiseService:
     @staticmethod
     def _init_placette_form(placette_manager):
         placette_manager.forms.init_drag_and_drop_form()
-        placette_manager.forms.add_fields_to_tab("fid")
+        placette_manager.forms.add_fields_to_tab("COMPTEUR")
         placette_manager.forms.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
         placette_manager.forms.add_fields_to_tab("PLTM_TYPE")
 
@@ -145,32 +162,42 @@ class ExpertiseService:
         va_ve = """left("PLTM_TYPE",2)='FR' OR left("PLTM_TYPE",2)='FI' OR left("PLTM_TYPE",2)='PE'"""
 
         placette_manager.forms.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
+        placette_manager.forms.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis", visibility_expression = reg_ve)
         placette_manager.forms.add_relation_to_tab("tse", tab_name="Taillis", visibility_expression = tse_ve)
         placette_manager.forms.add_fields_to_tab("VA_TX_TROUEE", tab_name="Valeur d'avenir", visibility_expression = reg_ve)
-        placette_manager.forms.add_relation_to_tab("va_ess", tab_name="Valeur d'avenir")
+        placette_manager.forms.add_relation_to_tab("va", tab_name="Valeur d'avenir")
         placette_manager.forms.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = va_ve)
     
     @staticmethod
     def _configure_placette(placette_manager):
         # ALIASES
         aliases = [
-            ("fid", "Placette"),
+            ("COMPTEUR", "Placette"),
             ("PLTM_PARCELLE", "Parcelle"),
             ("PLTM_STRATE", "Strate"),
             ("PLTM_TYPE", "Type de peuplement"),
-            ("VA_TX_TROUEE", "Taux trouée [%]")]
+            ("VA_TX_TROUEE", "Taux trouée [%]"),
+            ("TSE_STERE_HA", "Taillis [st/ha]")]
         
         for field, alias in aliases:
             placette_manager.fields.set_alias(field, alias)
 
-        # FID
-        placette_manager.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1 ,maximum("fid") + 1)')
-
         # UUID
+        # If apply_on_update=True, uuid() resets on each children edit: 
+        # - Create parent → UUID=A 
+        # - Add first child → FK=A 
+        # - Edit another child → UUID becomes B (child’s FK=A breaks under Composition) 
+        # - Add second child → FK=B 
+        # Only the last child stays linked. Using apply_on_update=False keeps the UUID stable so all children link correctly.
         field_name = "UUID"
         placette_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
-        placette_manager.fields.set_default_value(field_name, "uuid()")
+        placette_manager.fields.set_default_value(field_name, "uuid()", apply_on_update=False)
         placette_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+
+        # COMPTEUR
+        field_name = "COMPTEUR"
+        placette_manager.fields.set_read_only(field_name)
+        placette_manager.fields.set_default_value(field_name, 'count("fid") + 1')
 
         # PLTM_PARCELLE & PLTM_STRATE
         expression = '"PLTM_PARCELLE" is not NULL OR "PLTM_STRATE" is not NULL'
@@ -184,6 +211,10 @@ class ExpertiseService:
 
         # VA_TX_TROUEE
         placette_manager.fields.add_range("VA_TX_TROUEE", {'AllowNull': True, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
+
+        # TSE_STERE_HA
+        stere_ha = [*range(0, 200, 25), *range(200, 400, 50)]
+        placette_manager.fields.add_value_map("TSE_STERE_HA", {'map': [{str(value): str(value)} for value in stere_ha]})
 
         return None
 
@@ -202,9 +233,9 @@ class ExpertiseService:
             ("TR_STRATE", "Strate"),
             ("TR_ESSENCE_ID", "Essence"),
             ("TR_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
-            ("TR_DIAMETRE", "Diamètre"),
+            ("TR_DIAMETRE", "Diamètre [cm]"),
             ("TR_EFFECTIF", "Effectif"),
-            ("TR_HAUTEUR", "Hauteur"),]
+            ("TR_HAUTEUR", "Hauteur [m]"),]
         
         for field, alias in aliases:
             transect_manager.fields.set_alias(field, alias)
@@ -251,24 +282,29 @@ class ExpertiseService:
     
     @staticmethod
     def _configure_gha(gha_manager):
+        # ALIASES
+        aliases = [
+            ("GHA_ESSENCE_ID", "Essence"),
+            ("GHA_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("GHA_G", "Surface terrière")
+        ]
+        
+        for field, alias in aliases:
+            gha_manager.fields.set_alias(field, alias)
+        
+        # DISPLAY EXPRESSION
         display_expression = """
             WITH_VARIABLE(
                 'ess',
                 get_feature(
                     'essences',
                     'fid',
-                    coalesce(NULLIF("GHA_ESSENCE_ID", ''), "GHA_ESSENCE_SECONDAIRE_ID")
+                    coalesce(NULLIF("GHA_ESSENCE_ID", ''), "ghA_ESSENCE_SECONDAIRE_ID")
                 ),
-                concat(
-                    attribute(@ess, 'code'),
-                    CASE
-                        WHEN attribute(@ess, 'variation') IS NOT NULL
-                        THEN concat(' ', attribute(@ess, 'variation'))
-                        ELSE ''
-                    END,
-                    ': ',
-                    "GHA_G"
-                )
+                concat(attribute(@ess, 'essence_variation'),
+                ' : ',
+                "GHA_G",
+                ' m²/ha ')
             )
             """
         gha_manager.set_display_expression(display_expression)
@@ -276,15 +312,26 @@ class ExpertiseService:
         # GHA_G
         field_name = "GHA_G"
         gha_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        gha_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
+        gha_manager.fields.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
+        gha_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
 
     @staticmethod
     def _init_tse_form(tse_manager):
         tse_manager.forms.init_drag_and_drop_form()
-        tse_manager.forms.add_fields_to_tab("TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID", "TSE_DIAMETRE")
+        tse_manager.forms.add_fields_to_tab("TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID")
     
     @staticmethod
     def _configure_tse(tse_manager):
+        # ALIASES
+        aliases = [
+            ("TSE_ESSENCE_ID", "Essence"),
+            ("TSE_ESSENCE_SECONDAIRE_ID", "Essence secondaire")
+        ]
+        
+        for field, alias in aliases:
+            tse_manager.fields.set_alias(field, alias)
+        
+        # DISPLAY EXPRESSION
         display_expression = """
             WITH_VARIABLE(
                 'ess',
@@ -293,19 +340,124 @@ class ExpertiseService:
                     'fid',
                     coalesce(NULLIF("TSE_ESSENCE_ID", ''), "TSE_ESSENCE_SECONDAIRE_ID")
                 ),
-                concat(
-                    attribute(@ess, 'code'),
-                    CASE
-                        WHEN attribute(@ess, 'variation') IS NOT NULL
-                        THEN concat(' ', attribute(@ess, 'variation'))
-                        ELSE ''
-                    END,
-                    ': ',
-                    "TSE_DIAMETRE"
-                )
+                attribute(@ess, 'essence_variation')
             )
             """
         tse_manager.set_display_expression(display_expression)
+
+    @staticmethod
+    def _init_va_form(va_manager):
+        va_manager.forms.init_drag_and_drop_form()
+        va_manager.forms.add_fields_to_tab("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
+    
+    @staticmethod
+    def _configure_va(va_manager):
+        # ALIASES
+        aliases = [
+            ("VA_ESSENCE_ID", "Essence"),
+            ("VA_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("VA_AGE_APP", "Age Apparent"),
+            ("VA_TX_HA", "Recouvrement [%]"),
+            ("CUMUL_TX_VA", "Cumul des recouvrements"),
+        ]
+        
+        for field, alias in aliases:
+            va_manager.fields.set_alias(field, alias)
+        
+        # DISPLAY EXPRESSION
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature(
+                    'essences',
+                    'fid',
+                    coalesce(NULLIF("VA_ESSENCE_ID", ''), "VA_ESSENCE_SECONDAIRE_ID")
+                ),
+                concat(
+                    attribute(@ess, 'essence_variation'),
+                    ' : ',
+                    "VA_TX_HA",
+                    ' %'
+                )
+            )
+            """
+        va_manager.set_display_expression(display_expression)
+
+        # VA_AGE_APP
+        field_name = "VA_AGE_APP"
+        va_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        va_manager.fields.set_constraint_expression(field_name, f'"{field_name}" > 0', "L'âge doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
+        va_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 300, 'Min': 0, 'Precision': 0, 'Step': 1})
+
+        # VA_TX_HA
+        field_name = "VA_TX_HA"
+        va_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        expression = '"CUMUL_TX_VA" + "VA_TX_HA" = 100'
+        description = 'La somme de VA_TX_HA et de CUMUL_TX_VA doit être égale à 100.'
+        va_manager.fields.set_constraint_expression(field_name, expression, description)
+        va_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
+
+        # CUMUL_TX_VA
+        field_name = "CUMUL_TX_VA"
+        default_value = """aggregate(layer:='va', aggregate:='sum', expression:="VA_TX_HA", filter:="UUID" = attribute(@parent, 'UUID'))"""
+        va_manager.fields.set_default_value(field_name, default_value)
+
+    @staticmethod
+    def _init_reg_form(reg_manager):
+        reg_manager.forms.init_drag_and_drop_form()
+        reg_manager.forms.add_fields_to_tab("REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", "REG_STADE", "REG_ETAT")
+    
+    @staticmethod
+    def _configure_reg(reg_manager):
+        # ALIASES
+        aliases = [
+            ("REG_ESSENCE_ID", "Essence"),
+            ("REG_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("REG_STADE", "Stade"),
+            ("REG_ETAT", "Etat"),
+        ]
+        
+        for field, alias in aliases:
+            reg_manager.fields.set_alias(field, alias)
+
+        # DISPLAY EXPRESSION
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature(
+                    'essences',
+                    'fid',
+                    coalesce(NULLIF("REG_ESSENCE_ID", ''), "REG_ESSENCE_SECONDAIRE_ID")
+                ),
+                concat(
+                    attribute(@ess, 'essence_variation'),
+                    ' : ',
+                    "REG_STADE",
+                    ' - '
+                    "REG_ETAT"
+                )
+            )
+            """
+        reg_manager.set_display_expression(display_expression)
+
+        # REG_STADE
+        stades = {
+            "semis_inf_05": "Semis <0.5m",
+            "semis_05_1": "Semis 0.5-1m",
+            "fourre_1_3": "Fourré 1-3m",
+            "semis_3_5": "Gaulis 3-5m",
+            "semis_5_15": "Perchis 5m-15cm"
+            }
+        reg_manager.fields.add_value_map('REG_STADE', {'map': [{str(value): str(descr)} for descr, value in stades.items()]})
+
+        # REG_ETAT
+        etats = {
+            "continue_sup_80": "Continue >80%",
+            "conseqente_50_80": "Conséquente 50-80%",
+            "moderee_30_50": "Modérée 30-50%",
+            "eparse_10_30": "Eparse 10-30%",
+            "infime_inf_10": "Infime <10%"}
+        reg_manager.fields.add_value_map('REG_ETAT', {'map': [{str(value): str(descr)} for descr, value in etats.items()]})
 
     @staticmethod
     def _configure_essence_field(layer_manager, essence_field, essence_secondaire_field, essences_manager, codes, with_variation = False, selected_field = "selected"):
@@ -358,7 +510,7 @@ class ExpertiseService:
     def _package_for_qfield(self):
         forest_prefix = get_project_variable("forest_prefix")
         codes = "_".join(self.codes)
-        filename = f"{forest_prefix}_D{self.dmax}H{self.hmax}_{codes}" if forest_prefix else f"D{self.dmax}H{self.hmax}_{codes}"
+        filename = f"EXP_{forest_prefix}_D{self.dmax}H{self.hmax}_{codes}" if forest_prefix else f"D{self.dmax}H{self.hmax}_{codes}"
         
         package_for_qfield(iface, self.project, self.output_dir, filename)
 

@@ -172,10 +172,13 @@ class LayerFactory:
                 "fields": [
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
+                    ("COMPTEUR", QVariant.LongLong),
                     # Peuplement
                     ("PLTM_PARCELLE", QVariant.String),
                     ("PLTM_STRATE", QVariant.String),
                     ("PLTM_TYPE", QVariant.String),
+                    # Taillis
+                    ("TSE_STERE_HA", QVariant.String),
                     # Valeur avenir
                     ("VA_TX_TROUEE", QVariant.LongLong),
             ],
@@ -183,49 +186,54 @@ class LayerFactory:
             },
             "transect": {
                 "fields": [
-                ("fid", QVariant.Int),
-                ("UUID", QVariant.String),
-                ("TR_PARCELLE", QVariant.String),
-                ("TR_STRATE", QVariant.String),
-                ("TR_ESSENCE_ID", QVariant.String),
-                ("TR_ESSENCE_SECONDAIRE_ID", QVariant.String),
-                ("TR_DIAMETRE", QVariant.String),
-                ("TR_EFFECTIF", QVariant.LongLong),
-                ("TR_HAUTEUR", QVariant.String),
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("TR_PARCELLE", QVariant.String),
+                    ("TR_STRATE", QVariant.String),
+                    ("TR_ESSENCE_ID", QVariant.String),
+                    ("TR_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                    ("TR_DIAMETRE", QVariant.String),
+                    ("TR_EFFECTIF", QVariant.LongLong),
+                    ("TR_HAUTEUR", QVariant.String),
                 ],
                 "geometry": "Point"
             },
             "gha": {
                 "fields": [
-                ("UUID", QVariant.String),
-                ("GHA_ESSENCE_ID", QVariant.String),
-                ("GHA_ESSENCE_SECONDAIRE_ID", QVariant.String),
-                ("GHA_G", QVariant.Int),
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("GHA_ESSENCE_ID", QVariant.String),
+                    ("GHA_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                    ("GHA_G", QVariant.Int),
                 ],
             },
             "tse": {
                 "fields": [
-                ("UUID", QVariant.String),
-                ("TSE_ESSENCE_ID", QVariant.String),
-                ("TSE_ESSENCE_SECONDAIRE_ID", QVariant.String),
-                ("TSE_DIAMETRE", QVariant.String),
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("TSE_ESSENCE_ID", QVariant.String),
+                    ("TSE_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                ],
+            },
+            "va": {
+                "fields": [
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("VA_ESSENCE_ID", QVariant.String),
+                    ("VA_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                    ("VA_AGE_APP", QVariant.LongLong),
+                    ("VA_TX_HA", QVariant.Double),
+                    ("CUMUL_TX_VA", QVariant.Double)
                 ],
             },
             "reg": {
                 "fields": [
-                ("UUID", QVariant.String),
-                ("REG_ESS", QVariant.String),
-                ("REG_STADE", QVariant.String),
-                ("REG_ETAT", QVariant.String),
-                ],
-            },
-            "va_ess": {
-                "fields": [
-                ("UUID", QVariant.String),
-                ("VA_ESS", QVariant.String),
-                ("VA_AGE_APP", QVariant.Int),
-                ("VA_TX_HA", QVariant.Double),
-                ("CUMUL_TX_VA", QVariant.Double)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("REG_ESSENCE_ID", QVariant.String),
+                    ("REG_ESSENCE_SECONDAIRE_ID", QVariant.String),
+                    ("REG_STADE", QVariant.String),
+                    ("REG_ETAT", QVariant.String),
                 ],
             },
         },

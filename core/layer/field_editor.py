@@ -38,10 +38,7 @@ class FieldEditor:
     def set_constraint(self, field_name, constraint, strength=QgsFieldConstraints.ConstraintStrengthHard):
         index = self._get_field_index(field_name)
         self.layer.setFieldConstraint(index, constraint, strength)
-
-    def set_display_expression(self, expression):
-        self.layer.setDisplayExpression(expression)
-        
+    
     def set_constraint_expression(self, field_name, expression, description, strength=QgsFieldConstraints.ConstraintStrengthSoft):
         index = self._get_field_index(field_name)
         self.layer.setConstraintExpression(index, expression, description)
