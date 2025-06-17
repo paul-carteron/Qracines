@@ -1,4 +1,8 @@
-from qgis.core import *
+from qgis.core import (
+    QgsExpressionContextUtils,
+    QgsProject,
+    QgsCoordinateReferenceSystem
+)
 from qgis.utils import *
 from collections import *
 import geopandas as gpd 
@@ -8,44 +12,33 @@ from pathlib import Path
 
 def set_global_variable(variable_name, value):
     QgsExpressionContextUtils.setGlobalVariable(variable_name, value)
+    return None
 
 def get_global_variable(variable_name):
     return QgsExpressionContextUtils.globalScope().variable(variable_name)
   
-def set_project_variable(variable_name, value):
-    project = QgsProject.instance()
-    context = QgsExpressionContextUtils.projectScope(project)
-    QgsExpressionContextUtils.setProjectVariable(project, variable_name, value)
+def set_project_variable(name, value):
+    QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, value)
+    return None
 
-def get_project_variable(variable_name):
-    project = QgsProject.instance()
-    context = QgsExpressionContextUtils.projectScope(project)
-    return context.variable(variable_name)
+def get_project_variable(name):
+    return QgsExpressionContextUtils.projectScope(QgsProject.instance()).variable(name)
     
-def clear_project(keep_variable = True):
-    if keep_variable:
-        variables = [
-            "forest_city",
-            "forest_directory",
-            "forest_formated_surface",
-            "forest_name",
-            "forest_owner",
-            "forest_prefix",
-            "forest_wooded_surface",
-            "forest_unwooded_surface",
-            "forest_surface",
-        ]
+def clear_project(keep_variables=True):
+    if keep_variables:
+        # Save all existing project variables
+        project = QgsProject.instance()
+        context = QgsExpressionContextUtils.projectScope(project)
+        variable_names = context.variableNames()
+        saved_variables = {var: get_project_variable(var) for var in variable_names}
 
-        # Sauvegarde des valeurs
-        values = {var: get_project_variable(var) for var in variables}
-
-    # Nouveau projet
+    # Clear the project
     QgsProject.instance().clear()
     QgsProject.instance().setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
-    
-    if keep_variable:
-    # Restauration des variables
-        for var, value in values.items():
+
+    if keep_variables:
+        # Restore all saved variables
+        for var, value in saved_variables.items():
             set_project_variable(var, value)
 
 

@@ -1,12 +1,15 @@
-from PyQt5.QtWidgets import QDialog, QMessageBox ,QAbstractItemView
-from qgis.core import (
-  QgsProject,
-  QgsRasterLayer,
-  )
+from PyQt5.QtWidgets import (
+    QDialog,
+    QMessageBox,
+    QAbstractItemView,
+    QFileDialog
+    )
+
 
 from pathlib import Path
 
 from .expertise_dialog import Ui_ExpertiseDialog
+from .expertise_import import Ui_ExpertiseImportDialog
 
 from ..core.db.manager import DatabaseManager
 from ..core.expertise_service import ExpertiseService
@@ -16,56 +19,81 @@ from ..utils.variable_utils import clear_project, get_project_variable
 from ..utils.layer_utils import load_rasters, zoom_on_layer
 
 class ExpertiseDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, mode="create", parent=None):
         super().__init__(parent)
-        self.ui = Ui_ExpertiseDialog()
+        self.mode = mode
+
+        if self.mode == "create":
+            self.ui = Ui_ExpertiseDialog()
+        elif self.mode == "import":
+            self.ui = Ui_ExpertiseImportDialog()
+            print("yo import")
+        else:
+            raise ValueError(f"Unknown mode: {mode}")
+        
         self.ui.setupUi(self)
-
-        # --- initialize forest_name if forest is selected ---
-        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-
-        # --- initialize raster checkboxes ---
-        self.raster_checkboxes = {
-            "plt_anc": self.ui.cb_plt_anc,
-            "plt":     self.ui.cb_plt,
-            "mnh":     self.ui.cb_mnh,
-            "scan25":  self.ui.cb_scan25,
-            "irc":     self.ui.cb_irc,
-            "rgb":     self.ui.cb_rgb,
-        }
-        self.update_raster_checkbox_states()
-
-        # --- initialise default output directory ---
-        default_dir = get_racines_path("expertise", "Expertise")
-        default_dir.mkdir(parents=True, exist_ok=True)
-        self.ui.fw_outdir.setFilePath(str(default_dir))
-        self.ui.fw_outdir.setStorageMode(self.ui.fw_outdir.GetDirectory)
-
-        # ---- initialize species list ----
-        ## Gha / Transect
-        self.ui.lw_selected_species.setSelectionMode(QAbstractItemView.MultiSelection)
-        self.ui.lw_species.setSelectionMode(QAbstractItemView.MultiSelection)
-
-        ## Taillis
-        self.ui.lw_selected_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
-        self.ui.lw_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
-        self.taillis_default_codes = ["BOU", "CHA", "CHE", "ECH", "FRE", "HET", "NOI", "SAU", "TIL", "TRE"]
         
-        self.essences_layer = DatabaseManager().load_essences("essences")
-        self.populate_species_list()
+        if self.mode == "import":
+            self.ui.pb_import_files.clicked.connect(self.import_files)
+        else:
+            # --- initialize forest_name if forest is selected ---
+            self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
-        # --- add/remove species functionnalities ---
-        self.ui.pb_add_species.clicked.connect(self.add_selected_species)
-        self.ui.pb_remove_species.clicked.connect(self.remove_selected_species)
-        self.ui.pb_add_species_taillis.clicked.connect(self.add_selected_species_taillis)
-        self.ui.pb_remove_species_taillis.clicked.connect(self.remove_selected_species_taillis)
+            # --- initialize raster checkboxes ---
+            self.raster_checkboxes = {
+                "plt_anc": self.ui.cb_plt_anc,
+                "plt":     self.ui.cb_plt,
+                "mnh":     self.ui.cb_mnh,
+                "scan25":  self.ui.cb_scan25,
+                "irc":     self.ui.cb_irc,
+                "rgb":     self.ui.cb_rgb,
+            }
+            self.update_raster_checkbox_states()
 
-        # --- connect buttons ---
-        self.ui.buttonBox.accepted.connect(self._on_accept)
-        self.ui.buttonBox.rejected.connect(self.reject)
-        
-         # --- connect checkbox to toggle ---
-        self.setup_connections()
+            # --- initialise default output directory ---
+            default_dir = get_racines_path("expertise", "Expertise")
+            default_dir.mkdir(parents=True, exist_ok=True)
+            self.ui.fw_outdir.setFilePath(str(default_dir))
+            self.ui.fw_outdir.setStorageMode(self.ui.fw_outdir.GetDirectory)
+
+            # ---- initialize species list ----
+            ## Gha / Transect
+            self.ui.lw_selected_species.setSelectionMode(QAbstractItemView.MultiSelection)
+            self.ui.lw_species.setSelectionMode(QAbstractItemView.MultiSelection)
+
+            ## Taillis
+            self.ui.lw_selected_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
+            self.ui.lw_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
+            self.taillis_default_codes = ["BOU", "CHA", "CHE", "ECH", "FRE", "HET", "NOI", "SAU", "TIL", "TRE"]
+            
+            self.essences_layer = DatabaseManager().load_essences("essences")
+            self.populate_species_list()
+
+            # --- add/remove species functionnalities ---
+            self.ui.pb_add_species.clicked.connect(self.add_selected_species)
+            self.ui.pb_remove_species.clicked.connect(self.remove_selected_species)
+            self.ui.pb_add_species_taillis.clicked.connect(self.add_selected_species_taillis)
+            self.ui.pb_remove_species_taillis.clicked.connect(self.remove_selected_species_taillis)
+
+            # --- connect buttons ---
+            self.ui.buttonBox.accepted.connect(self._on_accept)
+            self.ui.buttonBox.rejected.connect(self.reject)
+            
+            # --- connect checkbox to toggle ---
+            self.setup_connections()
+
+
+    def import_files(self):
+        files, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Sélectionner des fichiers à importer",
+            "",  # starting directory
+            "GeoPackage (*.gpkg);;Shapefiles (*.shp);;All files (*.*)"
+        )
+        if files:
+            print("Fichiers sélectionnés:", files)
+            self.ui.lw_selected_files.addItems(files)
+
 
     def update_raster_checkbox_states(self):
         forest_selected = bool(get_project_variable("forest_prefix"))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QToolButton, QMenu
 from PyQt5.QtGui import QIcon
-from PyQt5.QtSvg import QSvgRenderer
+
 import os
 
 # Import from dialogs folder
@@ -97,13 +97,21 @@ class QSequoia2:
             self.toolbar.addAction(self.tree_marking_action)
             self.iface.addPluginToMenu(self.plugin_name, self.tree_marking_action)
 
-        # Add expertise action
-        if self.expertise_action is None:
-            project_icon = os.path.join(plugin_dir, "icons", "expertise.svg")
-            self.expertise_action = QAction(QIcon(project_icon), "Expertise", self.iface.mainWindow())
-            self.expertise_action.triggered.connect(self.open_expertise)
-            self.toolbar.addAction(self.expertise_action)
-            self.iface.addPluginToMenu(self.plugin_name, self.expertise_action)
+        # Add expertise dropdown button
+        expertise_icon = os.path.join(plugin_dir, "icons", "expertise.svg")
+        expertise_button = QToolButton()
+        expertise_button.setIcon(QIcon(expertise_icon))
+        expertise_button.setToolTip("Expertise")
+        expertise_button.setPopupMode(QToolButton.InstantPopup)
+
+        # Create menu for expertise
+        menu = QMenu()
+        menu.addAction("Créer une expertise", self.open_expertise_create)
+        menu.addAction("Importer une expertise", self.open_expertise_import)
+        expertise_button.setMenu(menu)
+
+        # Add to toolbar
+        self.toolbar.addWidget(expertise_button)
 
     def open_global_settings(self):
         if not self.global_dialog:
@@ -134,11 +142,14 @@ class QSequoia2:
         if not self.tree_marking_dialog:
             self.tree_marking_dialog = Tree_markingDialog()
         self.tree_marking_dialog.exec_()
+        
+    def open_expertise_import(self):
+        dialog = ExpertiseDialog(mode="import")
+        dialog.exec_()
 
-    def open_expertise(self):
-        if not self.expertise_dialog:
-            self.expertise_dialog = ExpertiseDialog()
-        self.expertise_dialog.exec_()
+    def open_expertise_create(self):
+        dialog = ExpertiseDialog(mode="create")
+        dialog.exec_()
 
     def unload(self):
         
