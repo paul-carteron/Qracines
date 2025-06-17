@@ -18,6 +18,8 @@ def get_global_variable(variable_name):
     return QgsExpressionContextUtils.globalScope().variable(variable_name)
   
 def set_project_variable(name, value):
+    print(f"set_project_variable - name: {name}")
+    print(f"set_project_variable - name: {value}")
     QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, value)
     return None
 
@@ -30,7 +32,7 @@ def clear_project(keep_variables=True):
         project = QgsProject.instance()
         context = QgsExpressionContextUtils.projectScope(project)
         variable_names = context.variableNames()
-        saved_variables = {var: get_project_variable(var) for var in variable_names}
+        saved_variables = {var: get_project_variable(var) for var in variable_names if "forest" in var}
 
     # Clear the project
     QgsProject.instance().clear()
@@ -38,8 +40,9 @@ def clear_project(keep_variables=True):
 
     if keep_variables:
         # Restore all saved variables
-        for var, value in saved_variables.items():
-            set_project_variable(var, value)
+        for name, value in saved_variables.items():
+            print(f"clear_project - name : {name} - value {value}")
+            set_project_variable(name, value)
 
 
 # Ces fonctions devraient plutôt être dans projet_settings dialog car spécifiques à ce module

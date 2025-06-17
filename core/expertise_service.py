@@ -57,17 +57,21 @@ class ExpertiseService:
         Returns the output_dir path (as str) if packaging was done, otherwise None.
         Raises on any error.
         """
+        print("_create_and_load_gpkg")
         self._create_and_load_gpkg()
+        print("_create_relations")
         self._create_relations()
         essences_manager = LayerManager("essences")
 
         # PLACETTE
+        print("configure PLACETTE layer")
         placette_manager = LayerManager("placette")
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
         placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 13)
 
         # TRANSECT
+        print("configure TRANSECT layer")
         transect_manager = LayerManager("transect")
         self._init_transect_form(transect_manager)
         self._configure_transect(transect_manager, self.dmin, self.dmax, self.hmin, self.hmax)
@@ -75,6 +79,7 @@ class ExpertiseService:
         transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # GHA
+        print("configure GHA layer")
         gha_manager = LayerManager("gha")
         self._init_gha_form(gha_manager)  
         self._configure_gha(gha_manager)  
@@ -82,6 +87,7 @@ class ExpertiseService:
         gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # TAILLIS
+        print("configure TAILLIS layer")
         tse_manager = LayerManager("tse")
         self._init_tse_form(tse_manager)  
         self._configure_tse(tse_manager)  
@@ -89,6 +95,7 @@ class ExpertiseService:
         tse_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # VALEUR AVENIR
+        print("configure VALEUR AVENIR layer")
         va_manager = LayerManager("va")
         self._init_va_form(va_manager)  
         self._configure_va(va_manager)  
@@ -96,6 +103,7 @@ class ExpertiseService:
         va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # REGENERATION
+        print("configure REGENERATION layer")
         reg_manager = LayerManager("reg")
         self._init_reg_form(reg_manager)  
         self._configure_reg(reg_manager)  

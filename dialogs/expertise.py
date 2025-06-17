@@ -27,7 +27,6 @@ class ExpertiseDialog(QDialog):
             self.ui = Ui_ExpertiseDialog()
         elif self.mode == "import":
             self.ui = Ui_ExpertiseImportDialog()
-            print("yo import")
         else:
             raise ValueError(f"Unknown mode: {mode}")
         
