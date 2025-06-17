@@ -110,7 +110,8 @@ def load_rasters(*raster_keys, group_name=None):
         if project.mapLayersByName(display_name):
             QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
             continue
-
+        
+        print(f"load_raster - key: {key}")
         path = get_path(key)
         layer = QgsRasterLayer(str(path), display_name)
 

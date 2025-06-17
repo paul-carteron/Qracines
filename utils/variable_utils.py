@@ -18,8 +18,6 @@ def get_global_variable(variable_name):
     return QgsExpressionContextUtils.globalScope().variable(variable_name)
   
 def set_project_variable(name, value):
-    print(f"set_project_variable - name: {name}")
-    print(f"set_project_variable - name: {value}")
     QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, value)
     return None
 

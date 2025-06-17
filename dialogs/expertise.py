@@ -75,6 +75,7 @@ class ExpertiseDialog(QDialog):
             self.ui.pb_remove_species_taillis.clicked.connect(self.remove_selected_species_taillis)
 
             # --- connect buttons ---
+            self.ui.buttonBox.accepted.disconnect(self.accept)
             self.ui.buttonBox.accepted.connect(self._on_accept)
             self.ui.buttonBox.rejected.connect(self.reject)
             
@@ -92,7 +93,6 @@ class ExpertiseDialog(QDialog):
         if files:
             print("Fichiers sélectionnés:", files)
             self.ui.lw_selected_files.addItems(files)
-
 
     def update_raster_checkbox_states(self):
         forest_selected = bool(get_project_variable("forest_prefix"))
@@ -164,8 +164,9 @@ class ExpertiseDialog(QDialog):
     
     def _load_selected_rasters(self):
         asked_keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
+        print(asked_keys)
         if not asked_keys:
-            return
+            return None
 
         loaded_keys = load_rasters(*asked_keys, group_name="RASTER")
         if loaded_keys:
@@ -178,12 +179,25 @@ class ExpertiseDialog(QDialog):
             QMessageBox.warning(self, "Dossier invalide", "Veuillez choisir un répertoire valide.")
             return
 
+        # GHA/Transect check
+        gha_empty = self.ui.lw_selected_species.count() == 0
+        if gha_empty:
+            QMessageBox.warning(self, "Espèces manquantes", "Veuillez sélectionner au moins une essence pour GHA/Transect.")
+            return
+
+        # Taillis check (use lw_selected_species_taillis)
+        taillis_empty = self.ui.lw_selected_species_taillis.count() == 0
+        if taillis_empty:
+            QMessageBox.warning(self, "Espèces manquantes", "Veuillez sélectionner au moins une essence pour le Taillis.")
+            return
+
         dmin, dmax = self.ui.sp_dmin.value(), self.ui.sp_dmax.value()
         hmin, hmax = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
 
         clear_project()
 
         # 2) call service
+
         svc = ExpertiseService(
             output_dir=outdir,
             package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
