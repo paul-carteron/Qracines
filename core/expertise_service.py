@@ -7,9 +7,7 @@ from qgis.core import (
     QgsFieldConstraints,
     QgsFeatureRequest,
     QgsExpression,
-    QgsPalLayerSettings,
-    QgsTextFormat,
-    QgsVectorLayerSimpleLabeling
+    Qgis
 )
 
 from qgis.utils import iface
@@ -18,7 +16,6 @@ from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QFont
 
 from ..core.layer_factory import LayerFactory
-from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
 from ..utils.path_manager import get_peuplements
 from ..utils.layer_utils import add_layers_from_gpkg, create_relation
@@ -158,26 +155,31 @@ class ExpertiseService:
     
     @staticmethod
     def _init_placette_form(placette_manager):
-        placette_manager.forms.init_drag_and_drop_form()
-        placette_manager.forms.add_fields_to_tab("COMPTEUR")
-        placette_manager.forms.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
-        placette_manager.forms.add_fields_to_tab("PLTM_TYPE")
+
+        placette_fb = placette_manager.forms
+
+        placette_fb.init_drag_and_drop_form()
+        placette_fb.add_fields_to_tab("COMPTEUR")
+        placette_fb.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
+        placette_fb.add_fields_to_tab("PLTM_TYPE")
 
         # ve: stand for visibility_expression
-        gha_ve = """left("PLTM_TYPE",2)='FR' OR left("PLTM_TYPE",2)='FI' OR left("PLTM_TYPE",2)='MF' OR left("PLTM_TYPE",2)='PE'"""
+        gha_ve = """left("PLTM_TYPE",2) IN ('FR','FI','MF','PE')"""
         tse_ve = """"PLTM_TYPE"<>''"""
-        reg_ve = """"PLTM_TYPE"<>''"""
-        va_ve = """left("PLTM_TYPE",2)='FR' OR left("PLTM_TYPE",2)='FI' OR left("PLTM_TYPE",2)='PE'"""
+        reg_ve = tse_ve
+        va_ve = """left("PLTM_TYPE",2) IN ('FR','FI','PE')"""
 
-        placette_manager.forms.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
-        placette_manager.forms.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis", visibility_expression = reg_ve)
-        placette_manager.forms.add_relation_to_tab("tse", tab_name="Taillis", visibility_expression = tse_ve)
-        placette_manager.forms.add_fields_to_tab("VA_TX_TROUEE", tab_name="Valeur d'avenir", visibility_expression = reg_ve)
-        placette_manager.forms.add_relation_to_tab("va", tab_name="Valeur d'avenir")
-        placette_manager.forms.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = va_ve)
-    
+        placette_fb.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
+        placette_fb.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis", visibility_expression = reg_ve)
+        placette_fb.add_relation_to_tab("tse", tab_name="Taillis", visibility_expression = tse_ve)
+        placette_fb.add_fields_to_tab("VA_TX_TROUEE", tab_name="Valeur d'avenir", visibility_expression = reg_ve)
+        placette_fb.add_relation_to_tab("va", tab_name="Valeur d'avenir")
+        placette_fb.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = va_ve)
+
     @staticmethod
     def _configure_placette(placette_manager):
+        placette_f = placette_manager.fields
+
         # ALIASES
         aliases = [
             ("COMPTEUR", "Placette"),
@@ -188,7 +190,7 @@ class ExpertiseService:
             ("TSE_STERE_HA", "Taillis [st/ha]")]
         
         for field, alias in aliases:
-            placette_manager.fields.set_alias(field, alias)
+            placette_f.set_alias(field, alias)
 
         # UUID
         # If apply_on_update=True, uuid() resets on each children edit: 
@@ -198,43 +200,53 @@ class ExpertiseService:
         # - Add second child → FK=B 
         # Only the last child stays linked. Using apply_on_update=False keeps the UUID stable so all children link correctly.
         field_name = "UUID"
-        placette_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
-        placette_manager.fields.set_default_value(field_name, "uuid()", apply_on_update=False)
-        placette_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        placette_f.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
+        placette_f.set_default_value(field_name, "uuid()", apply_on_update=False)
+        placette_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
         # COMPTEUR
         field_name = "COMPTEUR"
-        placette_manager.fields.set_read_only(field_name)
-        placette_manager.fields.set_default_value(field_name, 'count("fid") + 1')
+        placette_f.set_read_only(field_name)
+        placette_f.set_default_value(field_name, 'count("fid") + 1')
 
         # PLTM_PARCELLE & PLTM_STRATE
         expression = '"PLTM_PARCELLE" is not NULL OR "PLTM_STRATE" is not NULL'
         description = "Ajouter une parcelle ou une strate si l'inventaire n'utilise pas de carto"
-        placette_manager.fields.set_constraint_expression("PLTM_PARCELLE", expression, description)
-        placette_manager.fields.set_constraint_expression("PLTM_STRATE", expression, description)
+        placette_f.set_constraint_expression("PLTM_PARCELLE", expression, description)
+        placette_f.set_constraint_expression("PLTM_STRATE", expression, description)
+        placette_f.set_reuse_last_value ("PLTM_PARCELLE")
+        placette_f.set_reuse_last_value("PLTM_STRATE")
 
         # PLTM_TYPE
         peuplements = get_peuplements()
-        placette_manager.fields.add_value_map('PLTM_TYPE', {'map': [{str(name): str(code)} for code, name in peuplements.items()]})
+        placette_f.add_value_map('PLTM_TYPE', {'map': [{str(name): str(code)} for code, name in peuplements.items()]})
 
         # VA_TX_TROUEE
-        placette_manager.fields.add_range("VA_TX_TROUEE", {'AllowNull': True, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
+        placette_f.add_range("VA_TX_TROUEE", {'AllowNull': True, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
 
         # TSE_STERE_HA
         stere_ha = [*range(0, 200, 25), *range(200, 400, 50)]
-        placette_manager.fields.add_value_map("TSE_STERE_HA", {'map': [{str(value): str(value)} for value in stere_ha]})
+        placette_f.add_value_map("TSE_STERE_HA", {'map': [{str(value): str(value)} for value in stere_ha]})
+
+        # RELATIONS
+        ## This line has to be after all fields are configured
+        placette_f.set_relation_label("gha", label = False)
+        placette_f.set_relation_label("tse", label = "Essence taillis")
+        placette_f.set_relation_label("va", label = False)
+        placette_f.set_relation_label("reg", label = False)
 
         return None
 
     @staticmethod
     def _init_transect_form(transect_manager):
         transect_manager.forms.init_drag_and_drop_form()
-        transect_manager.forms.add_fields_to_tab("TR_PARCELLE", "TR_STRATE", tab_name="Localisation", columns=2)
-        fields = ["TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", "TR_DIAMETRE", "TR_EFFECTIF", "TR_HAUTEUR"]
-        transect_manager.forms.add_fields_to_tab(*fields, tab_name="Dendrométrie")
+        fields = ["TR_PARCELLE", "TR_STRATE", "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", "TR_DIAMETRE", "TR_EFFECTIF", "TR_HAUTEUR"]
+        transect_manager.forms.add_fields_to_tab(*fields)
     
     @staticmethod
     def _configure_transect(transect_manager, dmin, dmax, hmin, hmax):
+        transect_f = transect_manager.fields
+
         # ALIASES
         aliases = [
             ("TR_PARCELLE", "Parcelle"),
@@ -246,40 +258,42 @@ class ExpertiseService:
             ("TR_HAUTEUR", "Hauteur [m]"),]
         
         for field, alias in aliases:
-            transect_manager.fields.set_alias(field, alias)
+            transect_f.set_alias(field, alias)
 
         # FID
-        transect_manager.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1, maximum("fid") + 1)')
+        transect_f.set_default_value("fid", 'if (maximum("fid") is NULL, 1, maximum("fid") + 1)')
 
         # UUID
         field_name = "UUID"
-        transect_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
-        transect_manager.fields.set_default_value(field_name, "uuid()")
-        transect_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
+        transect_f.set_default_value(field_name, "uuid()")
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
         # TR_PARCELLE & TR_STRATE
         expression = '"TR_PARCELLE" is not NULL OR "TR_STRATE" is not NULL'
         description = "Ajouter une parcelle ou une strate si l'inventaire n'utilise pas de carto"
-        transect_manager.fields.set_constraint_expression("TR_PARCELLE", expression, description)
-        transect_manager.fields.set_constraint_expression("TR_STRATE", expression, description)
+        transect_f.set_constraint_expression("TR_PARCELLE", expression, description)
+        transect_f.set_constraint_expression("TR_STRATE", expression, description)
+        transect_f.set_reuse_last_value ("TR_PARCELLE")
+        transect_f.set_reuse_last_value("TR_STRATE")
 
         # TR_DIAMETRE
         field_name = "TR_DIAMETRE"
-        transect_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        transect_manager.fields.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax + 1, 5)]})
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        transect_f.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax + 1, 5)]})
         expression = '"TR_DIAMETRE" != \'\''
         description = "Le champ TR_DIAMETRE ne peut pas être vide."
-        transect_manager.fields.set_constraint_expression(field_name, expression, description ,QgsFieldConstraints.ConstraintStrengthHard)
+        transect_f.set_constraint_expression(field_name, expression, description ,QgsFieldConstraints.ConstraintStrengthHard)
 
         # TR_EFFECTIF
         field_name = "TR_EFFECTIF"
-        transect_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        transect_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
-        transect_manager.fields.set_default_value(field_name, '1', False)
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        transect_f.add_range(field_name, {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
+        transect_f.set_default_value(field_name, '1', False)
 
         # TR_HAUTEUR
         field_name = "TR_HAUTEUR"
-        transect_manager.fields.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax + 1)]})
+        transect_f.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax + 1)]})
 
         return None
     

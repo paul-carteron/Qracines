@@ -14,15 +14,15 @@ from .expertise_import import Ui_ExpertiseImportDialog
 from ..core.db.manager import DatabaseManager
 from ..core.expertise_service import ExpertiseService
 
-from ..utils.path_manager import get_racines_path, get_display_name
-from ..utils.variable_utils import clear_project, get_project_variable
-from ..utils.layer_utils import load_rasters, zoom_on_layer
+from ..utils.path_manager import get_racines_path
+from ..utils.variable_utils import clear_project, get_project_variable, set_project_variable
+from ..utils.layer_utils import load_rasters, zoom_on_layer, load_vectors
 
 class ExpertiseDialog(QDialog):
     def __init__(self, mode="create", parent=None):
         super().__init__(parent)
         self.mode = mode
-
+        
         if self.mode == "create":
             self.ui = Ui_ExpertiseDialog()
         elif self.mode == "import":
@@ -35,53 +35,109 @@ class ExpertiseDialog(QDialog):
         if self.mode == "import":
             self.ui.pb_import_files.clicked.connect(self.import_files)
         else:
-            # --- initialize forest_name if forest is selected ---
             self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
-            # --- initialize raster checkboxes ---
-            self.raster_checkboxes = {
-                "plt_anc": self.ui.cb_plt_anc,
-                "plt":     self.ui.cb_plt,
-                "mnh":     self.ui.cb_mnh,
-                "scan25":  self.ui.cb_scan25,
-                "irc":     self.ui.cb_irc,
-                "rgb":     self.ui.cb_rgb,
-            }
-            self.update_raster_checkbox_states()
+        # --- initialize diam/hauteur ---
+        self.restore_dh_values()
 
-            # --- initialise default output directory ---
-            default_dir = get_racines_path("expertise", "Expertise")
-            default_dir.mkdir(parents=True, exist_ok=True)
-            self.ui.fw_outdir.setFilePath(str(default_dir))
-            self.ui.fw_outdir.setStorageMode(self.ui.fw_outdir.GetDirectory)
+        # --- initialize raster checkboxes ---
+        self.raster_checkboxes = {
+            "plt_anc": self.ui.cb_plt_anc,
+            "plt":     self.ui.cb_plt,
+            "mnh":     self.ui.cb_mnh,
+            "scan25":  self.ui.cb_scan25,
+            "irc":     self.ui.cb_irc,
+            "rgb":     self.ui.cb_rgb,
+        }
+        self.restore_checkbox_states()
+        
+        # --- initialise default output directory ---
+        default_dir = get_racines_path("expertise", "Expertise")
+        default_dir.mkdir(parents=True, exist_ok=True)
+        self.ui.fw_outdir.setFilePath(str(default_dir))
+        self.ui.fw_outdir.setStorageMode(self.ui.fw_outdir.GetDirectory)
 
-            # ---- initialize species list ----
-            ## Gha / Transect
-            self.ui.lw_selected_species.setSelectionMode(QAbstractItemView.MultiSelection)
-            self.ui.lw_species.setSelectionMode(QAbstractItemView.MultiSelection)
+        # ---- initialize species list ----
+        ## Gha / Transect
+        self.ui.lw_selected_species.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.ui.lw_species.setSelectionMode(QAbstractItemView.MultiSelection)
 
-            ## Taillis
-            self.ui.lw_selected_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
-            self.ui.lw_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
-            self.taillis_default_codes = ["BOU", "CHA", "CHE", "ECH", "FRE", "HET", "NOI", "SAU", "TIL", "TRE"]
-            
-            self.essences_layer = DatabaseManager().load_essences("essences")
-            self.populate_species_list()
+        ## Taillis
+        self.ui.lw_selected_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.ui.lw_species_taillis.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.taillis_default_codes = ["BOU", "CHA", "CHE", "ECH", "FRE", "HET", "NOI", "SAU", "TIL", "TRE"]
+        
+        self.essences_layer = DatabaseManager().load_essences("essences")
+        self.populate_species_list()
+        self.restore_species_selection()
 
-            # --- add/remove species functionnalities ---
-            self.ui.pb_add_species.clicked.connect(self.add_selected_species)
-            self.ui.pb_remove_species.clicked.connect(self.remove_selected_species)
-            self.ui.pb_add_species_taillis.clicked.connect(self.add_selected_species_taillis)
-            self.ui.pb_remove_species_taillis.clicked.connect(self.remove_selected_species_taillis)
+        # --- add/remove species functionnalities ---
+        self.ui.pb_add_species.clicked.connect(self.add_selected_species)
+        self.ui.pb_remove_species.clicked.connect(self.remove_selected_species)
+        self.ui.pb_add_species_taillis.clicked.connect(self.add_selected_species_taillis)
+        self.ui.pb_remove_species_taillis.clicked.connect(self.remove_selected_species_taillis)
 
-            # --- connect buttons ---
-            self.ui.buttonBox.accepted.disconnect(self.accept)
-            self.ui.buttonBox.accepted.connect(self._on_accept)
-            self.ui.buttonBox.rejected.connect(self.reject)
-            
-            # --- connect checkbox to toggle ---
-            self.setup_connections()
+        # --- connect buttons ---
+        self.ui.buttonBox.accepted.disconnect(self.accept)
+        self.ui.buttonBox.accepted.connect(self._on_accept)
+        self.ui.buttonBox.rejected.connect(self.reject)
+        
+        # --- connect checkbox to toggle ---
+        self.setup_connections()
 
+    # region SAVE/RESTORE STATES
+    def save_checkbox_states(self):
+        for key, cb in self.raster_checkboxes.items():
+            set_project_variable(f"ui_chk_{key}", cb.isChecked())
+
+    def restore_checkbox_states(self):
+        for key, cb in self.raster_checkboxes.items():
+            val = get_project_variable(f"ui_chk_{key}")
+            if val is not None:
+                cb.setChecked(bool(val))
+
+    def save_dh_values(self):
+        set_project_variable("ui_dmin", self.ui.sp_dmin.value())
+        set_project_variable("ui_dmax", self.ui.sp_dmax.value())
+        set_project_variable("ui_hmin", self.ui.sp_hmin.value())
+        set_project_variable("ui_hmax", self.ui.sp_hmax.value())
+
+    def restore_dh_values(self):
+        for key, spinbox in {
+            "ui_dmin": self.ui.sp_dmin,
+            "ui_dmax": self.ui.sp_dmax,
+            "ui_hmin": self.ui.sp_hmin,
+            "ui_hmax": self.ui.sp_hmax,
+        }.items():
+            val = get_project_variable(key)
+            if val is not None:
+                try:
+                    spinbox.setValue(int(val))  # or float(val) if using QDoubleSpinBox
+                except Exception:
+                    pass
+
+    def save_species_selection(self):
+        gha_species = [self.ui.lw_selected_species.item(i).text() for i in range(self.ui.lw_selected_species.count())]
+        taillis_species = [self.ui.lw_selected_species_taillis.item(i).text() for i in range(self.ui.lw_selected_species_taillis.count())]
+        set_project_variable("ui_species_gha", ";".join(gha_species))
+        set_project_variable("ui_species_taillis", ";".join(taillis_species))
+
+    def restore_species_selection(self):
+        gha_saved = get_project_variable("ui_species_gha")
+        taillis_saved = get_project_variable("ui_species_taillis")
+
+        if gha_saved:
+            self.ui.lw_selected_species.clear()
+            for name in gha_saved.split(";"):
+                if name in self.essences_lookup:
+                    self.ui.lw_selected_species.addItem(name)
+
+        if taillis_saved:
+            self.ui.lw_selected_species_taillis.clear()
+            for name in taillis_saved.split(";"):
+                if name in self.essences_lookup:
+                    self.ui.lw_selected_species_taillis.addItem(name)
+    # endredion
 
     def import_files(self):
         files, _ = QFileDialog.getOpenFileNames(
@@ -94,17 +150,11 @@ class ExpertiseDialog(QDialog):
             print("Fichiers sélectionnés:", files)
             self.ui.lw_selected_files.addItems(files)
 
-    def update_raster_checkbox_states(self):
-        forest_selected = bool(get_project_variable("forest_prefix"))
-        # These logical keys get auto-checked when a forest exists
-        auto_check = {"plt_anc", "plt"} if forest_selected else set()
-
-        for logical_key, cb in self.raster_checkboxes.items():
-            cb.setEnabled(forest_selected)
-            cb.setChecked(logical_key in auto_check)
-
     def setup_connections(self):
         self.ui.cb_package_for_qfield.toggled.connect(self.toggle_fw_editability)
+
+        self.ui.le_filter_species.textChanged.connect(self.update_species_lists)
+        self.ui.le_filter_species_taillis.textChanged.connect(self.update_species_lists)
 
     def toggle_fw_editability(self, checked):
         self.ui.fw_outdir.setEnabled(checked)
@@ -116,7 +166,6 @@ class ExpertiseDialog(QDialog):
     
     def populate_species_list(self):
         self.essences_lookup = {}
-
         unique_essences = []
 
         for feat in self.essences_layer.getFeatures():
@@ -126,11 +175,22 @@ class ExpertiseDialog(QDialog):
                 self.essences_lookup[name] = code
                 unique_essences.append(name)
 
-        self.ui.lw_species.addItems(unique_essences)
-        self.ui.lw_species_taillis.addItems(unique_essences)
+        self._species_all = self._taillis_all = sorted(unique_essences)
+
+        self.update_species_lists()
 
         taillis_default_species = [name for name, code in self.essences_lookup.items() if code in self.taillis_default_codes]
         self.ui.lw_selected_species_taillis.addItems(taillis_default_species)
+
+    def update_species_lists(self):
+        filter_species = self.ui.le_filter_species.text().lower()
+        filter_taillis = self.ui.le_filter_species_taillis.text().lower()
+
+        self.ui.lw_species.clear()
+        self.ui.lw_species_taillis.clear()
+
+        self.ui.lw_species.addItems([s for s in self._species_all if filter_species in s.lower()])
+        self.ui.lw_species_taillis.addItems([s for s in self._taillis_all if filter_taillis in s.lower()])  
 
     def add_selected_species(self):
         selected_items = self.ui.lw_species.selectedItems()
@@ -164,7 +224,6 @@ class ExpertiseDialog(QDialog):
     
     def _load_selected_rasters(self):
         asked_keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
-        print(asked_keys)
         if not asked_keys:
             return None
 
@@ -209,6 +268,7 @@ class ExpertiseDialog(QDialog):
         )
 
         try:
+            load_vectors("ua_polygon", group_name= "VECTOR")
             self._load_selected_rasters()
             packaged_dir = svc.run_full_diagnostic()
 
@@ -222,3 +282,17 @@ class ExpertiseDialog(QDialog):
         except Exception as e:
             # everything else bubbles up here
             QMessageBox.critical(self, "Erreur", f"Une erreur est survenue :\n{e}")
+
+    def accept(self):
+        if self.mode == "create":
+            self.save_checkbox_states()
+            self.save_species_selection()
+            self.save_dh_values()
+        super().accept()
+
+    def reject(self):
+        if self.mode == "create":
+            self.save_checkbox_states()
+            self.save_species_selection()
+            self.save_dh_values()
+        super().reject()

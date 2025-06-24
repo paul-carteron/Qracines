@@ -35,6 +35,7 @@ class FormBuilder:
 
         self.layer.setEditFormConfig(self.config)
 
+
     def add_relation_to_tab(self, relation_name, tab_name=None, visibility_expression=None):
         relation = LayerFetcher.get_relation_by_name(relation_name)
         if not relation:

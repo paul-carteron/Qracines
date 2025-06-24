@@ -148,6 +148,10 @@ class QSequoia2:
         dialog.exec_()
 
     def open_expertise_create(self):
+        forest = get_project_variable("forest_prefix")
+        if not forest:
+            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
+            return
         dialog = ExpertiseDialog(mode="create")
         dialog.exec_()
 
