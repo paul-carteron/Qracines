@@ -18,7 +18,7 @@ from .utils.variable_utils import *
 from .utils.layer_utils import *
 from .utils.qfield_utils import *
 
-class QSequoia2:
+class Qsequoia2:
     def __init__(self, iface):
         self.iface = iface
         self.global_action = None
@@ -36,9 +36,8 @@ class QSequoia2:
         self.diagnostic_dialog = None
         self.pedology_dialog = None
         self.tree_marking_dialog = None
-        self.expertise_dialog = None
-
-        self.plugin_name = "QSequoia2"
+        self.diagnostic_dialog   = None
+        self.plugin_name = "Qsequoia2"
 
     def initGui(self):
         # Initialisation
@@ -47,7 +46,7 @@ class QSequoia2:
         # Toolbar
         if self.toolbar is None:
             self.toolbar = self.iface.addToolBar(self.plugin_name)
-            self.toolbar.setObjectName("QSequoia2Toolbar")  # Set a unique object name
+            self.toolbar.setObjectName("Qsequoia2Toolbar")  # Set a unique object name
 
         # Global Settings action
         if self.global_action is None:

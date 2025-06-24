@@ -251,4 +251,4 @@ class ProjectSettingsDialog(QDialog):
         clear_project()
         if map_project:
             create_map_project(map_project.lower(), type_project)
-            self.iface.messageBar().pushMessage("QSequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
+            self.iface.messageBar().pushMessage("Qsequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
