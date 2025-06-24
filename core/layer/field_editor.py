@@ -1,11 +1,13 @@
 from qgis.core import (
+    Qgis,
     QgsField,
     QgsFieldConstraints,
     QgsDefaultValue,
     QgsEditorWidgetSetup,
-    QgsFeatureRequest
+    QgsFeatureRequest,
+    QgsAttributeEditorRelation
 )
-
+from .fetcher import LayerFetcher
 
 class FieldEditor:
     def __init__(self, layer):
@@ -38,10 +40,7 @@ class FieldEditor:
     def set_constraint(self, field_name, constraint, strength=QgsFieldConstraints.ConstraintStrengthHard):
         index = self._get_field_index(field_name)
         self.layer.setFieldConstraint(index, constraint, strength)
-
-    def set_display_expression(self, expression):
-        self.layer.setDisplayExpression(expression)
-        
+    
     def set_constraint_expression(self, field_name, expression, description, strength=QgsFieldConstraints.ConstraintStrengthSoft):
         index = self._get_field_index(field_name)
         self.layer.setConstraintExpression(index, expression, description)
@@ -78,3 +77,19 @@ class FieldEditor:
         index = self._get_field_index(field_name)
         widget_setup = QgsEditorWidgetSetup('Range', config)
         self.layer.setEditorWidgetSetup(index, widget_setup)
+
+    def set_relation_label(self, relation_name, label):
+        relation = LayerFetcher.get_relation_by_name(relation_name)
+        if not relation:
+            print(f"Relation '{relation_name}' not found.")
+            return
+        
+        form_config = self.layer.editFormConfig()
+        root = form_config.invisibleRootContainer()
+        for widget in root.findElements(Qgis.AttributeEditorType.Relation):
+            if isinstance(widget, QgsAttributeEditorRelation) and widget.relation().id() == relation.id():
+                widget.setLabel(label or '')
+                widget.setShowLabel(bool(label))
+                self.layer.setEditFormConfig(form_config)
+                return
+        print(f"No editor for relation '{relation_name}' in form.")

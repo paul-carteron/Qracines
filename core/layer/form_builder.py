@@ -2,7 +2,9 @@ from qgis.core import (
     Qgis,
     QgsAttributeEditorField,
     QgsAttributeEditorContainer,
-    QgsAttributeEditorRelation
+    QgsAttributeEditorRelation,
+    QgsOptionalExpression,
+    QgsExpression
 )
 from .fetcher import LayerFetcher
 
@@ -19,8 +21,11 @@ class FormBuilder:
         self.layer.setEditFormConfig(self.config)
         self.root = self.config.invisibleRootContainer() 
 
-    def add_fields_to_tab(self, field_names, tab_name=None, clear_tab=False):
+    def add_fields_to_tab(self, *field_names, tab_name=None, clear_tab=False, columns=1, visibility_expression=None):
         tab = self._get_or_create_tab(tab_name, clear_tab)
+        tab.setColumnCount(int(columns))
+        if visibility_expression:
+            tab.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
 
         for name in field_names:
             index = self.layer.fields().indexFromName(name)
@@ -30,13 +35,16 @@ class FormBuilder:
 
         self.layer.setEditFormConfig(self.config)
 
-    def add_relation_to_tab(self, relation_name, tab_name=None):
+
+    def add_relation_to_tab(self, relation_name, tab_name=None, visibility_expression=None):
         relation = LayerFetcher.get_relation_by_name(relation_name)
         if not relation:
             print(f"Relation '{relation_name}' not found.")
             return
 
         tab = self._get_or_create_tab(tab_name)
+        if visibility_expression:
+            tab.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
         relation_editor = QgsAttributeEditorRelation(relation, tab)
         tab.addChildElement(relation_editor)
         self.layer.setEditFormConfig(self.config)

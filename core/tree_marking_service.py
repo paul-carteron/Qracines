@@ -85,7 +85,7 @@ class TreeMarkingService:
 
     def _create_and_load_gpkg(self):
         layers = [
-            LayerFactory.create("arbres"),
+            LayerFactory.create("arbres", "INVENTAIRE"),
             self.essences_layer
         ]
 
@@ -105,7 +105,7 @@ class TreeMarkingService:
     def _init_form(arbres_manager):
         form_fields = ["COMPTEUR", "PARCELLE", "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE"]
         arbres_manager.forms.init_drag_and_drop_form()
-        arbres_manager.forms.add_fields_to_tab(form_fields)
+        arbres_manager.forms.add_fields_to_tab(*form_fields)
     
     @staticmethod
     def _configure_essence_field( arbres_manager, essences_manager, codes):

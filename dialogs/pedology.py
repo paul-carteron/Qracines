@@ -73,7 +73,7 @@ class PedologyDialog(QDialog):
 
         replier()
         
-        layers = [LayerFactory.create("sondage"), LayerFactory.create("horizons")]
+        layers = [LayerFactory.create("sondage", "PEDOLOGIE"), LayerFactory.create("horizons", "PEDOLOGIE")]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,

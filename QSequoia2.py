@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QToolButton, QMenu
 from PyQt5.QtGui import QIcon
-from PyQt5.QtSvg import QSvgRenderer
+
 import os
 
 # Import from dialogs folder
@@ -11,6 +11,7 @@ from .dialogs.add_data import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
 from .dialogs.tree_marking import *
+from .dialogs.expertise import *
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -26,11 +27,13 @@ class Qsequoia2:
         self.diagnostic_action = None
         self.pedology_action = None
         self.tree_marking_action = None
+        self.expertise_action = None
         
         self.toolbar = None
         self.global_dialog = None
         self.project_dialog = None
         self.add_data_dialog = None
+        self.diagnostic_dialog = None
         self.pedology_dialog = None
         self.tree_marking_dialog = None
         self.diagnostic_dialog   = None
@@ -93,6 +96,22 @@ class Qsequoia2:
             self.toolbar.addAction(self.tree_marking_action)
             self.iface.addPluginToMenu(self.plugin_name, self.tree_marking_action)
 
+        # Add expertise dropdown button
+        expertise_icon = os.path.join(plugin_dir, "icons", "expertise.svg")
+        expertise_button = QToolButton()
+        expertise_button.setIcon(QIcon(expertise_icon))
+        expertise_button.setToolTip("Expertise")
+        expertise_button.setPopupMode(QToolButton.InstantPopup)
+
+        # Create menu for expertise
+        menu = QMenu()
+        menu.addAction("Créer une expertise", self.open_expertise_create)
+        menu.addAction("Importer une expertise", self.open_expertise_import)
+        expertise_button.setMenu(menu)
+
+        # Add to toolbar
+        self.toolbar.addWidget(expertise_button)
+
     def open_global_settings(self):
         if not self.global_dialog:
             self.global_dialog = GlobalSettingsDialog()
@@ -122,6 +141,18 @@ class Qsequoia2:
         if not self.tree_marking_dialog:
             self.tree_marking_dialog = Tree_markingDialog()
         self.tree_marking_dialog.exec_()
+        
+    def open_expertise_import(self):
+        dialog = ExpertiseDialog(mode="import")
+        dialog.exec_()
+
+    def open_expertise_create(self):
+        forest = get_project_variable("forest_prefix")
+        if not forest:
+            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
+            return
+        dialog = ExpertiseDialog(mode="create")
+        dialog.exec_()
 
     def unload(self):
         
@@ -161,6 +192,12 @@ class Qsequoia2:
             self.toolbar.removeAction(self.tree_marking_action)
             self.tree_marking_action.deleteLater()  # Ensure the action is deleted
             self.tree_marking_action = None
+
+        if self.expertise_action:
+            self.iface.removePluginMenu(self.plugin_name, self.expertise_action)
+            self.toolbar.removeAction(self.expertise_action)
+            self.expertise_action.deleteLater()  # Ensure the action is deleted
+            self.expertise_action = None
 
         # Remove the toolbar if it exists
         if self.toolbar:
