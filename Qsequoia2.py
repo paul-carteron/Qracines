@@ -18,14 +18,14 @@ from .utils.qfield_utils import *
 
 from pathlib import Path
 
-CLASSICBUTTONS = [
+CLASSIC_BUTTONS = [
 #   ("icon-file",            "tooltip",              "handler"              ),
     ("global_settings.svg",  "Global Settings",      "open_global_settings" ),
     ("project_settings.svg", "Project Settings",     "open_project_settings"),
     ("add_data.svg",         "Ajouter des couches",  "open_add_data"        ),
 ]
 
-QFIELDBUTTONS = [
+QFIELD_BUTTONS = [
 #   ("icon-file",        "tooltip",    "create_handler",           "import_handler"          ),
     ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_import"  ),
     ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import"    ),
@@ -33,7 +33,7 @@ QFIELDBUTTONS = [
     ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_import"   ),
 ]
 
-class PluginButton:
+class ClassicButton:
     def __init__(self, icon: Path, tooltip: str, slot: callable, iface, plugin_name: str):
         self.plugin_name = plugin_name
         self.iface = iface
@@ -49,7 +49,7 @@ class PluginButton:
         toolbar.removeAction(self.action)
         self.action.deleteLater() 
 
-class PluginDropdownButton:
+class QfieldButton:
     def __init__(self, icon: Path, tooltip: str, menu_items: list[tuple[str, callable]]):
         self.button = QToolButton()
         self.button.setIcon(QIcon(str(icon)))
@@ -103,8 +103,8 @@ class Qsequoia2:
         self.toolbar = self.iface.addToolBar(self.plugin_name)
         self.toolbar.setObjectName("Qsequoia2Toolbar")
 
-        for icon, tooltip, handler in CLASSICBUTTONS:
-            btn = PluginButton(
+        for icon, tooltip, handler in CLASSIC_BUTTONS:
+            btn = ClassicButton(
                 icon = self.plugin_dir / "icons" / icon,
                 tooltip = tooltip,
                 slot = getattr(self, handler),
@@ -113,8 +113,8 @@ class Qsequoia2:
             )
             self.buttons.append(btn)
 
-        for icon, tooltip, create_handler, import_handler in QFIELDBUTTONS:
-            btn = PluginDropdownButton(
+        for icon, tooltip, create_handler, import_handler in QFIELD_BUTTONS:
+            btn = QfieldButton(
                 icon = self.plugin_dir / "icons" / icon,
                 tooltip = tooltip,
                 menu_items = [
