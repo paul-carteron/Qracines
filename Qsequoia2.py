@@ -10,6 +10,7 @@ from .dialogs.diagnostic import *
 from .dialogs.pedology import *
 from .dialogs.tree_marking import *
 from .dialogs.expertise import *
+from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -180,9 +181,9 @@ class Qsequoia2:
         
     def open_expertise_import(self):
         self._check_forest_is_selected()
-        
+
         if not self.expertise_import:
-            self.expertise_import = ExpertiseDialog(mode="import")
+            self.expertise_import = ExpertiseImportDialog()
         self.expertise_import.exec_()
         
     # endregion

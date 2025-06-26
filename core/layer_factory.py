@@ -261,6 +261,15 @@ class LayerFactory:
         
         return cls.create_memory_layer(name, layer_config.get("fields"), layer_config.get("geometry"))
 
+    @classmethod
+    def get_layer_names(cls, category: str):
+        """Return a list of layer names for the given category."""
+        category_config = cls.LAYERS.get(category)
+        if category_config is None:
+            raise ValueError(f"Unknown category: {category!r}")
+        
+        return list(category_config.keys())
+
     @staticmethod
     def create_memory_layer(layer_name, fields_list, geometry = None, crs = "EPSG:2154"):
 

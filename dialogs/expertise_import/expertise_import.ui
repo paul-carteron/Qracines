@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>ExpertiseImportDialog</class>
+ <widget class="QDialog" name="ExpertiseImportDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -47,7 +47,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QListWidget" name="listWidget"/>
+     <widget class="QListWidget" name="lw_selected_files"/>
     </item>
    </layout>
   </widget>
@@ -57,7 +57,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>ExpertiseImportDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -73,7 +73,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>ExpertiseImportDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

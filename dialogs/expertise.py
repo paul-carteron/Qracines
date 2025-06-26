@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import (
 from pathlib import Path
 
 from .expertise_dialog import Ui_ExpertiseDialog
-from .expertise_import import Ui_ExpertiseImportDialog
 
 from ..core.db.manager import DatabaseManager
 from ..core.expertise_service import ExpertiseService
@@ -19,23 +18,12 @@ from ..utils.variable_utils import clear_project, get_project_variable, set_proj
 from ..utils.layer_utils import load_rasters, zoom_on_layer, load_vectors
 
 class ExpertiseDialog(QDialog):
-    def __init__(self, mode="create", parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.mode = mode
-        
-        if self.mode == "create":
-            self.ui = Ui_ExpertiseDialog()
-        elif self.mode == "import":
-            self.ui = Ui_ExpertiseImportDialog()
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
-        
+        self.ui = Ui_ExpertiseDialog()
         self.ui.setupUi(self)
-        
-        if self.mode == "import":
-            self.ui.pb_import_files.clicked.connect(self.import_files)
-        else:
-            self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
+       
+        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
         # --- initialize diam/hauteur ---
         self.restore_dh_values()
