@@ -46,7 +46,7 @@ class ExpertiseImportDialog(QDialog):
         for layer in layers:
             all_layer = []
             for gpkg in gpkgs:
-                vl = QgsVectorLayer(f"{gpkg}|layername={layer}", layer, 'ogr')
+                vl = QgsVectorLayer(f"{gpkg}|layername={layer}", layer, "ogr")
                 if vl.isValid():
                     all_layer.append(vl)
             
@@ -58,18 +58,24 @@ class ExpertiseImportDialog(QDialog):
                 'LAYERS': all_layer,   # ← just reuse the list
                 'CRS':    'PROJECT',
                 'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
-            })
-            
-            merged_layers.append(merge_layer['OUTPUT'])
-        
+            })['OUTPUT']
+ 
+            # When merging, fid is reinitialized which mean duplicated fid that will cause geopackage creation to fail (processing.run("native:package"))
+            merge_layer = processing.run("qgis:deletecolumn", {
+                'INPUT':  merge_layer,
+                'COLUMN': ['fid'],
+                'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
+            })['OUTPUT']
+
+            merge_layer.setName(layer)
+            merged_layers.append(merge_layer)
+
         print(merged_layers)
-        result = processing.run("native:package", {
+        processing.run("native:package", {
             'LAYERS':      merged_layers,
             'OUTPUT':      str(out_path),
             'OVERWRITE':   True,
+            'SAVE_STYLES': False
         })
-        QMessageBox.information(
-            self, "Merge Complete",
-            f"Merged {len(self.selected_files)} files into\n{out_path}"
-        ) 
+
         
