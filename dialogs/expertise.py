@@ -137,7 +137,7 @@ class ExpertiseDialog(QDialog):
             for name in taillis_saved.split(";"):
                 if name in self.essences_lookup:
                     self.ui.lw_selected_species_taillis.addItem(name)
-    # endredion
+    # endregion
 
     def import_files(self):
         files, _ = QFileDialog.getOpenFileNames(

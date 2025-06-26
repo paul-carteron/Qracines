@@ -7,17 +7,19 @@ from qgis.core import (
     QgsFieldConstraints,
     QgsFeatureRequest,
     QgsExpression,
-    Qgis
+    QgsRendererCategory,
+    QgsCategorizedSymbolRenderer,
+    QgsSymbol
 )
 
 from qgis.utils import iface
 
 from PyQt5.QtCore import QVariant
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QColor
 
 from ..core.layer_factory import LayerFactory
 from ..core.layer.manager import LayerManager
-from ..utils.path_manager import get_peuplements
+from ..utils.path_manager import get_peuplements, get_limites
 from ..utils.layer_utils import add_layers_from_gpkg, create_relation
 from ..utils.qfield_utils import package_for_qfield
 from ..utils.variable_utils import get_project_variable
@@ -75,6 +77,13 @@ class ExpertiseService:
         self._configure_essence_field(transect_manager, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = True)
         transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
+        # LIMITE
+        print("configure LIMITE layer")
+        limite_manager = LayerManager("limite")
+        self._init_limite_form(limite_manager)
+        self._configure_limite(limite_manager)
+        self._style_limite(limite_manager)
+
         # GHA
         print("configure GHA layer")
         gha_manager = LayerManager("gha")
@@ -119,6 +128,7 @@ class ExpertiseService:
         layers = [
             LayerFactory.create("placette", "EXPERTISE"),
             LayerFactory.create("transect", "EXPERTISE"),
+            LayerFactory.create("limite", "EXPERTISE"),
             LayerFactory.create("gha", "EXPERTISE"),
             LayerFactory.create("tse", "EXPERTISE"),
             LayerFactory.create("reg", "EXPERTISE"),
@@ -161,7 +171,7 @@ class ExpertiseService:
         placette_fb.init_drag_and_drop_form()
         placette_fb.add_fields_to_tab("COMPTEUR")
         placette_fb.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
-        placette_fb.add_fields_to_tab("PLTM_TYPE")
+        placette_fb.add_fields_to_tab("PLTM_TYPE", "PLA_RMQ")
 
         # ve: stand for visibility_expression
         gha_ve = """left("PLTM_TYPE",2) IN ('FR','FI','MF','PE')"""
@@ -185,6 +195,7 @@ class ExpertiseService:
             ("COMPTEUR", "Placette"),
             ("PLTM_PARCELLE", "Parcelle"),
             ("PLTM_STRATE", "Strate"),
+            ("PLA_RMQ", "Remarque"),
             ("PLTM_TYPE", "Type de peuplement"),
             ("VA_TX_TROUEE", "Taux trouée [%]"),
             ("TSE_STERE_HA", "Taillis [st/ha]")]
@@ -252,7 +263,7 @@ class ExpertiseService:
             ("TR_PARCELLE", "Parcelle"),
             ("TR_STRATE", "Strate"),
             ("TR_ESSENCE_ID", "Essence"),
-            ("TR_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("TR_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("TR_DIAMETRE", "Diamètre [cm]"),
             ("TR_EFFECTIF", "Effectif"),
             ("TR_HAUTEUR", "Hauteur [m]"),]
@@ -298,6 +309,60 @@ class ExpertiseService:
         return None
     
     @staticmethod
+    def _init_limite_form(limite_manager):
+        limite_manager.forms.init_drag_and_drop_form()
+        limite_manager.forms.add_fields_to_tab("LIMITE_TYPE", "LIMITE_RMQ")
+
+    @staticmethod
+    def _configure_limite(limite_manager):
+        limite_f = limite_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("LIMITE_TYPE", "Type"),
+            ("LIMITE_RMQ", "Remarque"),
+        ]
+        
+        for field, alias in aliases:
+            limite_f.set_alias(field, alias)
+
+        # LIMITE_TYPE
+        limites = get_limites()
+        limite_f.add_value_map('LIMITE_TYPE', {'map': [{str(name): str(code)} for code, name in limites.items()]})
+    
+    @staticmethod
+    def _style_limite(limite_manager):
+        field = 'LIMITE_TYPE'
+        labels = get_limites()
+        layer = limite_manager.layer
+        # 2) define your fixed color mapping
+        colors = {
+            'LPL': (238,255,0,255),
+            'LPF': (0,224,0,255),
+            'RFO': (247,0,255,255),
+            'PNA': (247,0,255,255),
+            'RUI': (0,251,255,255),
+            'TAL': (214,163,62,255),
+            'CLO': (0,0,0,255),
+            'MEM': (238,255,0,255),
+            'OTH': (125,139,143,255),
+        }
+
+        # 3) build categories
+        categories = []
+        for code, label in labels.items():
+            sym = QgsSymbol.defaultSymbol(layer.geometryType())
+            r, g, b, a = colors.get(code, (0,0,0,255))
+            for sl in sym.symbolLayers():
+                sl.setColor(QColor(r, g, b, a))
+            categories.append(QgsRendererCategory(code, sym, label))
+
+        # 4) apply renderer
+        renderer = QgsCategorizedSymbolRenderer(field, categories)
+        layer.setRenderer(renderer)
+        layer.triggerRepaint()
+
+    @staticmethod
     def _init_gha_form(gha_manager):
         gha_manager.forms.init_drag_and_drop_form()
         gha_manager.forms.add_fields_to_tab("GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G")
@@ -307,7 +372,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("GHA_ESSENCE_ID", "Essence"),
-            ("GHA_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("GHA_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("GHA_G", "Surface terrière")
         ]
         
@@ -347,7 +412,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("TSE_ESSENCE_ID", "Essence"),
-            ("TSE_ESSENCE_SECONDAIRE_ID", "Essence secondaire")
+            ("TSE_ESSENCE_SECONDAIRE_ID", "Autre essence")
         ]
         
         for field, alias in aliases:
@@ -377,7 +442,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("VA_ESSENCE_ID", "Essence"),
-            ("VA_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("VA_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("VA_AGE_APP", "Age Apparent"),
             ("VA_TX_HA", "Recouvrement [%]"),
             ("CUMUL_TX_VA", "Cumul des recouvrements"),
@@ -434,7 +499,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("REG_ESSENCE_ID", "Essence"),
-            ("REG_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("REG_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("REG_STADE", "Stade"),
             ("REG_ETAT", "Etat"),
         ]

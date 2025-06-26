@@ -173,6 +173,7 @@ class LayerFactory:
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("COMPTEUR", QVariant.LongLong),
+                    ("PLA_RMQ", QVariant.String),
                     # Peuplement
                     ("PLTM_PARCELLE", QVariant.String),
                     ("PLTM_STRATE", QVariant.String),
@@ -197,6 +198,14 @@ class LayerFactory:
                     ("TR_HAUTEUR", QVariant.String),
                 ],
                 "geometry": "Point"
+            },
+            "limite": {
+                "fields": [
+                    ("fid", QVariant.Int),
+                    ("LIMITE_TYPE", QVariant.String), 
+                    ("LIMITE_RMQ", QVariant.String)
+                ],
+                "geometry": "LineString"
             },
             "gha": {
                 "fields": [

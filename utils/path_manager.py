@@ -202,3 +202,26 @@ def get_peuplements():
     return peuplements
 
 # endregion
+
+# region LIMITES
+_LIMITE_CONFIG: dict | None = None
+
+def _load_LIMITE_CONFIG() -> dict:
+    global _LIMITE_CONFIG
+    if _LIMITE_CONFIG is None:
+        limite_config_path = get_config_path("limites.yaml")
+        with open(limite_config_path, encoding="utf-8") as f:
+            _LIMITE_CONFIG = yaml.safe_load(f)
+    return _LIMITE_CONFIG
+
+def get_limites():
+    """
+    Return the list of guide names defined under 'guides' in stations.yaml.
+    """
+    limite_config = _load_LIMITE_CONFIG()
+    limites = limite_config.get("limites")
+    if not isinstance(limites, dict):
+        raise KeyError("Missing or invalid top‐level 'limites' mapping in stations.yaml")
+    return limites
+
+# endregion
