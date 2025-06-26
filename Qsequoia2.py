@@ -172,22 +172,28 @@ class Qsequoia2:
     
     # EXPERTISE
     def open_expertise_create(self):
-        forest = get_project_variable("forest_prefix")
-        if not forest:
-            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
-            return
+        self._check_forest_is_selected()
         
         if not self.expertise_create:
             self.expertise_create = ExpertiseDialog(mode="create")
         self.expertise_create.exec_()
         
     def open_expertise_import(self):
+        self._check_forest_is_selected()
+        
         if not self.expertise_import:
             self.expertise_import = ExpertiseDialog(mode="import")
         self.expertise_import.exec_()
         
     # endregion
     
+    @staticmethod
+    def _check_forest_is_selected():
+        forest = get_project_variable("forest_prefix")
+        if not forest:
+            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
+            return
+        
     def unload(self):
         for btn in self.buttons:
             btn.unload(self.toolbar)
