@@ -7,17 +7,19 @@ from qgis.core import (
     QgsFieldConstraints,
     QgsFeatureRequest,
     QgsExpression,
-    Qgis
+    QgsRendererCategory,
+    QgsCategorizedSymbolRenderer,
+    QgsSymbol
 )
 
 from qgis.utils import iface
 
 from PyQt5.QtCore import QVariant
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QColor
 
 from ..core.layer_factory import LayerFactory
 from ..core.layer.manager import LayerManager
-from ..utils.path_manager import get_peuplements
+from ..utils.path_manager import get_peuplements, get_limites
 from ..utils.layer_utils import add_layers_from_gpkg, create_relation
 from ..utils.qfield_utils import package_for_qfield
 from ..utils.variable_utils import get_project_variable
@@ -74,6 +76,13 @@ class ExpertiseService:
         self._configure_transect(transect_manager, self.dmin, self.dmax, self.hmin, self.hmax)
         self._configure_essence_field(transect_manager, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = True)
         transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        # LIMITE
+        print("configure LIMITE layer")
+        limite_manager = LayerManager("limite")
+        self._init_limite_form(limite_manager)
+        self._configure_limite(limite_manager)
+        self._style_limite(limite_manager)
 
         # GHA
         print("configure GHA layer")
@@ -186,6 +195,7 @@ class ExpertiseService:
             ("COMPTEUR", "Placette"),
             ("PLTM_PARCELLE", "Parcelle"),
             ("PLTM_STRATE", "Strate"),
+            ("PLA_RMQ", "Remarque"),
             ("PLTM_TYPE", "Type de peuplement"),
             ("VA_TX_TROUEE", "Taux trouée [%]"),
             ("TSE_STERE_HA", "Taillis [st/ha]")]
@@ -298,6 +308,60 @@ class ExpertiseService:
 
         return None
     
+    @staticmethod
+    def _init_limite_form(limite_manager):
+        limite_manager.forms.init_drag_and_drop_form()
+        limite_manager.forms.add_fields_to_tab("LIMITE_TYPE", "LIMITE_RMQ")
+
+    @staticmethod
+    def _configure_limite(limite_manager):
+        limite_f = limite_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("LIMITE_TYPE", "Type"),
+            ("LIMITE_RMQ", "Remarque"),
+        ]
+        
+        for field, alias in aliases:
+            limite_f.set_alias(field, alias)
+
+        # LIMITE_TYPE
+        limites = get_limites()
+        limite_f.add_value_map('LIMITE_TYPE', {'map': [{str(name): str(code)} for code, name in limites.items()]})
+    
+    @staticmethod
+    def _style_limite(limite_manager):
+        field = 'LIMITE_TYPE'
+        labels = get_limites()
+        layer = limite_manager.layer
+        # 2) define your fixed color mapping
+        colors = {
+            'LPL': (238,255,0,255),
+            'LPF': (0,224,0,255),
+            'RFO': (247,0,255,255),
+            'PNA': (247,0,255,255),
+            'RUI': (0,251,255,255),
+            'TAL': (214,163,62,255),
+            'CLO': (0,0,0,255),
+            'MEM': (238,255,0,255),
+            'OTH': (125,139,143,255),
+        }
+
+        # 3) build categories
+        categories = []
+        for code, label in labels.items():
+            sym = QgsSymbol.defaultSymbol(layer.geometryType())
+            r, g, b, a = colors.get(code, (0,0,0,255))
+            for sl in sym.symbolLayers():
+                sl.setColor(QColor(r, g, b, a))
+            categories.append(QgsRendererCategory(code, sym, label))
+
+        # 4) apply renderer
+        renderer = QgsCategorizedSymbolRenderer(field, categories)
+        layer.setRenderer(renderer)
+        layer.triggerRepaint()
+
     @staticmethod
     def _init_gha_form(gha_manager):
         gha_manager.forms.init_drag_and_drop_form()

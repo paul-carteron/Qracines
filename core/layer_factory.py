@@ -202,8 +202,8 @@ class LayerFactory:
             "limite": {
                 "fields": [
                     ("fid", QVariant.Int),
-                    ("TYPE", QVariant.String), 
-                    ("RMQ", QVariant.String)
+                    ("LIMITE_TYPE", QVariant.String), 
+                    ("LIMITE_RMQ", QVariant.String)
                 ],
                 "geometry": "LineString"
             },

@@ -1,0 +1,10 @@
+limites:
+  LPL: "Limite de peuplement"
+  LPF: "Limite de parcelle"
+  RFO: "Route"
+  PNA: "Piste"
+  RUI: "Ruisseau/Fossé"
+  TAL: "Talus"
+  CLO: "Clôture"
+  MEM: "Même peuplement"
+  OTH: "Autre"
