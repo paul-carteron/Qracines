@@ -119,6 +119,7 @@ class ExpertiseService:
         layers = [
             LayerFactory.create("placette", "EXPERTISE"),
             LayerFactory.create("transect", "EXPERTISE"),
+            LayerFactory.create("limite", "EXPERTISE"),
             LayerFactory.create("gha", "EXPERTISE"),
             LayerFactory.create("tse", "EXPERTISE"),
             LayerFactory.create("reg", "EXPERTISE"),
@@ -161,7 +162,7 @@ class ExpertiseService:
         placette_fb.init_drag_and_drop_form()
         placette_fb.add_fields_to_tab("COMPTEUR")
         placette_fb.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
-        placette_fb.add_fields_to_tab("PLTM_TYPE")
+        placette_fb.add_fields_to_tab("PLTM_TYPE", "PLA_RMQ")
 
         # ve: stand for visibility_expression
         gha_ve = """left("PLTM_TYPE",2) IN ('FR','FI','MF','PE')"""
@@ -252,7 +253,7 @@ class ExpertiseService:
             ("TR_PARCELLE", "Parcelle"),
             ("TR_STRATE", "Strate"),
             ("TR_ESSENCE_ID", "Essence"),
-            ("TR_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("TR_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("TR_DIAMETRE", "Diamètre [cm]"),
             ("TR_EFFECTIF", "Effectif"),
             ("TR_HAUTEUR", "Hauteur [m]"),]
@@ -307,7 +308,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("GHA_ESSENCE_ID", "Essence"),
-            ("GHA_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("GHA_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("GHA_G", "Surface terrière")
         ]
         
@@ -347,7 +348,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("TSE_ESSENCE_ID", "Essence"),
-            ("TSE_ESSENCE_SECONDAIRE_ID", "Essence secondaire")
+            ("TSE_ESSENCE_SECONDAIRE_ID", "Autre essence")
         ]
         
         for field, alias in aliases:
@@ -377,7 +378,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("VA_ESSENCE_ID", "Essence"),
-            ("VA_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("VA_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("VA_AGE_APP", "Age Apparent"),
             ("VA_TX_HA", "Recouvrement [%]"),
             ("CUMUL_TX_VA", "Cumul des recouvrements"),
@@ -434,7 +435,7 @@ class ExpertiseService:
         # ALIASES
         aliases = [
             ("REG_ESSENCE_ID", "Essence"),
-            ("REG_ESSENCE_SECONDAIRE_ID", "Essence secondaire"),
+            ("REG_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("REG_STADE", "Stade"),
             ("REG_ETAT", "Etat"),
         ]
