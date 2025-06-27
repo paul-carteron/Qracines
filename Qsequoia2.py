@@ -4,6 +4,7 @@ from PyQt5.QtGui import QIcon
 
 # Import from dialogs folder
 from .dialogs.global_settings import *
+from .dialogs.forest_settings import *
 from .dialogs.project_settings import *
 from .dialogs.add_data import *
 from .dialogs.diagnostic import *
@@ -21,6 +22,7 @@ from pathlib import Path
 CLASSIC_BUTTONS = [
 #   ("icon-file",            "tooltip",              "handler"              ),
     ("global_settings.svg",  "Global Settings",      "open_global_settings" ),
+    ("forest_settings.svg",  "Forest Settings",      "open_forest_settings" ),
     ("project_settings.svg", "Project Settings",     "open_project_settings"),
     ("add_data.svg",         "Ajouter des couches",  "open_add_data"        ),
 ]
@@ -82,6 +84,7 @@ class Qsequoia2:
 
         # Classic dialogs
         self.global_dialog = None
+        self.forest_dialog = None
         self.project_dialog = None
         self.add_data_dialog = None
 
@@ -132,8 +135,18 @@ class Qsequoia2:
         if not self.global_dialog:
             self.global_dialog = GlobalSettingsDialog()
         self.global_dialog.exec_()
+        
+    def open_forest_settings(self):
+        if not self.forest_dialog:
+            self.forest_dialog = ForestSettingsDialog()
+        self.forest_dialog.exec_()
 
     def open_project_settings(self):
+        forest = get_project_variable("forest_prefix")
+        if not forest:
+            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer un projet de carte.")
+            return
+          
         if not self.project_dialog:
             self.project_dialog = ProjectSettingsDialog()
         self.project_dialog.exec_()

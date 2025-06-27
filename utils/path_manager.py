@@ -91,6 +91,31 @@ def get_display_name(logical_key):
     entry, _ = _find_entry(logical_key)
     return entry.get("display_name")
 
+def get_logical_files_from(folder_key: str):
+    """
+    Retourne un dictionnaire {logical_key: {filename, path, full_path}} pour un dossier donné
+    (ex: 'output_folder') dans sig_structure.yaml.
+    """
+    structure = _load_sig_structure()["structure"]
+    
+    if folder_key not in structure:
+        raise KeyError(f"Dossier '{folder_key}' non trouvé dans sig_structure.yaml")
+    
+    folder = structure[folder_key]
+    path = folder.get("path", [])
+    files = folder.get("files", {})
+    
+    result = {}
+    for logical_key, entry in files.items():
+        filename = entry.get("filename")
+        if filename:
+            result[logical_key] = {
+                "filename": filename,
+                "path": path,
+                "full_path": Path(*path) / filename
+            }
+    return result
+  
 # endregion
 
 # region WMS
