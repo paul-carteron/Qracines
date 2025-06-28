@@ -8,9 +8,10 @@ structure:
       enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, }
       enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, }
       geologie: { filename: GEOLOGIE.qgz, }
+      pedology: { filename: PEDOLOGY.qgz, }
       peuplements: { filename: PEUPLEMENTS.qgz, }
       situation: { filename: SITUATION.qgz, }
-      pedology: { filename: PEDOLOGY.qgz, }
+      
 
   raster_folder:
     path: [SIG, 1_RASTER]

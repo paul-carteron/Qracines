@@ -72,7 +72,7 @@ class GlobalSettingsDialog(QDialog):
         agence = _agence_config.get(agence, {})
         parts = [
             agence.get("nom", ""),
-            agence.get("adresspostale", ""),
+            agence.get("adresse", ""),
             agence.get("numero", ""),
             agence.get("mail", ""),
             agence.get("site", ""),
