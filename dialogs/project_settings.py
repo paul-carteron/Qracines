@@ -12,7 +12,7 @@ from ..utils.variable_utils import (
     set_project_variable,
     clear_project
     )
-from ..utils.layer_utils import load_wms, load_vectors, zoom_on_layer, create_map_theme, replier, create_map_project
+from ..utils.layer_utils import load_wms, load_vectors, zoom_on_layer, create_map_theme, replier, create_map_project, configure_snapping
 from ..utils.path_manager import get_wms, get_config_path, get_logical_files_from, get_path
 
 class ProjectSettingsDialog(QDialog):
@@ -63,6 +63,7 @@ class ProjectSettingsDialog(QDialog):
         clear_project()
         if map_project in self.projects:
             create_map_project(map_project.lower(), type_project)
+            configure_snapping()
             self.iface.messageBar().pushMessage("Qsequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
         
         # Save project qgz
