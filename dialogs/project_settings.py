@@ -1,19 +1,14 @@
 from pathlib import Path
 
-from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QCompleter
+from qgis.PyQt.QtWidgets import QDialog
 from qgis.core import Qgis, QgsProject
 from qgis.utils import iface
 from .project_settings_dialog import Ui_ProjectSettingsDialog
-from qgis.PyQt.QtCore import Qt
 
 # Import from utils folder
-from ..utils.variable_utils import (
-    get_project_variable,
-    set_project_variable,
-    clear_project
-    )
-from ..utils.layer_utils import load_wms, load_vectors, zoom_on_layer, create_map_theme, replier, create_map_project, configure_snapping
-from ..utils.path_manager import get_wms, get_config_path, get_logical_files_from, get_path
+from ..utils.variable_utils import get_project_variable, set_project_variable, clear_project
+from ..utils.path_manager import get_project, get_path
+from .. utils.layer_utils import create_map_project, configure_snapping
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, parent=None):
@@ -23,12 +18,11 @@ class ProjectSettingsDialog(QDialog):
         self.ui.setupUi(self)
 
         # Liste des projets possibles
-        output_files = get_logical_files_from("output_folder")
-        self.projects = list(output_files.keys())
+        self.projects = get_project()
 
         cb = self.ui.comboBox_projects
         cb.addItem("") 
-        cb.addItems(self.projects)
+        cb.addItems(self.projects.values())
         cb.setCurrentIndex(0)
         
         # Connecter les boutons
@@ -36,38 +30,25 @@ class ProjectSettingsDialog(QDialog):
 
     def save_settings(self):
       
-        # Liste des noms de variables à récupérer
-        keys = [ 
-           "directory", "dirname", "prefix", "name", "city", "owner",
-           "surface_boisee", "surface_non_boisee", "surface_totale", "formated_surface"
-        ]
-        
-        # Dictionnaire où seront stockées les valeurs récupérées
-        settings = {}
-        
-        # Récupération des variables
-        for key in keys:
-            settings[key] = get_project_variable(f"forest_{key}")
-      
         # Récupère le projet
-        map_project = self.ui.comboBox_projects.currentText()
-        
-        if map_project in self.projects:
-            type_project = "wooded" if settings["surface_non_boisee"] < 0 else "unwooded"
-            set_project_variable("forest_map_project", map_project)
+        selected_project_name = self.ui.comboBox_projects.currentText()
+        project_key = next((key for key, name in self.projects.items() if name == selected_project_name), None)
+
+        if project_key in self.projects:
+            type_project = "wooded" if get_project_variable("forest_surface_non_boisee") < 0 else "unwooded"
+            set_project_variable("forest_map_project", project_key)
             set_project_variable("forest_type_project", type_project)
-        else:
-            type_project = ""
 
         # Lance la création de la map
         clear_project()
-        if map_project in self.projects:
-            create_map_project(map_project.lower(), type_project)
-            configure_snapping()
-            self.iface.messageBar().pushMessage("Qsequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
+
+        if project_key in self.projects:
+            create_map_project(project_key.lower(), type_project)
+            # configure_snapping()
+            self.iface.messageBar().pushMessage("Qsequoia2", f"Projet {project_key} généré avec succès", level=Qgis.Success, duration=10)
         
         # Save project qgz
         if self.ui.checkBox_saved.isChecked():
             project = QgsProject.instance()
-            save_path = get_path(map_project)
+            save_path = get_path(project_key)
             project.write(str(save_path))
