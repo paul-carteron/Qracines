@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="Vector">
     <attribute name="title">
@@ -495,6 +495,37 @@
      </property>
      <property name="text">
       <string>2011-2015</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="Terrain">
+    <attribute name="title">
+     <string>Terrain</string>
+    </attribute>
+    <widget class="QCheckBox" name="checkBox_EXPERTISE">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>91</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Expertise</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_layers_13">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>191</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Parmis les géopackages</string>
      </property>
     </widget>
    </widget>
