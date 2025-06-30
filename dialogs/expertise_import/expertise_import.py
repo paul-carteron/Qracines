@@ -1,11 +1,10 @@
 from PyQt5.QtWidgets import QMessageBox, QDialog, QFileDialog
 from .expertise_import_dialog import Ui_ExpertiseImportDialog
 from qgis.utils import iface
-from qgis.core import QgsVectorLayer, QgsProject, QgsProcessing
+from qgis.core import QgsVectorLayer, QgsProcessing
 
 # Import from utils folder
-from ...utils.variable_utils import get_global_variable, get_project_variable, get_project_variable
-from ...utils.layer_utils import * 
+from ...utils.layer_utils import get_path, load_gpkg
 from ...core.layer_factory import LayerFactory
 
 import processing
@@ -70,7 +69,6 @@ class ExpertiseImportDialog(QDialog):
             merge_layer.setName(layer)
             merged_layers.append(merge_layer)
 
-        print(merged_layers)
         processing.run("native:package", {
             'LAYERS':      merged_layers,
             'OUTPUT':      str(out_path),
@@ -78,4 +76,6 @@ class ExpertiseImportDialog(QDialog):
             'SAVE_STYLES': False
         })
 
-        
+        expertise_gpkg_path = get_path("expertise")
+        load_gpkg(expertise_gpkg_path, group_name="EXPERTISE")
+

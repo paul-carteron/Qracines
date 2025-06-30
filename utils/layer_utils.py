@@ -141,6 +141,43 @@ def load_rasters(*raster_keys, group_name=None):
 
     return loaded_keys
 
+def load_gpkg(gpkg_path, *layers, group_name=None):
+    datasource = ogr.Open(gpkg_path)
+    if datasource is None:
+        raise Exception("Failed to open GeoPackage.")
+
+    project = QgsProject.instance()
+    root = project.layerTreeRoot()
+    group = None
+    if group_name:
+        group = root.findGroup(group_name) or root.addGroup(group_name)
+
+    available_layers = [layer.GetName() for layer in datasource]
+
+    # If no layer names provided, load all
+    layers_to_load = layers or available_layers
+
+    for layer in available_layers:
+        if layer not in layers_to_load:
+            continue
+
+        uri = f"{gpkg_path}|layername={layer}"
+        imported_layer = QgsVectorLayer(uri, layer, 'ogr')
+        # Skip invalid layers
+        if not imported_layer.isValid():
+            QgsMessageLog.logMessage(f"Failed to load gpkg from {gpkg_path}", "Qsequoia2", Qgis.Warning)
+            continue
+
+        # Create group only if a layer will be added
+        if group_name and group is None:
+            group = root.findGroup(group_name) or root.addGroup(group_name)
+
+        project.addMapLayer(imported_layer, not bool(group))
+        if group:
+            group.addLayer(imported_layer)
+
+    return None
+    
 # endregion
 
 def zoom_on_layer(key):
@@ -205,28 +242,6 @@ def deplier(group_name):
   
     if group:
         group.setExpanded(True)
-
-def add_layers_from_gpkg(gpkg_path, *layer_names):
-    datasource = ogr.Open(gpkg_path)
-    if datasource is None:
-        raise Exception("Failed to open GeoPackage.")
-
-    available_layers = [layer.GetName() for layer in datasource]
-
-    # If no layer names provided, load all
-    layers_to_load = layer_names or available_layers
-
-    for layer in reversed(available_layers):
-        if layer not in layers_to_load:
-            continue
-
-        uri = f"{gpkg_path}|layername={layer}"
-        vlayer = QgsVectorLayer(uri, layer, 'ogr')
-        if vlayer.isValid():
-            QgsProject.instance().addMapLayer(vlayer)
-            print(f"✅ Layer '{layer}' added to project")
-        else:
-            print(f"❌ Layer '{layer}' is not valid and was skipped")
 
 def create_relation(parent_name, child_name, parent_field, child_field, relation_id, relation_name):
     """

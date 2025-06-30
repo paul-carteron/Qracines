@@ -20,7 +20,7 @@ from PyQt5.QtGui import QColor
 from ..core.layer_factory import LayerFactory
 from ..core.layer.manager import LayerManager
 from ..utils.path_manager import get_peuplements, get_limites
-from ..utils.layer_utils import add_layers_from_gpkg, create_relation
+from ..utils.layer_utils import load_gpkg, create_relation
 from ..utils.qfield_utils import package_for_qfield
 from ..utils.variable_utils import get_project_variable
 
@@ -146,7 +146,7 @@ class ExpertiseService:
         self.gpkg_path = result['OUTPUT']
 
         # 5) load it back into the project
-        add_layers_from_gpkg(self.gpkg_path)
+        load_gpkg(self.gpkg_path, group_name="EXPERTISE")
 
     def _create_relations(self):
         pairs = [

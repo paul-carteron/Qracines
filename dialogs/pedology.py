@@ -13,7 +13,7 @@ from qgis.utils import iface
 
 from ..utils.path_manager import get_guides, get_style, get_stations, get_path
 from ..utils.variable_utils import clear_project, get_project_variable
-from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer, add_layers_from_gpkg, create_relation, set_layers_readonly
+from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer, load_gpkg, create_relation, set_layers_readonly
 from ..utils.qfield_utils import package_for_qfield
 from ..core.layer_factory import LayerFactory
 from ..core.layer import LayerManager
@@ -63,17 +63,8 @@ class PedologyDialog(QDialog):
         
         guide = self.ui.cob_stations.currentText()
         stations = get_stations(guide)
-        
-        # Vector import
-        load_vectors('prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon')
-        zoom_on_layer('prop_line')
-
-        # Raster import
-        load_rasters('plt','plt_anc','irc','rgb','mnh','scan25', group_name="RASTER")
-
-        replier()
-        
-        layers = [LayerFactory.create("sondage", "PEDOLOGIE"), LayerFactory.create("horizons", "PEDOLOGIE")]
+           
+        layers = [LayerFactory.create("sondage", "PEDOLOGY"), LayerFactory.create("horizons", "PEDOLOGY")]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
@@ -83,7 +74,7 @@ class PedologyDialog(QDialog):
         })
 
         self.gpkg_path = result['OUTPUT']
-        add_layers_from_gpkg(self.gpkg_path)
+        load_gpkg(self.gpkg_path, group_name="PEDOLOGY")
 
         # Création de la relation
         create_relation('sondage', 'horizons', 'uuid', 'sondage', 'sondage_horizons','sondage')
@@ -101,6 +92,15 @@ class PedologyDialog(QDialog):
         sondage_mgr = LayerManager('sondage')
         sondage_mgr.fields.add_value_map('station', {'map': [{str(s): str(s)} for s in stations]})
         
+        # Vector import
+        load_vectors('prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon', group_name="VECTOR")
+        zoom_on_layer('prop_line')
+
+        # Raster import
+        load_rasters('plt','plt_anc','irc','rgb','mnh','scan25', group_name="RASTER")
+
+        replier()
+
         # Création des thèmes
         map_themes = [
                 ("1_PLT",
