@@ -11,7 +11,6 @@ structure:
       pedology: { filename: PEDOLOGY.qgz, display_name: Pédologie }
       peuplements: { filename: PEUPLEMENTS.qgz, display_name: Peuplements }
       situation: { filename: SITUATION.qgz, display_name: Situation }
-      
 
   raster_folder:
     path: [SIG, 1_RASTER]

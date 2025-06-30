@@ -363,10 +363,10 @@ def configure_snapping(layer_names=None):
     # 1. Activer l'accrochage global
     config.setEnabled(True)
     # config.setMode(Qgis.SnappingMode.AllLayers)
-    config.setMode(Qgis.SnappingMode.AdvancedConfiguration)
+    # config.setMode(Qgis.SnappingMode.AdvancedConfiguration)
 
     # 2. Réglages globaux (pour tolérance, types…)
-    snapping_types = (
+    snapping_types = Qgis.SnappingTypes(
         Qgis.SnappingType.Vertex |
         Qgis.SnappingType.Segment |
         Qgis.SnappingType.MiddleOfSegment |

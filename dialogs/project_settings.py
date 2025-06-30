@@ -44,7 +44,7 @@ class ProjectSettingsDialog(QDialog):
 
         if project_key in self.projects:
             create_map_project(project_key.lower(), type_project)
-            # configure_snapping()
+            configure_snapping()
             self.iface.messageBar().pushMessage("Qsequoia2", f"Projet {project_key} généré avec succès", level=Qgis.Success, duration=10)
         
         # Save project qgz
