@@ -91,6 +91,18 @@ def get_display_name(logical_key):
     entry, _ = _find_entry(logical_key)
     return entry.get("display_name")
 
+def get_project(folder: str = "output_folder"):
+
+    structure = _load_sig_structure()["structure"]
+
+    if folder not in structure:
+        raise KeyError(f"Dossier '{folder}' non trouvé dans sig_structure.yaml")
+
+    files = structure[folder]["files"]
+    project_names = {key: get_display_name(key) for key in files.keys()}
+
+    return project_names
+  
 # endregion
 
 # region WMS

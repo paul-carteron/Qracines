@@ -113,10 +113,10 @@ map_project:
       layers: ['prop_line', 'pf_line', 'pf_polygon', 'geol_polygon' ]
     wms:
       group_name: wms
-      layers: ['geol']
+      layers: ['wms_geol']
     themes:
       - name: 1_geol
-        visible: ['geol_polygon', 'pf_polygon', 'pf_line', 'prop_line', geol]
+        visible: ['geol_polygon', 'pf_polygon', 'pf_line', 'prop_line', wms_geol]
         hidden: ['parca_polygon_legend']
         
   enjeux_wooded:

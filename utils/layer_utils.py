@@ -8,7 +8,9 @@ from qgis.core import (
     QgsLayerTreeGroup,
     QgsMapThemeCollection,
     QgsRelation,
-    QgsEditorWidgetSetup
+    QgsEditorWidgetSetup,
+    QgsSnappingConfig,
+    QgsTolerance
 )
 from qgis.utils import iface
 from osgeo import ogr
@@ -170,6 +172,7 @@ def _set_layer_visibility(layer_name, visible):
         node.setItemVisibilityChecked(visible)
 
 def create_map_theme(theme_name, visible_keys, invisible_keys):
+  
     def _resolve_name(key):
         try:
             return get_display_name(key)
@@ -295,7 +298,7 @@ def set_layers_readonly(*keys):
                 vector_layer.setReadOnly(True)
 
 def create_map_project(map_project, type_project, layer_registry=None):
-
+    
     # Lecture du YAML
     cfg_path = get_config_path("map_project.yaml")
     with open(cfg_path, 'r') as f:
@@ -352,3 +355,57 @@ def create_map_project(map_project, type_project, layer_registry=None):
     layer = QgsProject.instance().mapLayersByName("IGN SCAN 25 TOPO (Metropole) gray")
     if layer:
         layer[0].setOpacity(0.5)
+
+def configure_snapping(layer_names=None):
+    project = QgsProject.instance()
+    config = project.snappingConfig()
+
+    # 1. Activer l'accrochage global
+    config.setEnabled(True)
+    # config.setMode(Qgis.SnappingMode.AllLayers)
+    # config.setMode(Qgis.SnappingMode.AdvancedConfiguration)
+
+    # 2. Réglages globaux (pour tolérance, types…)
+    snapping_types = Qgis.SnappingTypes(
+        Qgis.SnappingType.Vertex |
+        Qgis.SnappingType.Segment |
+        Qgis.SnappingType.MiddleOfSegment |
+        Qgis.SnappingType.LineEndpoint
+    )
+    config.setTypeFlag(snapping_types)
+    config.setTolerance(15)
+    config.setUnits(QgsTolerance.Pixels)
+    project.setTopologicalEditing(True)
+    config.setIntersectionSnapping(True)
+    config.setSelfSnapping(False)
+    
+    # 3. Définir la liste des couches ciblées
+    if not layer_names:
+        layers = [
+            layer for layer in project.mapLayers().values()
+            if isinstance(layer, QgsVectorLayer)
+        ]
+    else:
+        layers = []
+        for name in layer_names:
+            display_name = get_display_name(name)
+            matched = project.mapLayersByName(display_name)
+            if not matched:
+                print(f"⚠️ Couche non trouvée : {name}")
+            else:
+                layers.append(matched[0])
+                
+                
+    # 4. Appliquer les réglages individuels
+    config.clearIndividualLayerSettings()
+    for layer in layers:
+        settings = QgsSnappingConfig.IndividualLayerSettings(
+            True,
+            snapping_types,
+            15.0,
+            Qgis.MapToolUnit.Pixels
+        )
+        config.setIndividualLayerSettings(layer, settings)
+
+    # 5. Appliquer la configuration globale
+    project.setSnappingConfig(config)

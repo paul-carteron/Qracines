@@ -2,15 +2,15 @@ structure:
   output_folder:
     path: [SIG, 0_OUTPUT]
     files:
-      amenagements: { filename: AMENAGEMENTS.qgz, }
-      assemblage: { filename: ASSEMBLAGE.qgz, }
-      enjeux_environnementaux: { filename: ENJEUX_ENVIRONNEMENTAUX.qgz, }
-      enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, }
-      enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, }
-      geologie: { filename: GEOLOGIE.qgz, }
-      peuplements: { filename: PEUPLEMENTS.qgz, }
-      situation: { filename: SITUATION.qgz, }
-      pedology: { filename: PEDOLOGY.qgz, }
+      amenagements: { filename: AMENAGEMENTS.qgz, display_name: Aménagements }
+      assemblage: { filename: ASSEMBLAGE.qgz, display_name: Assemblage }
+      enjeux_environnementaux: { filename: ENJEUX_ENVIRONNEMENTAUX.qgz, display_name: "Enjeux environnementaux" }
+      enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, display_name: "Enjeux patrimoniaux" }
+      enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, display_name: "Enjeux sociaux" }
+      geologie: { filename: GEOLOGIE.qgz, display_name: Géologie }
+      pedology: { filename: PEDOLOGY.qgz, display_name: Pédologie }
+      peuplements: { filename: PEUPLEMENTS.qgz, display_name: Peuplements }
+      situation: { filename: SITUATION.qgz, display_name: Situation }
 
   raster_folder:
     path: [SIG, 1_RASTER]
