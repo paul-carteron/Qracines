@@ -24,7 +24,6 @@ structure:
       rgb: { filename: "RGB.tif", display_name: "BD ORTHO - Couleur"}
       scan25: { filename: "SCAN25.tif", style: "SCAN25.qml", display_name: "Scan 25"}
 
-
   vector_folder:
     path: [SIG, 2_VECTOR]
     files:
@@ -89,3 +88,9 @@ structure:
       diagnostic: { filename: diagnostic.gpkg }
       diag_qfield: { filename: diag_qfield.zip }
       pedology_qfield: { filename: pedology.zip }
+
+  gpkg_folder:
+    path: [SIG, 4_TERRAIN]
+    files:
+      expertise: { filename: expertise.gpkg }
+

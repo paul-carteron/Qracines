@@ -10,7 +10,8 @@ from .dialogs.add_data import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
 from .dialogs.tree_marking import *
-from .dialogs.expertise import *
+from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -185,22 +186,33 @@ class Qsequoia2:
     
     # EXPERTISE
     def open_expertise_create(self):
-        forest = get_project_variable("forest_prefix")
-        if not forest:
-            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
-            return
+        if not self._check_forest_is_selected():
+            return None
         
         if not self.expertise_create:
-            self.expertise_create = ExpertiseDialog(mode="create")
+            self.expertise_create = ExpertiseCreateDialog()
         self.expertise_create.exec_()
         
     def open_expertise_import(self):
+        if not self._check_forest_is_selected():
+            return None
+
         if not self.expertise_import:
-            self.expertise_import = ExpertiseDialog(mode="import")
+            self.expertise_import = ExpertiseImportDialog()
         self.expertise_import.exec_()
         
     # endregion
     
+    @staticmethod
+    def _check_forest_is_selected():
+        forest = get_project_variable("forest_prefix")
+        if not forest:
+            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
+            return False
+        return True
+        
+
+        
     def unload(self):
         for btn in self.buttons:
             btn.unload(self.toolbar)

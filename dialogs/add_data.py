@@ -52,6 +52,10 @@ class AddDataDialog(QDialog):
             self.ui.checkBox_GEOL: "wms_geol",
             self.ui.checkBox_PCI: "wms_pci",
         }
+        
+        self.TERRAIN_CHECKBOX_KEY_MAP = {
+            self.ui.checkBox_EXPERTISE: "expertise",
+        }
 
         self.ui.buttonBox.clicked.connect(self.add_data)
     
@@ -60,6 +64,7 @@ class AddDataDialog(QDialog):
         self._add_vector()
         self._add_raster()
         self._add_wms()
+        self._add_terrain()
 
     def _check_variables(self):
         styles_directory = get_global_variable("styles_directory")
@@ -92,3 +97,9 @@ class AddDataDialog(QDialog):
         wms_keys = [key for cb, key in self.WMS_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
         if wms_keys:
             load_wms(*wms_keys, group_name="added_wms")
+
+    def _add_terrain(self):
+        # flatten list of list
+        gpkg_keys = [key for cb, key in self.TERRAIN_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
+        if gpkg_keys:
+            [load_gpkg(get_path(key), group_name="added_terrain") for key in gpkg_keys]

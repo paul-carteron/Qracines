@@ -8,34 +8,22 @@ from PyQt5.QtWidgets import (
 
 from pathlib import Path
 
-from .expertise_dialog import Ui_ExpertiseDialog
-from .expertise_import import Ui_ExpertiseImportDialog
+from .expertise_create_dialog import Ui_ExpertiseDialog
 
-from ..core.db.manager import DatabaseManager
-from ..core.expertise_service import ExpertiseService
+from ...core.db.manager import DatabaseManager
+from ...core.expertise_service import ExpertiseService
 
-from ..utils.path_manager import get_racines_path
-from ..utils.variable_utils import clear_project, get_project_variable, set_project_variable
-from ..utils.layer_utils import load_rasters, zoom_on_layer, load_vectors
+from ...utils.path_manager import get_racines_path
+from ...utils.variable_utils import clear_project, get_project_variable, set_project_variable
+from ...utils.layer_utils import load_rasters, zoom_on_layer, load_vectors, replier
 
-class ExpertiseDialog(QDialog):
-    def __init__(self, mode="create", parent=None):
+class ExpertiseCreateDialog(QDialog):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.mode = mode
-        
-        if self.mode == "create":
-            self.ui = Ui_ExpertiseDialog()
-        elif self.mode == "import":
-            self.ui = Ui_ExpertiseImportDialog()
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
-        
+        self.ui = Ui_ExpertiseDialog()
         self.ui.setupUi(self)
-        
-        if self.mode == "import":
-            self.ui.pb_import_files.clicked.connect(self.import_files)
-        else:
-            self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
+       
+        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
         # --- initialize diam/hauteur ---
         self.restore_dh_values()
@@ -268,9 +256,10 @@ class ExpertiseDialog(QDialog):
         )
 
         try:
+            packaged_dir = svc.run_full_diagnostic()
             load_vectors("ua_polygon", group_name= "VECTOR")
             self._load_selected_rasters()
-            packaged_dir = svc.run_full_diagnostic()
+            replier()
 
             if packaged_dir:
                 QMessageBox.information(self, "Succès", f"Expertise complète !\nProjet packagé dans :\n{packaged_dir}")
@@ -284,15 +273,13 @@ class ExpertiseDialog(QDialog):
             QMessageBox.critical(self, "Erreur", f"Une erreur est survenue :\n{e}")
 
     def accept(self):
-        if self.mode == "create":
-            self.save_checkbox_states()
-            self.save_species_selection()
-            self.save_dh_values()
+        self.save_checkbox_states()
+        self.save_species_selection()
+        self.save_dh_values()
         super().accept()
 
     def reject(self):
-        if self.mode == "create":
-            self.save_checkbox_states()
-            self.save_species_selection()
-            self.save_dh_values()
+        self.save_checkbox_states()
+        self.save_species_selection()
+        self.save_dh_values()
         super().reject()

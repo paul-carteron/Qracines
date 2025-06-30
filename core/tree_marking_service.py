@@ -20,7 +20,7 @@ from PyQt5.QtGui import QFont
 from ..core.layer_factory import LayerFactory
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
-from ..utils.layer_utils import add_layers_from_gpkg
+from ..utils.layer_utils import load_gpkg
 from ..utils.qfield_utils import package_for_qfield
 from ..utils.variable_utils import get_project_variable
 
@@ -99,7 +99,7 @@ class TreeMarkingService:
         self.gpkg_path = result['OUTPUT']
 
         # 5) load it back into the project
-        add_layers_from_gpkg(self.gpkg_path)
+        load_gpkg(self.gpkg_path)
 
     @staticmethod
     def _init_form(arbres_manager):
