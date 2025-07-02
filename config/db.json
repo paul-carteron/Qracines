@@ -1,7 +1,7 @@
 {
-  "db_host": "c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com",
+  "db_username": "u7bmh1falsq559",
+  "db_password": "p875c2d7cbfcbe0a57c4e30ec2785733bf5617444486a1e1799264b7c1757319a",
+  "db_host": "cah8ha8ra8h8i7.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com",
   "db_port": "5432",
-  "db_database": "dfmt7djs1uirmt",
-  "db_username": "ueo45oicvq7lh8",
-  "db_password": "p128a3e76b86b7246f203e2e8e51286f5790546134f0e6075ab0b82f4ae16412d"
+  "db_database": "dc8e2b20gbpgva"
 }

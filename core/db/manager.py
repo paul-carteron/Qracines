@@ -44,7 +44,8 @@ class DatabaseManager:
     @staticmethod
     def q_essences():
         query = """
-        SELECT ev.id as fid,
+        SELECT 
+            ev.id as fid,
             e.name AS essence,
             concat_ws(' ', e.name, ev.variation) AS essence_variation,
             e.code,
@@ -53,7 +54,6 @@ class DatabaseManager:
             e.type
         FROM public.gestion_essencevariation AS ev
         JOIN public.gestion_essence AS e ON ev.essence_id = e.id
-        WHERE concat_ws(' ', e.name, ev.variation) NOT LIKE '%sain%'
         ORDER BY ev.ordre ASC
         """
         return query
