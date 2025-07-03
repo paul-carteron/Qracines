@@ -89,11 +89,8 @@ class ExpertiseImportDialog(QDialog):
 
     def format_tra(self):
 
-        tra = self.project.mapLayersByName('transect')[0]
-        ess = self.project.instance().mapLayersByName('essences')[0]
-
         tra_with_ess_id = processing.run("qgis:fieldcalculator", {
-            'INPUT': tra,
+            'INPUT': self.tra,
             'FIELD_NAME': 'ESSENCE_ID',
             'FIELD_TYPE': 1,
             'FIELD_LENGTH': 50,
@@ -112,7 +109,7 @@ class ExpertiseImportDialog(QDialog):
         tra_with_ess = processing.run("qgis:joinattributestable", {
             'INPUT': tra_with_ess_id,
             'FIELD': 'ESSENCE_ID',
-            'INPUT_2': ess,
+            'INPUT_2': self.ess,
             'FIELD_2': 'fid',
             'FIELDS_TO_COPY': ['essence', 'code', 'variation', 'type'],  # adjust if field names differ
             'METHOD': 1,  # Take only matching
@@ -143,22 +140,18 @@ class ExpertiseImportDialog(QDialog):
 
     def format_gha(self):
 
-        gha = self.project.mapLayersByName('gha')[0]
-        ess = self.project.instance().mapLayersByName('essences')[0] 
-        pla = self.project.instance().mapLayersByName('placette')[0] 
-
-        gha_with_ess_id = calculate_essence_id(gha, "GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID")
-        gha_with_ess = merge_with_ess(gha_with_ess_id, ess)
+        gha_with_ess_id = calculate_essence_id(self.gha, "GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID")
+        gha_with_ess = merge_with_ess(gha_with_ess_id, self.ess)
         
         gha_with_pla = processing.run("qgis:joinattributestable", {
             'INPUT': gha_with_ess,
             'FIELD': 'UUID',
-            'INPUT_2': pla,
+            'INPUT_2': self.pla,
             'FIELD_2': 'UUID',
             'FIELDS_TO_COPY': ['fid', "PLTM_PARCELLE", "PLTM_STRATE", "PLTM_TYPE"],  # adjust if field names differ
             'METHOD': 1,  # Take only matching
             'DISCARD_NONMATCHING': False,
-            'PREFIX': 'pla',
+            'PREFIX': '',
             'OUTPUT': 'memory:'
         })['OUTPUT']
 
@@ -170,9 +163,10 @@ class ExpertiseImportDialog(QDialog):
                 {'expression': '"PLTM_PARCELLE"',  'name': 'PARCELLE',    'type': 10, 'length': 50, 'precision': 0},
                 {'expression': '"PLTM_TYPE"',      'name': 'PEUPLEMENT',  'type': 10, 'length': 50, 'precision': 0},
                 {'expression': '"GHA_G"',          'name': 'G',           'type': 2,  'length': 50, 'precision': 0},
-                {'expression': '"essence"',        'name': 'ESSENCE',     'type': 10, 'length': 50, 'precision': 0},
-                {'expression': '"variation"',      'name': 'VARIATION',   'type': 10, 'length': 50, 'precision': 0},
-                {'expression': '"type"',           'name': 'TYPE',        'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"code"',           'name': 'CODE',      'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"essence"',        'name': 'ESSENCE',   'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"variation"',      'name': 'VARIATION', 'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"type"',           'name': 'TYPE',      'type': 10, 'length': 50, 'precision': 0},
             ],
             'OUTPUT': 'memory:'
         })['OUTPUT']
@@ -181,8 +175,123 @@ class ExpertiseImportDialog(QDialog):
 
         return formated_gha
 
+    def format_va(self):
+
+        va_with_ess_id = calculate_essence_id(self.va, "VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID")
+        va_with_ess = merge_with_ess(va_with_ess_id, self.ess)
+        
+        va_with_pla = processing.run("qgis:joinattributestable", {
+            'INPUT': va_with_ess,
+            'FIELD': 'UUID',
+            'INPUT_2': self.pla,
+            'FIELD_2': 'UUID',
+            'FIELDS_TO_COPY': ['fid', "PLTM_PARCELLE", "PLTM_STRATE", "PLTM_TYPE", "VA_TX_TROUEE"],  # adjust if field names differ
+            'METHOD': 1,  # Take only matching
+            'DISCARD_NONMATCHING': False,
+            'PREFIX': '',
+            'OUTPUT': 'memory:'
+        })['OUTPUT']
+
+        formated_va = processing.run("qgis:refactorfields", {
+            'INPUT': va_with_pla,
+            'FIELDS_MAPPING': [
+                {'expression': '"fid_2"',          'name': 'PLACETTE',      'type': 2,  'length': 50, 'precision': 0},
+                {'expression': '"PLTM_STRATE"',    'name': 'STRATE',        'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"PLTM_PARCELLE"',  'name': 'PARCELLE',      'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"PLTM_TYPE"',      'name': 'PEUPLEMENT',    'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"code"',           'name': 'CODE',      'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"essence"',        'name': 'ESSENCE',   'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"variation"',      'name': 'VARIATION', 'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"type"',           'name': 'TYPE',      'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"VA_TX_TROUEE"',   'name': 'TX_TROUEE',     'type': 2,  'length': 50, 'precision': 0},
+                {'expression': '"VA_AGE_APP"',     'name': 'AGE',           'type': 2,  'length': 50, 'precision': 0},
+                {'expression': '"VA_TX_HA"',       'name': 'RECOUVREMENT',  'type': 2,  'length': 50, 'precision': 0},
+                {'expression': '"CUMUL_TX_VA"',    'name': 'CUMUL',         'type': 2, ' length': 50, 'precision': 0},
+            ],
+            'OUTPUT': 'memory:'
+        })['OUTPUT']
+
+        formated_va.setName("va")
+
+        return formated_va
+    
+    def format_tse(self):
+
+        tse_with_ess_id = calculate_essence_id(self.tse, "TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID")
+        tse_with_ess = merge_with_ess(tse_with_ess_id, self.ess)
+        
+        tse_with_pla = processing.run("qgis:joinattributestable", {
+            'INPUT': tse_with_ess,
+            'FIELD': 'UUID',
+            'INPUT_2': self.pla,
+            'FIELD_2': 'UUID',
+            'FIELDS_TO_COPY': ['fid', "PLTM_PARCELLE", "PLTM_STRATE", "PLTM_TYPE", "TSE_STERE_HA"],  # adjust if field names differ
+            'METHOD': 1,  # Take only matching
+            'DISCARD_NONMATCHING': False,
+            'PREFIX': '',
+            'OUTPUT': 'memory:'
+        })['OUTPUT']
+
+        formated_tse = processing.run("qgis:refactorfields", {
+            'INPUT': tse_with_pla,
+            'FIELDS_MAPPING': [
+                {'expression': '"fid_2"',          'name': 'PLACETTE',      'type': 2,   'length': 50, 'precision': 0},
+                {'expression': '"PLTM_STRATE"',    'name': 'STRATE',        'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"PLTM_PARCELLE"',  'name': 'PARCELLE',      'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"PLTM_TYPE"',      'name': 'PEUPLEMENT',    'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"TSE_STERE_HA"',   'name': 'STERE_HA',      'type': 2,   'length': 50, 'precision': 0},
+                {'expression': '"code"',           'name': 'CODE',          'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"essence"',        'name': 'ESSENCE',       'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"variation"',      'name': 'VARIATION',     'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"type"',           'name': 'TYPE',          'type': 10,  'length': 50, 'precision': 0},
+            ],
+            'OUTPUT': 'memory:'
+        })['OUTPUT']
+
+        formated_tse.setName("tse")
+
+        return formated_tse
+
+    def format_reg(self):
+
+        reg_with_ess_id = calculate_essence_id(self.reg, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID")
+        reg_with_ess = merge_with_ess(reg_with_ess_id, self.ess)
+        
+        reg_with_pla = processing.run("qgis:joinattributestable", {
+            'INPUT': reg_with_ess,
+            'FIELD': 'UUID',
+            'INPUT_2': self.pla,
+            'FIELD_2': 'UUID',
+            'FIELDS_TO_COPY': ['fid', "PLTM_PARCELLE", "PLTM_STRATE", "PLTM_TYPE"],  # adjust if field names differ
+            'METHOD': 1,  # Take only matching
+            'DISCARD_NONMATCHING': False,
+            'PREFIX': '',
+            'OUTPUT': 'memory:'
+        })['OUTPUT']
+
+        formated_reg = processing.run("qgis:refactorfields", {
+            'INPUT': reg_with_pla,
+            'FIELDS_MAPPING': [
+                {'expression': '"fid_2"',          'name': 'PLACETTE',      'type': 2,   'length': 50, 'precision': 0},
+                {'expression': '"PLTM_STRATE"',    'name': 'STRATE',        'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"PLTM_PARCELLE"',  'name': 'PARCELLE',      'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"PLTM_TYPE"',      'name': 'PEUPLEMENT',    'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"REG_STADE"',      'name': 'TX_TROUEE',     'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"REG_ETAT"',       'name': 'AGE',           'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"code"',           'name': 'CODE',          'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"essence"',        'name': 'ESSENCE',       'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"variation"',      'name': 'VARIATION',     'type': 10,  'length': 50, 'precision': 0},
+                {'expression': '"type"',           'name': 'TYPE',          'type': 10,  'length': 50, 'precision': 0},
+            ],
+            'OUTPUT': 'memory:'
+        })['OUTPUT']
+
+        formated_reg.setName("reg")
+
+        return formated_reg
+
     @staticmethod
-    def save_as_xlsx(*layers, path = get_path("expertise_synthese")):
+    def save_as_xlsx(*layers, path):
 
         processing.run("native:exporttospreadsheet", {
             'LAYERS': list(layers),
@@ -195,9 +304,27 @@ class ExpertiseImportDialog(QDialog):
     def _on_accept(self):
         try:
             self.merge_files()
+
+            self.ess = self.project.instance().mapLayersByName('essences')[0]
+            self.pla = self.project.mapLayersByName('placette')[0]
+            
+            self.tra = self.project.mapLayersByName('transect')[0]
+            self.gha = self.project.mapLayersByName('gha')[0]
+            self.va = self.project.mapLayersByName('va')[0]
+            self.tse = self.project.mapLayersByName('tse')[0]
+            self.reg = self.project.mapLayersByName('reg')[0]
+
             formated_tra = self.format_tra()
             formated_gha = self.format_gha()
-            self.save_as_xlsx(formated_tra, formated_gha)
+            formated_va = self.format_va()
+            formated_tse = self.format_tse()
+            formated_reg = self.format_reg()
+
+            out_path = get_path("expertise_synthese")
+            self.save_as_xlsx(formated_tra, formated_gha, formated_va, formated_tse, formated_reg, path = out_path)
+            
+            QMessageBox.information(self, "Succès",  f"Géopackage(s) compilé(s) et extrait(s) dans :\n{out_path}")
+            return
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {e}")
