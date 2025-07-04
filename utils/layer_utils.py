@@ -9,8 +9,6 @@ from qgis.core import (
     QgsMapThemeCollection,
     QgsRelation,
     QgsEditorWidgetSetup,
-    QgsSnappingConfig,
-    QgsTolerance
 )
 from qgis.utils import iface
 from osgeo import ogr
@@ -371,56 +369,41 @@ def create_map_project(map_project, type_project, layer_registry=None):
     if layer:
         layer[0].setOpacity(0.5)
 
-def configure_snapping(layer_names=None):
+def configure_snapping():
     project = QgsProject.instance()
-    config = project.snappingConfig()
+    cfg = project.snappingConfig()       # référence vers la config actuelle
 
-    # 1. Activer l'accrochage global
-    config.setEnabled(True)
-    # config.setMode(Qgis.SnappingMode.AllLayers)
-    # config.setMode(Qgis.SnappingMode.AdvancedConfiguration)
+    # 1. Activation globale
+    cfg.setEnabled(True)
 
-    # 2. Réglages globaux (pour tolérance, types…)
-    snapping_types = Qgis.SnappingTypes(
-        Qgis.SnappingType.Vertex |
-        Qgis.SnappingType.Segment |
-        Qgis.SnappingType.MiddleOfSegment |
-        Qgis.SnappingType.LineEndpoint
-    )
-    config.setTypeFlag(snapping_types)
-    config.setTolerance(15)
-    config.setUnits(QgsTolerance.Pixels)
-    project.setTopologicalEditing(True)
-    config.setIntersectionSnapping(True)
-    config.setSelfSnapping(False)
-    
-    # 3. Définir la liste des couches ciblées
-    if not layer_names:
-        layers = [
-            layer for layer in project.mapLayers().values()
-            if isinstance(layer, QgsVectorLayer)
-        ]
-    else:
-        layers = []
-        for name in layer_names:
-            display_name = get_display_name(name)
-            matched = project.mapLayersByName(display_name)
-            if not matched:
-                print(f"⚠️ Couche non trouvée : {name}")
-            else:
-                layers.append(matched[0])
-                
-                
-    # 4. Appliquer les réglages individuels
-    config.clearIndividualLayerSettings()
-    for layer in layers:
-        settings = QgsSnappingConfig.IndividualLayerSettings(
-            True,
-            snapping_types,
-            15.0,
-            Qgis.MapToolUnit.Pixels
+    # 2. Accrochage sur toutes les couches
+    cfg.setMode(Qgis.SnappingMode.AllLayers)
+
+    # 3. Types d’accrochage
+    cfg.setTypeFlag(
+        Qgis.SnappingTypes(
+            Qgis.SnappingType.Vertex |
+            Qgis.SnappingType.Segment |
+            Qgis.SnappingType.MiddleOfSegment |
+            Qgis.SnappingType.LineEndpoint
         )
-        config.setIndividualLayerSettings(layer, settings)
+    )
 
-    # 5. Appliquer la configuration globale
-    project.setSnappingConfig(config)
+    # 4. Tolérance & unités
+    cfg.setTolerance(15)                         # 15 px
+    cfg.setUnits(Qgis.MapToolUnit.Pixels)
+
+    # 5. Snapping divers
+    cfg.setIntersectionSnapping(True)            # attraper les intersections
+    cfg.setSelfSnapping(False)                   # pas de self-snapping (≥ 3.14)
+
+    # 6. Options de topologie & chevauchement
+    project.setTopologicalEditing(True)
+    project.setAvoidIntersectionsMode(
+        Qgis.AvoidIntersectionsMode.AllowIntersections
+    )
+
+    # 7. On pousse la config et on rafraîchit éventuellement le canevas
+    project.setSnappingConfig(cfg)                                  
+
+    return None
