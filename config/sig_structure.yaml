@@ -93,4 +93,5 @@ structure:
     path: [SIG, 4_TERRAIN]
     files:
       expertise: { filename: expertise.gpkg }
+      expertise_synthese: { filename: expertise.xlsx }
 
