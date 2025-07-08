@@ -1,25 +1,14 @@
-from PyQt5.QtWidgets import (
-    QDialog,
-    QMessageBox,
-    QAbstractItemView,
-    QFileDialog
-    )
-
-
-from pathlib import Path
+from PyQt5.QtWidgets import QDialog, QMessageBox
 
 from .expertise_create_dialog import Ui_ExpertiseCreateDialog
 from .expertise_service import ExpertiseService
 
-from ..base import RasterController, QfieldPackager, SpeciesSelector
-
 from ...core.db.manager import DatabaseManager
 
 from ...utils.path_manager import get_racines_path
-from ...utils.variable_utils import clear_project, get_project_variable, set_project_variable
-from ...utils.layer_utils import load_rasters, zoom_on_layer, load_vectors, replier
-
-import unicodedata
+from ...utils.variable_utils import clear_project, get_project_variable
+from ...utils.layer_utils import load_vectors
+from ...utils.ui_helpers import RasterController, QfieldPackager, SpeciesSelector
 
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):

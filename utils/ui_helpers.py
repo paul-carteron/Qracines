@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox
 from qgis.gui import QgsFileWidget
-from ..utils.variable_utils import get_project_variable
-from ..utils.layer_utils import load_rasters, zoom_on_layer, replier
+from .variable_utils import get_project_variable
+from .layer_utils import load_rasters, zoom_on_layer, replier
 
 import unicodedata
 from pathlib import Path
