@@ -64,6 +64,7 @@ class TreeMarkingCreateDialog(QDialog):
             dmax=self.ui.sp_dmax.value(),
             hmin=self.ui.sp_hmin.value(),
             hmax=self.ui.sp_hmax.value(),
+            essences_layer = self.essences_layer
         )
 
         try:

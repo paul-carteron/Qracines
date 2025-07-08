@@ -36,6 +36,7 @@ class TreeMarkingService:
         dmax: int,
         hmin: int,
         hmax: int,
+        essences_layer,
     ):
         self.iface = iface
         self.project = QgsProject.instance()
@@ -45,7 +46,7 @@ class TreeMarkingService:
         self.codes = codes
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
-        self.essences_layer = DatabaseManager().load_essences("essences")
+        self.essences_layer = essences_layer
 
     def run_full_diagnostic(self):
         """
