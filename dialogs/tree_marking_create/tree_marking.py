@@ -4,15 +4,14 @@ from pathlib import Path
 
 from .tree_marking_dialog import Ui_TreeMarkingCreateDialog
 from .tree_marking_service import TreeMarkingService
-from ..base import RasterCheckboxMixin, SpeciesSelectionMixin, QfieldPackageMixin
+from ..base import RasterController, SpeciesSelector, QfieldPackager
 
 from ...core.db.manager import DatabaseManager
 
 from ...utils.path_manager import get_racines_path
 from ...utils.variable_utils import clear_project, get_project_variable
-from ...utils.layer_utils import load_rasters, zoom_on_layer, replier
 
-class TreeMarkingCreateDialog(QDialog, QfieldPackageMixin, RasterCheckboxMixin, SpeciesSelectionMixin):
+class TreeMarkingCreateDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -24,8 +23,7 @@ class TreeMarkingCreateDialog(QDialog, QfieldPackageMixin, RasterCheckboxMixin, 
         self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
         # --- initialize from mixin ---
-        self.init_raster_checkboxes(
-            raster_checkbox = {
+        raster_checkbox = {
             #   'key':     'checkbox_name',
                 'plt_anc': 'cb_plt_anc',
                 'plt':     'cb_plt',
@@ -33,32 +31,35 @@ class TreeMarkingCreateDialog(QDialog, QfieldPackageMixin, RasterCheckboxMixin, 
                 'scan25':  'cb_scan25',
                 'irc':     'cb_irc',
                 'rgb':     'cb_rgb',
-            })
-        self.init_species_selection(
-            choices =  'lw_species', 
-            selected = 'lw_selected_species',
-            add =      'pb_add_species', 
-            remove =   'pb_remove_species',
-            filter =   'le_filter_species'
-            )
-        self.init_qfield_package(
-            package_ui = 'cb_package_for_qfield',
-            outdir_ui = 'fw_outdir',
-            default_dir = get_racines_path("expertise", "Inventaire")
+            }
+        self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
+        
+        self.ess_selector = SpeciesSelector(
+            ui = self.ui, layer = self.essences_layer,
+            choices="lw_species", selected="lw_selected_species",
+            add="pb_add_species", remove="pb_remove_species",
+            filter="le_filter_species"
         )
 
-        # --- connect buttons ---
-        self.ui.buttonBox.accepted.connect(self._on_accept)
+        self.packager = QfieldPackager(
+            self.ui,
+            default_dir = get_racines_path("expertise", "Inventaire"),
+            package_ui = 'cb_package_for_qfield',
+            outdir_ui = 'fw_outdir'
+            )
 
-    def _on_accept(self):
+    def accept(self):
+
+        if not self.ess_selector.is_valid():
+            return
 
         clear_project()
 
         # 2) call service
         svc = TreeMarkingService(
-            output_dir=self.get_qfield_outdir(),
+            output_dir=self.packager.get_qfield_outdir(),
             package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
-            codes=self.selected_codes(),
+            codes=self.ess_selector.selected_codes(),
             dmin=self.ui.sp_dmin.value(),
             dmax=self.ui.sp_dmax.value(),
             hmin=self.ui.sp_hmin.value(),
@@ -67,15 +68,14 @@ class TreeMarkingCreateDialog(QDialog, QfieldPackageMixin, RasterCheckboxMixin, 
 
         try:
             packaged_dir = svc.run_full_diagnostic()
-            self.load_selected_rasters()
-            replier()
+            self.raster_controller.load_selected_rasters()
 
             if packaged_dir:
                 QMessageBox.information(self, "Succès", f"Inventaire complet !\nProjet packagé dans :\n{packaged_dir}")
             else:
                 QMessageBox.information(self, "Succès", "Inventaire complet !")
 
-            self.accept()
+            super().accept()
 
         except Exception as e:
             # everything else bubbles up here

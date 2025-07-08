@@ -20,7 +20,7 @@ from PyQt5.QtGui import QFont
 from ...core.layer_factory import LayerFactory
 from ...core.db.manager import DatabaseManager
 from ...core.layer.manager import LayerManager
-from ...utils.layer_utils import load_gpkg
+from ...utils.layer_utils import load_gpkg, replier
 from ...utils.qfield_utils import package_for_qfield
 from ...utils.variable_utils import get_project_variable
 
@@ -73,6 +73,8 @@ class TreeMarkingService:
         self._configure_favori(arbres_manager)
         self._configure_fid_code(arbres_manager)
         self._configure_labelling(arbres_manager)
+
+        replier()
 
         arbres_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 

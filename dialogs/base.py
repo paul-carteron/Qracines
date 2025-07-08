@@ -1,48 +1,41 @@
 from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox
 from qgis.gui import QgsFileWidget
-from ..utils.variable_utils import get_project_variable, set_project_variable
-from ..utils.layer_utils import load_rasters, zoom_on_layer
+from ..utils.variable_utils import get_project_variable
+from ..utils.layer_utils import load_rasters, zoom_on_layer, replier
 
 import unicodedata
 from pathlib import Path
+from typing import Type, Any
 
-class RasterCheckboxMixin:
+class UIBinderMixin:
     """
-    Mixin for dialogs that need to initialize, restore and save a fixed set of
-    raster‐option QCheckBox widgets based on class‐level configuration.
-
-    Subclasses must define:
-      • NAMESPACE (str): prefix for persistence keys
-      • RASTER_CHECKBOX (tuple[str, ...]):
-          attribute names on self.ui for each QCheckBox, e.g.
-          ('cb_plt_anc','cb_plt','cb_mnh','cb_scan25','cb_irc','cb_rgb')
+    Provides a `_bind_widget(name, cls)` helper for looking up
+    self.ui.<name> and type-checking it.
     """
 
-    def _bind_widget(self, ui_name, cls):
+    def _bind_widget(self, name: str, cls: Type[Any]) -> Any:
         """
-        Look up self.ui.<ui_name>, assert it’s an instance of cls, 
-        then return it (or raise a clear AttributeError).
+        Look up self.ui.<ui_name>, assert it’s an instance of cls,
+        then return it (or raise AttributeError).
         """
-        w = getattr(self.ui, ui_name, None)
+        w = getattr(self.ui, name, None)
         if not isinstance(w, cls):
-            raise AttributeError(f"Expected {cls.__name__} at self.ui.{ui_name}")
+            raise AttributeError(f"Expected {cls.__name__} at ui.{name}")
         return w
 
-    def init_raster_checkboxes(self, raster_checkbox) -> None:
-        forest_selected = bool(get_project_variable("forest_prefix"))
+class RasterController(UIBinderMixin):
 
-        # Validate all widgets exist, are QCheckBox and save them in cbs (checkboxes)
-        cbs = {key: self._bind_widget(attr, QCheckBox) for key, attr in raster_checkbox.items()}
+    def __init__(self, ui, raster_checkbox):
+        self.ui  = ui
+        self.cbs = {key: self._bind_widget(attr, QCheckBox) for key, attr in raster_checkbox.items()}
 
-        if not forest_selected:
+        is_forest_selected = bool(get_project_variable("forest_prefix"))
+        if not is_forest_selected:
             # Disable + uncheck all
-            for cb in cbs.values():
+            for cb in self.cbs.values():
                 cb.setChecked(False)
                 cb.setEnabled(False)
             return
-
-        # Remember them for saving later
-        self.cbs = cbs
 
     def load_selected_rasters(self):
         asked_keys = [key for key, cb in self.cbs.items() if cb.isChecked()]
@@ -52,40 +45,60 @@ class RasterCheckboxMixin:
         loaded_keys = load_rasters(*asked_keys, group_name="RASTER")
         if loaded_keys:
             zoom_on_layer(loaded_keys[0])
-
-class SpeciesSelectionMixin:
-    """
-    Mixin to wire up a pair of QListWidgets for species selection:
-      - one for available choices
-      - one for currently selected items
-
-    After init_species_selection():
-      • self.choices  → QListWidget for all species
-      • self.selected → QListWidget for chosen species
-      • self.add  → QPushButton to add from choices → selected
-      • self.remove → QPushButton to remove from selected
-    """
-
-    def _bind_widget(self, ui_name, cls):
-        """
-        Look up self.ui.<ui_name>, assert it’s an instance of cls, 
-        then return it (or raise a clear AttributeError).
-        """
-        w = getattr(self.ui, ui_name, None)
-        if not isinstance(w, cls):
-            raise AttributeError(f"Expected {cls.__name__} at self.ui.{ui_name}")
-        return w
-
-    def init_species_selection(self, choices, selected, add, remove, filter) -> None:
-        if not hasattr(self, 'essences_layer'):
-          raise AttributeError(f"{self.__class__.__name__} must set `self.essences_layer` before calling init_species_selection()")
         
-        # 2) Grab widgets and expose them as attributes
-        self.choices =  self._bind_widget(choices, QListWidget)
+        replier()
+
+class QfieldPackager(UIBinderMixin):
+        
+    def __init__(self, ui, package_ui, outdir_ui, default_dir):
+        self.ui= ui
+
+        # 1) bind widgets
+        self.outdir_ui  = self._bind_widget(outdir_ui, QgsFileWidget)
+        self.package_ui = self._bind_widget(package_ui, QCheckBox)
+
+        # 2) set default directory
+        try:
+            default_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            QMessageBox.warning(None, "Erreur disque", f"Impossible de créer\n{default_dir}:\n{e}")
+
+        # 3) configure file-widget
+        self.outdir_ui.setStorageMode(self.outdir_ui.GetDirectory)
+        self.outdir_ui.setFilePath(str(default_dir))
+
+        # 4) wire toggle
+        self.package_ui.toggled.connect(self._on_toggle)
+    
+    def _on_toggle(self, checked):
+        self.outdir_ui.setEnabled(checked)
+
+    def get_qfield_outdir(self):
+        qfield_outdir = Path(self.outdir_ui.filePath())
+        if not qfield_outdir.exists():
+            QMessageBox.warning(self, "Dossier invalide", "Veuillez choisir un répertoire valide.")
+            return
+        return qfield_outdir
+
+class SpeciesSelector(UIBinderMixin):
+    def __init__(self,
+              *,
+              ui,
+              layer,
+              choices: str,
+              selected: str,
+              add: str,
+              remove: str,
+              filter: str):
+        
+        self.ui       = ui
+        self.layer    = layer
+        
+        self.choices  = self._bind_widget(choices, QListWidget)
         self.selected = self._bind_widget(selected, QListWidget)
-        self.add =      self._bind_widget(add, QPushButton)
-        self.remove =   self._bind_widget(remove, QPushButton)
-        self.filter =   self._bind_widget(filter, QLineEdit)
+        self.add      = self._bind_widget(add, QPushButton)
+        self.remove   = self._bind_widget(remove, QPushButton)
+        self.filter   = self._bind_widget(filter, QLineEdit)
 
         # 3) Configure selection modes
         self.choices.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -95,9 +108,9 @@ class SpeciesSelectionMixin:
         self.populate_species_list()
 
         # 5) Wire up buttons
+        self.filter.textChanged.connect(self.on_filter)
         self.add.clicked.connect(self.on_add)
         self.remove.clicked.connect(self.on_remove)
-        self.filter.textChanged.connect(self.update_species_lists)
 
     def populate_species_list(self) -> None:
         """
@@ -107,10 +120,9 @@ class SpeciesSelectionMixin:
         """
 
         # This create unique list of code essence because dict cant' have duplicate names
-        self.essences_lookup = {feat['essence']: feat['code'] for feat in self.essences_layer.getFeatures()}
+        self.essences_lookup = {feat['essence']: feat['code'] for feat in self.layer.getFeatures()}
         self.choices.clear()
         self.choices.addItems(sorted(self.essences_lookup))
-
 
     @staticmethod
     def _item_exists(list_widget: QListWidget, text: str) -> bool:
@@ -123,7 +135,7 @@ class SpeciesSelectionMixin:
         normalized = unicodedata.normalize('NFD', text)  
         return ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn')
 
-    def update_species_lists(self):
+    def on_filter(self):
         filter_species = self._strip_accents(self.filter.text().lower())
         self.choices.clear()
         self.choices.addItems([s for s in self.essences_lookup.keys() if filter_species in self._strip_accents(s.lower())])
@@ -148,37 +160,14 @@ class SpeciesSelectionMixin:
         codes = [self.essences_lookup[ess] for ess in all_essences if ess in self.essences_lookup]
         return codes
   
-class QfieldPackageMixin:
-    
-    def _bind_widget(self, ui_name, cls):
+    def is_valid(self) -> bool:
         """
-        Look up self.ui.<ui_name>, assert it’s an instance of cls, 
-        then return it (or raise a clear AttributeError).
+        Ensure at least one species is selected. Pop up a warning if empty.
+        Returns True if OK, False if empty.
         """
-        w = getattr(self.ui, ui_name, None)
-        if not isinstance(w, cls):
-            raise AttributeError(f"Expected {cls.__name__} at self.ui.{ui_name}")
-        return w
+        if self.selected.count() == 0:
+            QMessageBox.warning(None,"Espèces manquantes",f"Veuillez sélectionner au moins une essence dans chaque selecteur d'essence.")
+            return False
+        return True
     
-    def init_qfield_package(self, package_ui, outdir_ui, default_dir):
-        default_dir.mkdir(parents=True, exist_ok=True)
-        self.outdir_ui = self._bind_widget(outdir_ui, QgsFileWidget)
-        self.package_ui = self._bind_widget(package_ui, QCheckBox)
 
-        self.outdir_ui.setStorageMode(self.outdir_ui.GetDirectory)
-        self.outdir_ui.setFilePath(str(default_dir))
-        print(f"self.outdir_ui:{self.outdir_ui.filePath()}")
-        self.setup_connections()
-        
-    def setup_connections(self):
-        self.package_ui.toggled.connect(self.toggle_fw_editability)
-
-    def toggle_fw_editability(self, checked):
-        self.outdir_ui.setEnabled(checked)
-
-    def get_qfield_outdir(self):
-        qfield_outdir = Path(self.outdir_ui.filePath())
-        if not qfield_outdir.exists():
-            QMessageBox.warning(self, "Dossier invalide", "Veuillez choisir un répertoire valide.")
-            return
-        return qfield_outdir

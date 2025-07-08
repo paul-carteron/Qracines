@@ -24,29 +24,12 @@ class ExpertiseCreateDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ExpertiseCreateDialog()
         self.ui.setupUi(self)
-       
+        self.essences_layer = DatabaseManager().load_essences("essences")
+
+        # --- initialize forest_name if forest is selected ---
         self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
-        # --- initialize diam/hauteur ---
-        self.restore_dh_values()
-
-        # --- initialize raster checkboxes ---
-        self.raster_checkboxes = {
-            "plt_anc": self.ui.cb_plt_anc,
-            "plt":     self.ui.cb_plt,
-            "mnh":     self.ui.cb_mnh,
-            "scan25":  self.ui.cb_scan25,
-            "irc":     self.ui.cb_irc,
-            "rgb":     self.ui.cb_rgb,
-        }
-        self.restore_checkbox_states()
         
-        # --- initialise default output directory ---
-        default_dir = get_racines_path("expertise", "Expertise")
-        default_dir.mkdir(parents=True, exist_ok=True)
-        self.ui.fw_outdir.setFilePath(str(default_dir))
-        self.ui.fw_outdir.setStorageMode(self.ui.fw_outdir.GetDirectory)
-
         # ---- initialize species list ----
         ## Gha / Transect
         self.ui.lw_selected_species.setSelectionMode(QAbstractItemView.MultiSelection)
@@ -129,26 +112,6 @@ class ExpertiseCreateDialog(QDialog):
                     self.ui.lw_selected_species_taillis.addItem(name)
     # endregion
 
-    def import_files(self):
-        files, _ = QFileDialog.getOpenFileNames(
-            self,
-            "Sélectionner des fichiers à importer",
-            "",  # starting directory
-            "GeoPackage (*.gpkg);;Shapefiles (*.shp);;All files (*.*)"
-        )
-        if files:
-            print("Fichiers sélectionnés:", files)
-            self.ui.lw_selected_files.addItems(files)
-
-    def setup_connections(self):
-        self.ui.cb_package_for_qfield.toggled.connect(self.toggle_fw_editability)
-
-        self.ui.le_filter_species.textChanged.connect(self.update_species_lists)
-        self.ui.le_filter_species_taillis.textChanged.connect(self.update_species_lists)
-
-    def toggle_fw_editability(self, checked):
-        self.ui.fw_outdir.setEnabled(checked)
-
     # region species_list
     @staticmethod
     def is_in_list(list_widget, text):
@@ -225,21 +188,7 @@ class ExpertiseCreateDialog(QDialog):
         codes = [self.essences_lookup[ess] for ess in all_essences if ess in self.essences_lookup]
         return codes
     
-    def _load_selected_rasters(self):
-        asked_keys = [key for key, cb in self.raster_checkboxes.items() if cb.isChecked()]
-        if not asked_keys:
-            return None
-
-        loaded_keys = load_rasters(*asked_keys, group_name="RASTER")
-        if loaded_keys:
-            zoom_on_layer(loaded_keys[0])
-
     def _on_accept(self):
-        # 1) collect inputs
-        outdir = Path(self.ui.fw_outdir.filePath())
-        if not outdir.exists():
-            QMessageBox.warning(self, "Dossier invalide", "Veuillez choisir un répertoire valide.")
-            return
 
         # GHA/Transect check
         gha_empty = self.ui.lw_selected_species.count() == 0
@@ -253,27 +202,26 @@ class ExpertiseCreateDialog(QDialog):
             QMessageBox.warning(self, "Espèces manquantes", "Veuillez sélectionner au moins une essence pour le Taillis.")
             return
 
-        dmin, dmax = self.ui.sp_dmin.value(), self.ui.sp_dmax.value()
-        hmin, hmax = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
-
         clear_project()
 
         # 2) call service
 
         svc = ExpertiseService(
-            output_dir=outdir,
+            output_dir=self.get_qfield_outdir(),
             package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
             codes=self._pla_get_codes(),
             codes_taillis=self._tse_get_codes(),
-            dmin=dmin, dmax=dmax,
-            hmin=hmin, hmax=hmax,
+            dmin=self.ui.sp_dmin.value(),
+            dmax=self.ui.sp_dmax.value(),
+            hmin=self.ui.sp_hmin.value(),
+            hmax=self.ui.sp_hmax.value(),
             essences_layer = self.essences_layer
         )
 
         try:
             packaged_dir = svc.run_full_diagnostic()
             load_vectors("ua_polygon", group_name= "VECTOR")
-            self._load_selected_rasters()
+            self.load_selected_rasters()
             replier()
 
             if packaged_dir:
@@ -286,15 +234,3 @@ class ExpertiseCreateDialog(QDialog):
         except Exception as e:
             # everything else bubbles up here
             QMessageBox.critical(self, "Erreur", f"Une erreur est survenue :\n{e}")
-
-    def accept(self):
-        self.save_checkbox_states()
-        self.save_species_selection()
-        self.save_dh_values()
-        super().accept()
-
-    def reject(self):
-        self.save_checkbox_states()
-        self.save_species_selection()
-        self.save_dh_values()
-        super().reject()
