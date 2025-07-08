@@ -159,8 +159,8 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
     # If no layer names provided, load all
     layers_to_load = layers or available_layers
 
-    for layer in available_layers:
-        if layer not in layers_to_load:
+    for layer in layers_to_load:
+        if layer not in available_layers:
             continue
 
         uri = f"{gpkg_path}|layername={layer}"

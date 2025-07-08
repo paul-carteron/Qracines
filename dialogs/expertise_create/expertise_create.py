@@ -8,19 +8,21 @@ from PyQt5.QtWidgets import (
 
 from pathlib import Path
 
-from .expertise_create_dialog import Ui_ExpertiseDialog
+from .expertise_create_dialog import Ui_ExpertiseCreateDialog
+from .expertise_service import ExpertiseService
 
 from ...core.db.manager import DatabaseManager
-from ...core.expertise_service import ExpertiseService
 
 from ...utils.path_manager import get_racines_path
 from ...utils.variable_utils import clear_project, get_project_variable, set_project_variable
 from ...utils.layer_utils import load_rasters, zoom_on_layer, load_vectors, replier
 
+import unicodedata
+
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_ExpertiseDialog()
+        self.ui = Ui_ExpertiseCreateDialog()
         self.ui.setupUi(self)
        
         self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
@@ -152,6 +154,13 @@ class ExpertiseCreateDialog(QDialog):
     def is_in_list(list_widget, text):
         return any(list_widget.item(i).text() == text for i in range(list_widget.count()))
     
+    @staticmethod
+    def strip_accents(text: str) -> str:
+        """Remove diacritic marks (accents) from a Unicode string."""
+        # Normalize text to separate base letters and accents, then remove combining marks.
+        normalized = unicodedata.normalize('NFD', text)  
+        return ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn')
+
     def populate_species_list(self):
         self.essences_lookup = {}
         unique_essences = []
@@ -171,14 +180,15 @@ class ExpertiseCreateDialog(QDialog):
         self.ui.lw_selected_species_taillis.addItems(taillis_default_species)
 
     def update_species_lists(self):
-        filter_species = self.ui.le_filter_species.text().lower()
-        filter_taillis = self.ui.le_filter_species_taillis.text().lower()
+        filter_species = self.strip_accents(self.ui.le_filter_species.text().lower())
+        filter_taillis = self.strip_accents(self.ui.le_filter_species_taillis.text().lower())
 
         self.ui.lw_species.clear()
         self.ui.lw_species_taillis.clear()
 
-        self.ui.lw_species.addItems([s for s in self._species_all if filter_species in s.lower()])
-        self.ui.lw_species_taillis.addItems([s for s in self._taillis_all if filter_taillis in s.lower()])  
+        # Add species that match the filter (substring search on accent-stripped names)
+        self.ui.lw_species.addItems([s for s in self._species_all if filter_species in self.strip_accents(s.lower())])
+        self.ui.lw_species_taillis.addItems([s for s in self._taillis_all if filter_taillis in self.strip_accents(s.lower())])
 
     def add_selected_species(self):
         selected_items = self.ui.lw_species.selectedItems()
@@ -205,8 +215,13 @@ class ExpertiseCreateDialog(QDialog):
             self.ui.lw_selected_species_taillis.takeItem(row)
     # endregion
 
-    def _get_codes(self):
+    def _pla_get_codes(self):
         all_essences = [self.ui.lw_selected_species.item(i).text() for i in range(self.ui.lw_selected_species.count())]
+        codes = [self.essences_lookup[ess] for ess in all_essences if ess in self.essences_lookup]
+        return codes
+    
+    def _tse_get_codes(self):
+        all_essences = [self.ui.lw_selected_species_taillis.item(i).text() for i in range(self.ui.lw_selected_species_taillis.count())]
         codes = [self.essences_lookup[ess] for ess in all_essences if ess in self.essences_lookup]
         return codes
     
@@ -248,8 +263,8 @@ class ExpertiseCreateDialog(QDialog):
         svc = ExpertiseService(
             output_dir=outdir,
             package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
-            codes=self._get_codes(),
-            codes_taillis=self.taillis_default_codes,
+            codes=self._pla_get_codes(),
+            codes_taillis=self._tse_get_codes(),
             dmin=dmin, dmax=dmax,
             hmin=hmin, hmax=hmax,
             essences_layer = self.essences_layer

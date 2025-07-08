@@ -9,7 +9,7 @@ from .dialogs.project_settings import *
 from .dialogs.add_data import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
-from .dialogs.tree_marking import *
+from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
 from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
 
@@ -178,7 +178,7 @@ class Qsequoia2:
     # TREE MARKING
     def open_tree_marking_create(self):
         if not self.tree_marking_create:
-            self.tree_marking_create = Tree_markingDialog()
+            self.tree_marking_create = TreeMarkingCreateDialog()
         self.tree_marking_create.exec_()
 
     def open_tree_marking_import(self):
