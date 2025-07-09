@@ -17,12 +17,12 @@ from qgis.utils import iface
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
 
-from ..core.layer_factory import LayerFactory
-from ..core.layer.manager import LayerManager
-from ..utils.path_manager import get_peuplements, get_limites
-from ..utils.layer_utils import load_gpkg, create_relation
-from ..utils.qfield_utils import package_for_qfield
-from ..utils.variable_utils import get_project_variable
+from ...core.layer_factory import LayerFactory
+from ...core.layer.manager import LayerManager
+from ...utils.path_manager import get_peuplements, get_limites
+from ...utils.layer_utils import load_gpkg, create_relation
+from ...utils.qfield_utils import package_for_qfield
+from ...utils.variable_utils import get_project_variable
 
 
 class ExpertiseService:
@@ -180,11 +180,10 @@ class ExpertiseService:
         va_ve = """left("PLTM_TYPE",2) IN ('FR','FI','PE')"""
 
         placette_fb.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
-        placette_fb.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis", visibility_expression = reg_ve)
+        placette_fb.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis")
         placette_fb.add_relation_to_tab("tse", tab_name="Taillis", visibility_expression = tse_ve)
-        placette_fb.add_fields_to_tab("VA_TX_TROUEE", tab_name="Valeur d'avenir", visibility_expression = reg_ve)
-        placette_fb.add_relation_to_tab("va", tab_name="Valeur d'avenir")
-        placette_fb.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = va_ve)
+        placette_fb.add_relation_to_tab("va", tab_name="Valeur d'avenir", visibility_expression = va_ve)
+        placette_fb.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = reg_ve)
 
     @staticmethod
     def _configure_placette(placette_manager):
@@ -197,7 +196,6 @@ class ExpertiseService:
             ("PLTM_STRATE", "Strate"),
             ("PLA_RMQ", "Remarque"),
             ("PLTM_TYPE", "Type de peuplement"),
-            ("VA_TX_TROUEE", "Taux trouée [%]"),
             ("TSE_STERE_HA", "Taillis [st/ha]")]
         
         for field, alias in aliases:
@@ -231,9 +229,6 @@ class ExpertiseService:
         # PLTM_TYPE
         peuplements = get_peuplements()
         placette_f.add_value_map('PLTM_TYPE', {'map': [{str(name): str(code)} for code, name in peuplements.items()]})
-
-        # VA_TX_TROUEE
-        placette_f.add_range("VA_TX_TROUEE", {'AllowNull': True, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
 
         # TSE_STERE_HA
         stere_ha = [*range(0, 200, 25), *range(200, 400, 50)]
@@ -435,21 +430,24 @@ class ExpertiseService:
     @staticmethod
     def _init_va_form(va_manager):
         va_manager.forms.init_drag_and_drop_form()
-        va_manager.forms.add_fields_to_tab("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
+        va_manager.forms.add_fields_to_tab("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_TX_TROUEE", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
     
     @staticmethod
     def _configure_va(va_manager):
+        va_f = va_manager.fields
+
         # ALIASES
         aliases = [
             ("VA_ESSENCE_ID", "Essence"),
             ("VA_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("VA_AGE_APP", "Age Apparent"),
+            ("VA_TX_TROUEE", "Taux trouée [%]"),
             ("VA_TX_HA", "Recouvrement [%]"),
             ("CUMUL_TX_VA", "Cumul des recouvrements"),
         ]
         
         for field, alias in aliases:
-            va_manager.fields.set_alias(field, alias)
+            va_f.set_alias(field, alias)
         
         # DISPLAY EXPRESSION
         display_expression = """
@@ -472,22 +470,25 @@ class ExpertiseService:
 
         # VA_AGE_APP
         field_name = "VA_AGE_APP"
-        va_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        va_manager.fields.set_constraint_expression(field_name, f'"{field_name}" > 0', "L'âge doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
-        va_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 300, 'Min': 0, 'Precision': 0, 'Step': 1})
+        va_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        va_f.set_constraint_expression(field_name, f'"{field_name}" > 0', "L'âge doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
+        va_f.add_range(field_name, {'AllowNull': False, 'Max': 300, 'Min': 0, 'Precision': 0, 'Step': 1})
+
+        # VA_TX_TROUEE
+        va_f.add_range("VA_TX_TROUEE", {'AllowNull': True, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
 
         # VA_TX_HA
         field_name = "VA_TX_HA"
-        va_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        va_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
         expression = '"CUMUL_TX_VA" + "VA_TX_HA" = 100'
         description = 'La somme de VA_TX_HA et de CUMUL_TX_VA doit être égale à 100.'
-        va_manager.fields.set_constraint_expression(field_name, expression, description)
-        va_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
+        va_f.set_constraint_expression(field_name, expression, description)
+        va_f.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
 
         # CUMUL_TX_VA
         field_name = "CUMUL_TX_VA"
         default_value = """aggregate(layer:='va', aggregate:='sum', expression:="VA_TX_HA", filter:="UUID" = attribute(@parent, 'UUID'))"""
-        va_manager.fields.set_default_value(field_name, default_value)
+        va_f.set_default_value(field_name, default_value)
 
     @staticmethod
     def _init_reg_form(reg_manager):

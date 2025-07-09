@@ -6,12 +6,14 @@ from PyQt5.QtGui import QIcon
 from .dialogs.global_settings import *
 from .dialogs.forest_settings import *
 from .dialogs.project_settings import *
-from .dialogs.add_data import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
-from .dialogs.tree_marking import *
-from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+
+from .dialogs.add_data.add_data import AddDataDialog
 from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
+from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
+from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -178,12 +180,14 @@ class Qsequoia2:
     # TREE MARKING
     def open_tree_marking_create(self):
         if not self.tree_marking_create:
-            self.tree_marking_create = Tree_markingDialog()
+            self.tree_marking_create = TreeMarkingCreateDialog()
         self.tree_marking_create.exec_()
 
     def open_tree_marking_import(self):
-        return
-    
+        if not self.tree_marking_import:
+            self.tree_marking_import = TreeMarkingImportDialog()
+        self.tree_marking_import.exec_()
+ 
     # EXPERTISE
     def open_expertise_create(self):
         if not self._check_forest_is_selected():

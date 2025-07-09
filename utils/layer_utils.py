@@ -62,11 +62,6 @@ def load_vectors(*vector_keys, group_name=None):
     for key in vector_keys:
         display_name = get_display_name(key)
 
-        # Skip if already loaded
-        if project.mapLayersByName(display_name):
-            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
-            continue
-
         path = get_path(key)
         layer = QgsVectorLayer(str(path), display_name, "ogr")
 
@@ -105,11 +100,6 @@ def load_rasters(*raster_keys, group_name=None):
 
     for key in raster_keys:
         display_name = get_display_name(key)
-
-        # Skip already loaded
-        if project.mapLayersByName(display_name):
-            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
-            continue
         
         print(f"load_raster - key: {key}")
         path = get_path(key)
@@ -157,8 +147,8 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
     # If no layer names provided, load all
     layers_to_load = layers or available_layers
 
-    for layer in available_layers:
-        if layer not in layers_to_load:
+    for layer in layers_to_load:
+        if layer not in available_layers:
             continue
 
         uri = f"{gpkg_path}|layername={layer}"

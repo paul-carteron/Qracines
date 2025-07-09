@@ -94,4 +94,6 @@ structure:
     files:
       expertise: { filename: expertise.gpkg }
       expertise_synthese: { filename: expertise.xlsx }
+      inventaire: { filename: inventaire.gpkg }
+      inventaire_synthese: { filename: inventaire.xlsx }
 

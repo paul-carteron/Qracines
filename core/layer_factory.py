@@ -116,6 +116,7 @@ class LayerFactory:
                 ("fid", QVariant.Int),
                 ("ID_CODE", QVariant.String),
                 ("UUID", QVariant.String),
+                ("LOT", QVariant.String),
                 ("PARCELLE", QVariant.String),
                 ("ESSENCE_ID", QVariant.String),
                 ("ESSENCE_SECONDAIRE_ID", QVariant.String),
@@ -180,8 +181,6 @@ class LayerFactory:
                     ("PLTM_TYPE", QVariant.String),
                     # Taillis
                     ("TSE_STERE_HA", QVariant.String),
-                    # Valeur avenir
-                    ("VA_TX_TROUEE", QVariant.LongLong),
             ],
                 "geometry": "Point"
             },
@@ -231,6 +230,7 @@ class LayerFactory:
                     ("VA_ESSENCE_ID", QVariant.String),
                     ("VA_ESSENCE_SECONDAIRE_ID", QVariant.String),
                     ("VA_AGE_APP", QVariant.LongLong),
+                    ("VA_TX_TROUEE", QVariant.LongLong),
                     ("VA_TX_HA", QVariant.Double),
                     ("CUMUL_TX_VA", QVariant.Double)
                 ],

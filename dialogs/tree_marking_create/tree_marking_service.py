@@ -17,12 +17,12 @@ from qgis.utils import iface
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QFont
 
-from ..core.layer_factory import LayerFactory
-from ..core.db.manager import DatabaseManager
-from ..core.layer.manager import LayerManager
-from ..utils.layer_utils import load_gpkg
-from ..utils.qfield_utils import package_for_qfield
-from ..utils.variable_utils import get_project_variable
+from ...core.layer_factory import LayerFactory
+from ...core.db.manager import DatabaseManager
+from ...core.layer.manager import LayerManager
+from ...utils.layer_utils import load_gpkg, replier
+from ...utils.qfield_utils import package_for_qfield
+from ...utils.variable_utils import get_project_variable
 
 
 class TreeMarkingService:
@@ -36,6 +36,7 @@ class TreeMarkingService:
         dmax: int,
         hmin: int,
         hmax: int,
+        essences_layer,
     ):
         self.iface = iface
         self.project = QgsProject.instance()
@@ -45,7 +46,7 @@ class TreeMarkingService:
         self.codes = codes
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
-        self.essences_layer = DatabaseManager().load_essences("essences")
+        self.essences_layer = essences_layer
 
     def run_full_diagnostic(self):
         """
@@ -74,6 +75,8 @@ class TreeMarkingService:
         self._configure_fid_code(arbres_manager)
         self._configure_labelling(arbres_manager)
 
+        replier()
+
         arbres_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # Run packaging if needed
@@ -99,13 +102,16 @@ class TreeMarkingService:
         self.gpkg_path = result['OUTPUT']
 
         # 5) load it back into the project
-        load_gpkg(self.gpkg_path)
+        load_gpkg(self.gpkg_path, group_name="INVENTAIRE")
 
     @staticmethod
     def _init_form(arbres_manager):
-        form_fields = ["COMPTEUR", "PARCELLE", "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE"]
-        arbres_manager.forms.init_drag_and_drop_form()
-        arbres_manager.forms.add_fields_to_tab(*form_fields)
+        arbre_f = arbres_manager.forms
+
+        arbre_f.init_drag_and_drop_form()
+        arbre_f.add_fields_to_tab("COMPTEUR")
+        arbre_f.add_fields_to_tab("LOT", "PARCELLE", tab_name="Localisation" ,columns=2)
+        arbre_f.add_fields_to_tab("ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE")
     
     @staticmethod
     def _configure_essence_field( arbres_manager, essences_manager, codes):

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Tree_markingDialog</class>
- <widget class="QDialog" name="Tree_markingDialog">
+ <class>TreeMarkingCreateDialog</class>
+ <widget class="QDialog" name="TreeMarkingCreateDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>531</width>
-    <height>472</height>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>250</y>
      <width>511</width>
-     <height>161</height>
+     <height>191</height>
     </rect>
    </property>
    <property name="title">
@@ -29,7 +29,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>20</y>
+      <y>50</y>
       <width>491</width>
       <height>131</height>
      </rect>
@@ -86,6 +86,32 @@
      </item>
      <item row="0" column="0">
       <widget class="QListWidget" name="lw_species"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>491</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_layers_11">
+       <property name="text">
+        <string>Filtre :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_filter_species">
+       <property name="placeholderText">
+        <string extracomment="CHE..."/>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -257,19 +283,6 @@
      <item row="1" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLabel" name="label_layers_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="cb_plt_anc">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -279,6 +292,9 @@
          </property>
          <property name="text">
           <string>PLT_ANC</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -293,6 +309,9 @@
          <property name="text">
           <string>PLT</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -305,6 +324,9 @@
          </property>
          <property name="text">
           <string>MNH</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -319,6 +341,9 @@
          <property name="text">
           <string>SCAN25</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -332,6 +357,9 @@
          <property name="text">
           <string>IRC</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -344,6 +372,9 @@
          </property>
          <property name="text">
           <string>RGB</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -408,17 +439,20 @@
         <string>Paquet pour Qfield</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QgsFileWidget" name="fw_outdir">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="toolTip">
         <string/>
        </property>
        <property name="options">
-        <set>QFileDialog::ShowDirsOnly</set>
+        <set>QFileDialog::ReadOnly|QFileDialog::ShowDirsOnly</set>
        </property>
       </widget>
      </item>
@@ -429,7 +463,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>420</y>
+     <y>450</y>
      <width>511</width>
      <height>41</height>
     </rect>
@@ -473,7 +507,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Tree_markingDialog</receiver>
+   <receiver>TreeMarkingCreateDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -489,7 +523,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Tree_markingDialog</receiver>
+   <receiver>TreeMarkingCreateDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -1,26 +1,28 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
 
-from .expertise_create_dialog import Ui_ExpertiseCreateDialog
-from .expertise_service import ExpertiseService
+from pathlib import Path
+
+from .tree_marking_dialog import Ui_TreeMarkingCreateDialog
+from .tree_marking_service import TreeMarkingService
 
 from ...core.db.manager import DatabaseManager
 
 from ...utils.path_manager import get_racines_path
 from ...utils.variable_utils import clear_project, get_project_variable
-from ...utils.layer_utils import load_vectors
-from ...utils.ui_helpers import RasterController, QfieldPackager, SpeciesSelector
+from ...utils.ui_helpers import RasterController, SpeciesSelector, QfieldPackager
 
-class ExpertiseCreateDialog(QDialog):
+class TreeMarkingCreateDialog(QDialog):
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_ExpertiseCreateDialog()
+        self.ui = Ui_TreeMarkingCreateDialog()
         self.ui.setupUi(self)
         self.essences_layer = DatabaseManager().load_essences("essences")
 
         # --- initialize forest_name if forest is selected ---
         self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-        
-        # --- initialize from helpers class ---
+
+        # --- initialize from mixin ---
         raster_checkbox = {
             #   'key':     'checkbox_name',
                 'plt_anc': 'cb_plt_anc',
@@ -32,22 +34,12 @@ class ExpertiseCreateDialog(QDialog):
             }
         self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
         
-        self.gha_tra_selector = SpeciesSelector(
+        self.ess_selector = SpeciesSelector(
             ui = self.ui, layer = self.essences_layer,
             choices="lw_species", selected="lw_selected_species",
             add="pb_add_species", remove="pb_remove_species",
             filter="le_filter_species"
         )
-
-        self.tse_selector = SpeciesSelector(
-            ui = self.ui, layer = self.essences_layer,
-            choices="lw_species_taillis", selected="lw_selected_species_taillis",
-            add="pb_add_species_taillis", remove="pb_remove_species_taillis",
-            filter="le_filter_species_taillis"
-        )
-        tse_default = ["BOU", "CHA", "CHE", "ECH", "FRE", "HET", "NOI", "SAU", "TIL", "TRE"]
-        tse_default_label = [name for name, code in self.tse_selector.essences_lookup.items() if code in tse_default]
-        self.tse_selector.selected.addItems(tse_default_label)
 
         self.packager = QfieldPackager(
             self.ui,
@@ -58,17 +50,16 @@ class ExpertiseCreateDialog(QDialog):
 
     def accept(self):
 
-        if not self.gha_tra_selector.is_valid(): return
-        if not self.tse_selector.is_valid(): return
+        if not self.ess_selector.is_valid():
+            return
 
         clear_project()
 
         # 2) call service
-        svc = ExpertiseService(
+        svc = TreeMarkingService(
             output_dir=self.packager.get_qfield_outdir(),
             package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
-            codes=self.gha_tra_selector.selected_codes(),
-            codes_taillis=self.tse_selector.selected_codes(),
+            codes=self.ess_selector.selected_codes(),
             dmin=self.ui.sp_dmin.value(),
             dmax=self.ui.sp_dmax.value(),
             hmin=self.ui.sp_hmin.value(),
@@ -78,13 +69,12 @@ class ExpertiseCreateDialog(QDialog):
 
         try:
             packaged_dir = svc.run_full_diagnostic()
-            load_vectors("ua_polygon", group_name= "VECTOR")
             self.raster_controller.load_selected_rasters()
 
             if packaged_dir:
-                QMessageBox.information(self, "Succès", f"Expertise complète !\nProjet packagé dans :\n{packaged_dir}")
+                QMessageBox.information(self, "Succès", f"Inventaire complet !\nProjet packagé dans :\n{packaged_dir}")
             else:
-                QMessageBox.information(self, "Succès", "Expertise complète !")
+                QMessageBox.information(self, "Succès", "Inventaire complet !")
 
             super().accept()
 

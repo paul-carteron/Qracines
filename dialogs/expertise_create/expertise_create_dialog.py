@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\OSGeo4W\apps\qgis-ltr\python\plugins\Qsequoia2\dialogs\expertise.ui'
+# Form implementation generated from reading ui file 'C:\OSGeo4W\apps\qgis-ltr\python\plugins\Qsequoia2\dialogs\expertise_create\expertise_create.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -11,11 +11,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ExpertiseDialog(object):
-    def setupUi(self, ExpertiseDialog):
-        ExpertiseDialog.setObjectName("ExpertiseDialog")
-        ExpertiseDialog.resize(531, 681)
-        self.groupBox_2 = QtWidgets.QGroupBox(ExpertiseDialog)
+class Ui_ExpertiseCreateDialog(object):
+    def setupUi(self, ExpertiseCreateDialog):
+        ExpertiseCreateDialog.setObjectName("ExpertiseCreateDialog")
+        ExpertiseCreateDialog.resize(531, 681)
+        self.groupBox_2 = QtWidgets.QGroupBox(ExpertiseCreateDialog)
         self.groupBox_2.setGeometry(QtCore.QRect(10, 250, 511, 181))
         self.groupBox_2.setObjectName("groupBox_2")
         self.gridLayoutWidget_5 = QtWidgets.QWidget(self.groupBox_2)
@@ -56,7 +56,7 @@ class Ui_ExpertiseDialog(object):
         self.le_filter_species.setPlaceholderText("")
         self.le_filter_species.setObjectName("le_filter_species")
         self.horizontalLayout_4.addWidget(self.le_filter_species)
-        self.groupBox_3 = QtWidgets.QGroupBox(ExpertiseDialog)
+        self.groupBox_3 = QtWidgets.QGroupBox(ExpertiseCreateDialog)
         self.groupBox_3.setGeometry(QtCore.QRect(10, 150, 511, 91))
         self.groupBox_3.setObjectName("groupBox_3")
         self.gridLayoutWidget_3 = QtWidgets.QWidget(self.groupBox_3)
@@ -102,7 +102,7 @@ class Ui_ExpertiseDialog(object):
         self.sp_hmax.setProperty("value", 30)
         self.sp_hmax.setObjectName("sp_hmax")
         self.gridLayout_4.addWidget(self.sp_hmax, 1, 4, 1, 1)
-        self.groupBox = QtWidgets.QGroupBox(ExpertiseDialog)
+        self.groupBox = QtWidgets.QGroupBox(ExpertiseCreateDialog)
         self.groupBox.setGeometry(QtCore.QRect(10, 10, 511, 131))
         self.groupBox.setObjectName("groupBox")
         self.gridLayoutWidget = QtWidgets.QWidget(self.groupBox)
@@ -117,15 +117,6 @@ class Ui_ExpertiseDialog(object):
         self.gridLayout.addWidget(self.label_layers_1, 0, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.label_layers_2 = QtWidgets.QLabel(self.gridLayoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_layers_2.sizePolicy().hasHeightForWidth())
-        self.label_layers_2.setSizePolicy(sizePolicy)
-        self.label_layers_2.setText("")
-        self.label_layers_2.setObjectName("label_layers_2")
-        self.horizontalLayout_2.addWidget(self.label_layers_2)
         self.cb_plt_anc = QtWidgets.QCheckBox(self.gridLayoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -212,7 +203,7 @@ class Ui_ExpertiseDialog(object):
         self.fw_outdir.setOptions(QtWidgets.QFileDialog.ShowDirsOnly)
         self.fw_outdir.setObjectName("fw_outdir")
         self.gridLayout_2.addWidget(self.fw_outdir, 0, 1, 1, 1)
-        self.horizontalLayoutWidget = QtWidgets.QWidget(ExpertiseDialog)
+        self.horizontalLayoutWidget = QtWidgets.QWidget(ExpertiseCreateDialog)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 630, 511, 41))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
@@ -225,7 +216,7 @@ class Ui_ExpertiseDialog(object):
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.horizontalLayout.addWidget(self.buttonBox)
-        self.groupBox_4 = QtWidgets.QGroupBox(ExpertiseDialog)
+        self.groupBox_4 = QtWidgets.QGroupBox(ExpertiseCreateDialog)
         self.groupBox_4.setGeometry(QtCore.QRect(10, 440, 511, 181))
         self.groupBox_4.setObjectName("groupBox_4")
         self.gridLayoutWidget_7 = QtWidgets.QWidget(self.groupBox_4)
@@ -267,35 +258,35 @@ class Ui_ExpertiseDialog(object):
         self.le_filter_species_taillis.setObjectName("le_filter_species_taillis")
         self.horizontalLayout_5.addWidget(self.le_filter_species_taillis)
 
-        self.retranslateUi(ExpertiseDialog)
-        self.buttonBox.accepted.connect(ExpertiseDialog.accept) # type: ignore
-        self.buttonBox.rejected.connect(ExpertiseDialog.reject) # type: ignore
-        QtCore.QMetaObject.connectSlotsByName(ExpertiseDialog)
+        self.retranslateUi(ExpertiseCreateDialog)
+        self.buttonBox.accepted.connect(ExpertiseCreateDialog.accept) # type: ignore
+        self.buttonBox.rejected.connect(ExpertiseCreateDialog.reject) # type: ignore
+        QtCore.QMetaObject.connectSlotsByName(ExpertiseCreateDialog)
 
-    def retranslateUi(self, ExpertiseDialog):
+    def retranslateUi(self, ExpertiseCreateDialog):
         _translate = QtCore.QCoreApplication.translate
-        ExpertiseDialog.setWindowTitle(_translate("ExpertiseDialog", "Martelage"))
-        self.groupBox_2.setTitle(_translate("ExpertiseDialog", "Essences principales (Gha / Transect)"))
-        self.pb_remove_species.setText(_translate("ExpertiseDialog", "< Retirer"))
-        self.pb_add_species.setText(_translate("ExpertiseDialog", "Ajouter >"))
-        self.label_layers_11.setText(_translate("ExpertiseDialog", "Filtre :"))
-        self.groupBox_3.setTitle(_translate("ExpertiseDialog", "Paramétrage Martelage"))
-        self.label_layers_8.setText(_translate("ExpertiseDialog", "Diamètre maximal"))
-        self.label_layers_7.setText(_translate("ExpertiseDialog", "Diamètre minimal"))
-        self.label_layers_9.setText(_translate("ExpertiseDialog", "Hauteur minimale"))
-        self.label_layers_10.setText(_translate("ExpertiseDialog", "Hauteur maximale"))
-        self.groupBox.setTitle(_translate("ExpertiseDialog", "Paramétrage Généraux"))
-        self.label_layers_1.setText(_translate("ExpertiseDialog", "Forêt :"))
-        self.cb_plt_anc.setText(_translate("ExpertiseDialog", "PLT_ANC"))
-        self.cb_plt.setText(_translate("ExpertiseDialog", "PLT"))
-        self.cb_mnh.setText(_translate("ExpertiseDialog", "MNH"))
-        self.cb_scan25.setText(_translate("ExpertiseDialog", "SCAN25"))
-        self.cb_irc.setText(_translate("ExpertiseDialog", "IRC"))
-        self.cb_rgb.setText(_translate("ExpertiseDialog", "RGB"))
-        self.label_layers_3.setText(_translate("ExpertiseDialog", "Raster :"))
-        self.cb_package_for_qfield.setText(_translate("ExpertiseDialog", "Paquet pour Qfield"))
-        self.groupBox_4.setTitle(_translate("ExpertiseDialog", "Essences Taillis"))
-        self.pb_add_species_taillis.setText(_translate("ExpertiseDialog", "Ajouter >"))
-        self.pb_remove_species_taillis.setText(_translate("ExpertiseDialog", "< Retirer"))
-        self.label_layers_12.setText(_translate("ExpertiseDialog", "Filtre :"))
+        ExpertiseCreateDialog.setWindowTitle(_translate("ExpertiseCreateDialog", "Martelage"))
+        self.groupBox_2.setTitle(_translate("ExpertiseCreateDialog", "Essences principales (Gha / Transect)"))
+        self.pb_remove_species.setText(_translate("ExpertiseCreateDialog", "< Retirer"))
+        self.pb_add_species.setText(_translate("ExpertiseCreateDialog", "Ajouter >"))
+        self.label_layers_11.setText(_translate("ExpertiseCreateDialog", "Filtre :"))
+        self.groupBox_3.setTitle(_translate("ExpertiseCreateDialog", "Paramétrage Martelage"))
+        self.label_layers_8.setText(_translate("ExpertiseCreateDialog", "Diamètre maximal"))
+        self.label_layers_7.setText(_translate("ExpertiseCreateDialog", "Diamètre minimal"))
+        self.label_layers_9.setText(_translate("ExpertiseCreateDialog", "Hauteur minimale"))
+        self.label_layers_10.setText(_translate("ExpertiseCreateDialog", "Hauteur maximale"))
+        self.groupBox.setTitle(_translate("ExpertiseCreateDialog", "Paramétrage Généraux"))
+        self.label_layers_1.setText(_translate("ExpertiseCreateDialog", "Forêt :"))
+        self.cb_plt_anc.setText(_translate("ExpertiseCreateDialog", "PLT_ANC"))
+        self.cb_plt.setText(_translate("ExpertiseCreateDialog", "PLT"))
+        self.cb_mnh.setText(_translate("ExpertiseCreateDialog", "MNH"))
+        self.cb_scan25.setText(_translate("ExpertiseCreateDialog", "SCAN25"))
+        self.cb_irc.setText(_translate("ExpertiseCreateDialog", "IRC"))
+        self.cb_rgb.setText(_translate("ExpertiseCreateDialog", "RGB"))
+        self.label_layers_3.setText(_translate("ExpertiseCreateDialog", "Raster :"))
+        self.cb_package_for_qfield.setText(_translate("ExpertiseCreateDialog", "Paquet pour Qfield"))
+        self.groupBox_4.setTitle(_translate("ExpertiseCreateDialog", "Essences Taillis"))
+        self.pb_add_species_taillis.setText(_translate("ExpertiseCreateDialog", "Ajouter >"))
+        self.pb_remove_species_taillis.setText(_translate("ExpertiseCreateDialog", "< Retirer"))
+        self.label_layers_12.setText(_translate("ExpertiseCreateDialog", "Filtre :"))
 from qgsfilewidget import QgsFileWidget
