@@ -12,6 +12,7 @@ from .dialogs.pedology import *
 from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
 from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
+from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
 # Import from utils folder
 from .utils.variable_utils import *
@@ -182,8 +183,10 @@ class Qsequoia2:
         self.tree_marking_create.exec_()
 
     def open_tree_marking_import(self):
-        return
-    
+        if not self.tree_marking_import:
+            self.tree_marking_import = TreeMarkingImportDialog()
+        self.tree_marking_import.exec_()
+ 
     # EXPERTISE
     def open_expertise_create(self):
         if not self._check_forest_is_selected():

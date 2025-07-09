@@ -55,3 +55,15 @@ def merge_with_ess(layer, ess, f_ess_id ='ESSENCE_ID'):
             'OUTPUT': 'memory:'
         })['OUTPUT']
     return layer_with_ess
+
+def save_as_xlsx(*layers, path):
+
+    processing.run("native:exporttospreadsheet", {
+        'LAYERS': list(layers),
+        'OUTPUT': str(path),
+        'USE_ALIAS': False,
+        'FORMATTED_VALUES': False,
+        'OVERWRITE': True
+    })
+
+    return

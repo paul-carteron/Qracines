@@ -1,11 +1,11 @@
-from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog
 from qgis.gui import QgsFileWidget
 from .variable_utils import get_project_variable
 from .layer_utils import load_rasters, zoom_on_layer, replier
 
 import unicodedata
 from pathlib import Path
-from typing import Type, Any
+from typing import Type, Any, List
 
 class UIBinderMixin:
     """
@@ -170,4 +170,54 @@ class SpeciesSelector(UIBinderMixin):
             return False
         return True
     
+class GpkgLoader(UIBinderMixin):
+    def __init__(self, *, ui, add, selected):
+        self.ui = ui
+        self.add = self._bind_widget(add, QPushButton)
+        self.selected = self._bind_widget(selected, QListWidget)
 
+        self.add.clicked.connect(self._on_add)
+
+    def _on_add(self):
+        paths, _ = QFileDialog.getOpenFileNames(
+            self, "Sélectionner des fichiers à importer", "", "GeoPackage (*.gpkg)")
+        if paths:
+            self.selected.addItems(paths)
+
+    @property
+    def selected_files(self) -> List[str]:
+        return  [self.selected.item(i).text() for i in range(self.selected.count())]
+    
+    def is_valid(self) -> bool:
+        """
+        Validate that there is at least one selected file,
+        that each path exists, and that each has .gpkg extension.
+        Returns True if valid, False otherwise (after showing a warning).
+        """
+        # 1) No files selected
+        if not self.selected_files:
+            QMessageBox.warning(self, "Aucun fichier", "Aucun GeoPackage sélectionné.")
+            return False
+
+        # 2) Check existence
+        missing = [f for f in self.selected_files if not Path(f).exists()]
+        if missing:
+            QMessageBox.warning(
+                self,
+                "Fichiers introuvables",
+                "Les fichiers suivants n'existent pas :\n" + "\n".join(missing)
+            )
+            return False
+
+        # 3) (Optional) Check extension
+        invalid_ext = [f for f in self.selected_files if Path(f).suffix.lower() != ".gpkg"]
+        if invalid_ext:
+            QMessageBox.warning(
+                self,
+                "Extension invalide",
+                "Les fichiers suivants ne sont pas des .gpkg :\n" + "\n".join(invalid_ext)
+            )
+            return False
+
+        # All good!
+        return True

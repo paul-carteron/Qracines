@@ -5,11 +5,12 @@ from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
 
 # Import from utils folder
 from ...utils.layer_utils import get_path, load_gpkg
-from ...utils.custom_processing import calculate_essence_id, merge_with_ess
+from ...utils.custom_processing import calculate_essence_id, merge_with_ess, save_as_xlsx
+from ...utils.ui_helpers import GpkgLoader
+
 from ...core.layer_factory import LayerFactory
 
 import processing
-import pandas as pd
 
 class ExpertiseImportDialog(QDialog):
     def __init__(self, parent=None):
@@ -19,27 +20,11 @@ class ExpertiseImportDialog(QDialog):
         self.ui = Ui_ExpertiseImportDialog()  
         self.ui.setupUi(self)
         
-        self.ui.pb_import_files.clicked.connect(self.import_files)
-        
-        # --- connect buttons ---
-        self.ui.buttonBox.accepted.connect(self._on_accept)
-        self.ui.buttonBox.rejected.connect(self.reject)
-
-    def import_files(self):
-        files, _ = QFileDialog.getOpenFileNames(
-            self,
-            "Sélectionner des fichiers à importer",
-            "",  # starting directory
-            "GeoPackage (*.gpkg)"
-        )
-        if files:
-            self.ui.lw_selected_files.addItems(files)
+        self.loader = GpkgLoader(self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
 
     def merge_files(self):
-        gpkgs = [self.ui.lw_selected_files.item(i).text() for i in range(self.ui.lw_selected_files.count())]
-        if not gpkgs:
-            QMessageBox.warning(self, "No files", "Aucun GeoPackage sélectionné.")
-            return
+        if self.loader.is_valid():
+            gpkgs = self.loader.selected_files
 
         out_path = get_path("expertise")
         layers = LayerFactory.get_layer_names("EXPERTISE")
@@ -77,46 +62,19 @@ class ExpertiseImportDialog(QDialog):
 
         
         merged_layers.append(ess_layer)
-        processing.run("native:package", {
+        merged_result = processing.run("native:package", {
             'LAYERS':      merged_layers,
             'OUTPUT':      str(out_path),
             'OVERWRITE':   True,
             'SAVE_STYLES': False
         })
-
-        expertise_gpkg_path = get_path("expertise")
-        load_gpkg(expertise_gpkg_path, group_name="EXPERTISE")
+        
+        load_gpkg(merged_result['OUTPUT'], group_name="EXPERTISE")
 
     def format_tra(self):
 
-        tra_with_ess_id = processing.run("qgis:fieldcalculator", {
-            'INPUT': self.tra,
-            'FIELD_NAME': 'ESSENCE_ID',
-            'FIELD_TYPE': 1,
-            'FIELD_LENGTH': 50,
-            'FIELD_PRECISION': 0,
-            'FORMULA': """
-                to_int(
-                    coalesce(
-                        nullif("TR_ESSENCE_ID", ''),
-                        nullif("TR_ESSENCE_SECONDAIRE_ID", '')
-                    )
-                )
-            """,
-            'OUTPUT': 'memory:'
-        })['OUTPUT']
-
-        tra_with_ess = processing.run("qgis:joinattributestable", {
-            'INPUT': tra_with_ess_id,
-            'FIELD': 'ESSENCE_ID',
-            'INPUT_2': self.ess,
-            'FIELD_2': 'fid',
-            'FIELDS_TO_COPY': ['essence', 'code', 'variation', 'type'],  # adjust if field names differ
-            'METHOD': 1,  # Take only matching
-            'DISCARD_NONMATCHING': False,
-            'PREFIX': '',
-            'OUTPUT': 'memory:'
-        })['OUTPUT']
+        tra_with_ess_id = calculate_essence_id(self.tra, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID")
+        tra_with_ess =  merge_with_ess(tra_with_ess_id, self.ess)
 
         formated_tra = processing.run("qgis:refactorfields", {
             'INPUT': tra_with_ess,
@@ -290,18 +248,7 @@ class ExpertiseImportDialog(QDialog):
 
         return formated_reg
 
-    @staticmethod
-    def save_as_xlsx(*layers, path):
-
-        processing.run("native:exporttospreadsheet", {
-            'LAYERS': list(layers),
-            'OUTPUT': str(path),
-            'USE_ALIAS': False,
-            'FORMATTED_VALUES': False,
-            'OVERWRITE': True
-        })
-
-    def _on_accept(self):
+    def accept(self):
         try:
             self.merge_files()
 
@@ -321,9 +268,11 @@ class ExpertiseImportDialog(QDialog):
             formated_reg = self.format_reg()
 
             out_path = get_path("expertise_synthese")
-            self.save_as_xlsx(formated_tra, formated_gha, formated_va, formated_tse, formated_reg, path = out_path)
+            save_as_xlsx(formated_tra, formated_gha, formated_va, formated_tse, formated_reg, path = out_path)
             
             QMessageBox.information(self, "Succès",  f"Géopackage(s) compilé(s) et extrait(s) dans :\n{out_path}")
+
+            super().accept()
             return
 
         except Exception as e:
