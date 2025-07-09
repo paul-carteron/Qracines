@@ -3,15 +3,15 @@ projet:
   path: "0_projet/"
   files:
     enjeux:
-      environnement:   { filename: "ENJEUX_ENVIRONNEMENTAUX.qgz", label: "Enjeux environnementaux" }
-      patrimoine:      { filename: "ENJEUX_PATRIMONIAUX.qgz",     label: "Enjeux patrimoniaux" }
-      social:          { filename: "ENJEUX_SOCIAUX.qgz",          label: "Enjeux sociaux"}
-    amenagement:       { filename: "AMENAGEMENTS.qgz",            label: "Aménagements" }
-    assemblage:        { filename: "ASSEMBLAGE.qgz",              label: "Assemblage" }
-    geologie:          { filename: "GEOLOGIE.qgz",                label: "Géologie" }
-    pedologie:         { filename: "PEDOLOGIE.qgz",               label: "Pédologie" }
-    peuplement:        { filename: "PEUPLEMENT.qgz",              label: "Peuplement" }
-    situation:         { filename: "SITUATION.qgz",               label: "Situation" }
+      env:      { filename: "ENJEUX_ENVIRONNEMENTAUX.qgz", label: "Enjeux environnementaux" }
+      pat:      { filename: "ENJEUX_PATRIMONIAUX.qgz",     label: "Enjeux patrimoniaux" }
+      soc:      { filename: "ENJEUX_SOCIAUX.qgz",          label: "Enjeux sociaux"}
+    ame:        { filename: "AMENAGEMENTS.qgz",            label: "Aménagements" }
+    assemblage: { filename: "ASSEMBLAGE.qgz",              label: "Assemblage" }
+    geol:       { filename: "GEOLOGIE.qgz",                label: "Géologie" }
+    pedo:       { filename: "PEDOLOGIE.qgz",               label: "Pédologie" }
+    plt:        { filename: "PEUPLEMENT.qgz",              label: "Peuplement" }
+    situation:  { filename: "SITUATION.qgz",               label: "Situation" }
 
 terrain:
   path: "1_terrain/"
