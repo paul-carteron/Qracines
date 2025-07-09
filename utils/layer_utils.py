@@ -64,11 +64,6 @@ def load_vectors(*vector_keys, group_name=None):
     for key in vector_keys:
         display_name = get_display_name(key)
 
-        # Skip if already loaded
-        if project.mapLayersByName(display_name):
-            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
-            continue
-
         path = get_path(key)
         layer = QgsVectorLayer(str(path), display_name, "ogr")
 
@@ -107,11 +102,6 @@ def load_rasters(*raster_keys, group_name=None):
 
     for key in raster_keys:
         display_name = get_display_name(key)
-
-        # Skip already loaded
-        if project.mapLayersByName(display_name):
-            QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
-            continue
         
         print(f"load_raster - key: {key}")
         path = get_path(key)

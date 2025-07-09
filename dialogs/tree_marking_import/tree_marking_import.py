@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QMessageBox, QDialog, QFileDialog
-from .expertise_import_dialog import Ui_ExpertiseImportDialog
+from PyQt5.QtWidgets import QMessageBox, QDialog
+from .tree_marking_import_dialog import Ui_TreeMarkingImportDialog
 from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
 
@@ -16,7 +16,7 @@ class TreeMarkingImportDialog(QDialog):
         super().__init__(parent)
         self.project = QgsProject.instance()
         self.iface = iface
-        self.ui = Ui_ExpertiseImportDialog()  
+        self.ui = Ui_TreeMarkingImportDialog()  
         self.ui.setupUi(self)
         
         self.loader = GpkgLoader(self.ui, add = 'pb_import_files', selected = 'lw_selected_files')

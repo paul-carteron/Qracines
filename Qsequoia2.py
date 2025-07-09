@@ -6,12 +6,13 @@ from PyQt5.QtGui import QIcon
 from .dialogs.global_settings import *
 from .dialogs.forest_settings import *
 from .dialogs.project_settings import *
-from .dialogs.add_data import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
-from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
-from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+
+from .dialogs.add_data.add_data import AddDataDialog
 from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
+from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
 # Import from utils folder
