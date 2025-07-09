@@ -43,14 +43,14 @@ terrain:
 rast:
   path: "2_sequoia/raster/"
   files:
-    mns:       { filename: "MNS.tif",     label: Modèle Numérique de Surface,      style: ~            }
-    mnt:       { filename: "MNT.tif",     label: Modèle Numérique de Terrain,      style: ~            }
-    mnh:       { filename: "MNH.tif",     label: Modèle Numérique de Hauteur,      style: "MNH.qml"    }
-    plt:       { filename: "PLT.tif",     label: "Carte des Peuplements",          style: ~            }
-    plt_anc:   { filename: "PLT_ANC.tif", label: "Carte des Peuplements Ancienne", style: ~            }
-    irc:       { filename: "IRC.tif",     label: "BD ORTHO - Infra-rouge couleur", style: ~            }
-    rgb:       { filename: "RGB.tif",     label: "BD ORTHO - Couleur",             style: ~            }
-    scan25:    { filename: "SCAN25.tif",  label: "Scan 25",                        style: "SCAN25.qml" }
+    mns:       { filename: "MNS.tif",             label: Modèle Numérique de Surface,      style: ~            }
+    mnt:       { filename: "MNT.tif",             label: Modèle Numérique de Terrain,      style: ~            }
+    mnh:       { filename: "MNH.tif",             label: Modèle Numérique de Hauteur,      style: "MNH.qml"    }
+    plt:       { filename: "PEUPLEMENTS.tif",     label: "Carte des Peuplements",          style: ~            }
+    plt_anc:   { filename: "PEUPLEMENTS_EXT.tif", label: "Carte des Peuplements Ancienne", style: ~            }
+    irc:       { filename: "IRC.tif",             label: "BD ORTHO - Infra-rouge couleur", style: ~            }
+    rgb:       { filename: "RGB.tif",             label: "BD ORTHO - Couleur",             style: ~            }
+    scan25:    { filename: "SCAN25.tif",          label: "Scan 25",                        style: "SCAN25.qml" }
 
 vect:
   path: "2_sequoia/vecteur/"
