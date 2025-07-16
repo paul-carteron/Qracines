@@ -51,7 +51,7 @@ class ExpertiseCreateDialog(QDialog):
 
         self.packager = QfieldPackager(
             self.ui,
-            default_dir = get_racines_path("expertise", "Inventaire"),
+            default_dir = get_racines_path("expertise", "Qfield", "Expertise"),
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
@@ -63,12 +63,13 @@ class ExpertiseCreateDialog(QDialog):
 
         clear_project()
 
+        codes_gha_tra = self.gha_tra_selector.selected_codes()
+        codes_taillis = self.tse_selector.selected_codes()
+
         # 2) call service
         svc = ExpertiseService(
-            output_dir=self.packager.get_qfield_outdir(),
-            package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
-            codes=self.gha_tra_selector.selected_codes(),
-            codes_taillis=self.tse_selector.selected_codes(),
+            codes=codes_gha_tra,
+            codes_taillis=codes_taillis,
             dmin=self.ui.sp_dmin.value(),
             dmax=self.ui.sp_dmax.value(),
             hmin=self.ui.sp_hmin.value(),
@@ -77,14 +78,15 @@ class ExpertiseCreateDialog(QDialog):
         )
 
         try:
-            packaged_dir = svc.run_full_diagnostic()
+            svc.run()
             load_vectors("ua_polygon", group_name= "VECTOR")
             self.raster_controller.load_selected_rasters()
 
-            if packaged_dir:
-                QMessageBox.information(self, "Succès", f"Expertise complète !\nProjet packagé dans :\n{packaged_dir}")
-            else:
-                QMessageBox.information(self, "Succès", "Expertise complète !")
+            msg = "Expertise complète !"
+            if self.packager.is_valid():
+                packaged_dir = self.packager.package(prefix="EXP", codes=codes_gha_tra)
+                msg += f"\nProjet packagé dans :\n{packaged_dir}"
+            QMessageBox.information(self, "Succès", msg)
 
             super().accept()
 

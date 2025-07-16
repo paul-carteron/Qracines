@@ -8,6 +8,7 @@ from .tree_marking_service import TreeMarkingService
 from ...core.db.manager import DatabaseManager
 
 from ...utils.path_manager import get_racines_path
+from ...utils.layer_utils import load_vectors
 from ...utils.variable_utils import clear_project, get_project_variable
 from ...utils.ui_helpers import RasterController, SpeciesSelector, QfieldPackager
 
@@ -43,7 +44,7 @@ class TreeMarkingCreateDialog(QDialog):
 
         self.packager = QfieldPackager(
             self.ui,
-            default_dir = get_racines_path("expertise", "Inventaire"),
+            default_dir = get_racines_path("expertise", "Qfield", "Inventaire"),
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
@@ -55,11 +56,10 @@ class TreeMarkingCreateDialog(QDialog):
 
         clear_project()
 
+        codes = self.ess_selector.selected_codes()
         # 2) call service
         svc = TreeMarkingService(
-            output_dir=self.packager.get_qfield_outdir(),
-            package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
-            codes=self.ess_selector.selected_codes(),
+            codes=codes,
             dmin=self.ui.sp_dmin.value(),
             dmax=self.ui.sp_dmax.value(),
             hmin=self.ui.sp_hmin.value(),
@@ -68,13 +68,15 @@ class TreeMarkingCreateDialog(QDialog):
         )
 
         try:
-            packaged_dir = svc.run_full_diagnostic()
+            svc.run()
+            load_vectors("ua_polygon", group_name= "VECTOR")
             self.raster_controller.load_selected_rasters()
 
-            if packaged_dir:
-                QMessageBox.information(self, "Succès", f"Inventaire complet !\nProjet packagé dans :\n{packaged_dir}")
-            else:
-                QMessageBox.information(self, "Succès", "Inventaire complet !")
+            msg = "Expertise complète !"
+            if self.packager.is_valid():
+                packaged_dir = self.packager.package(prefix="INV", codes=codes)
+                msg += f"\nProjet packagé dans :\n{packaged_dir}"
+            QMessageBox.information(self, "Succès", msg)
 
             super().accept()
 

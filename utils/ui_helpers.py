@@ -1,11 +1,17 @@
 from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog
+
+from qgis.core import QgsProject
 from qgis.gui import QgsFileWidget
+from qgis.utils import iface
+
 from .variable_utils import get_project_variable
 from .layer_utils import load_rasters, zoom_on_layer, replier
+from .qfield_utils import package_for_qfield
 
 import unicodedata
 from pathlib import Path
-from typing import Type, Any, List
+from typing import Type, Any, List, Iterable, Optional
+
 
 class UIBinderMixin:
     """
@@ -49,36 +55,94 @@ class RasterController(UIBinderMixin):
         replier()
 
 class QfieldPackager(UIBinderMixin):
-        
-    def __init__(self, ui, package_ui, outdir_ui, default_dir):
-        self.ui= ui
+    """Utility class that wires UI elements and calls *package_for_qfield*.
 
-        # 1) bind widgets
-        self.outdir_ui  = self._bind_widget(outdir_ui, QgsFileWidget)
-        self.package_ui = self._bind_widget(package_ui, QCheckBox)
+    Parameters
+    ----------
+    ui
+        Top‑level Qt designer‑generated widget.
+    package_ui
+        Name of a :class:`QCheckBox` indicating whether the user wants the
+        project to be packaged for QField.
+    outdir_ui
+        Name of a :class:`QgsFileWidget` used to pick the output directory.
+    default_dir
+        Directory suggested to the user; it will be created if necessary.
+    """
 
-        # 2) set default directory
-        try:
-            default_dir.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            QMessageBox.warning(None, "Erreur disque", f"Impossible de créer\n{default_dir}:\n{e}")
+    def __init__(self, ui, package_ui: str, outdir_ui: str, default_dir: Path):
+        self.ui = ui
+        self.iface = iface
+        self.project = QgsProject.instance()
 
-        # 3) configure file-widget
+        # ─── Bind widgets ────────────────────────────────────────────────────
+        self.package_ui: QCheckBox = self._bind_widget(package_ui, QCheckBox)
+        self.outdir_ui: QgsFileWidget = self._bind_widget(outdir_ui, QgsFileWidget)
+
+        # ─── Default directory ───────────────────────────────────────────────
+        self.default_dir = Path(default_dir).expanduser()
+        self._ensure_default_dir()
+
+        # ─── Configure *outdir* widget ───────────────────────────────────────
         self.outdir_ui.setStorageMode(self.outdir_ui.GetDirectory)
-        self.outdir_ui.setFilePath(str(default_dir))
+        self.outdir_ui.setFilePath(str(self.default_dir))
+        self.outdir_ui.setEnabled(self.package_ui.isChecked())
 
-        # 4) wire toggle
-        self.package_ui.toggled.connect(self._on_toggle)
-    
-    def _on_toggle(self, checked):
-        self.outdir_ui.setEnabled(checked)
+        # ─── UI interactions ────────────────────────────────────────────────
+        self.package_ui.toggled.connect(self.outdir_ui.setEnabled)
 
-    def get_qfield_outdir(self):
-        qfield_outdir = Path(self.outdir_ui.filePath())
-        if not qfield_outdir.exists():
-            QMessageBox.warning(self, "Dossier invalide", "Veuillez choisir un répertoire valide.")
-            return
-        return qfield_outdir
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+    def _ensure_default_dir(self) -> None:
+        """Create *default_dir* if it does not already exist."""
+        try:
+            self.default_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:  # noqa: BLE001
+            QMessageBox.warning(self.iface.mainWindow(),"Erreur disque",f"Impossible de créer\n{self.default_dir}:\n{exc}",)
+    # ------------------------------------------------------------------
+    # Public helpers
+    # ------------------------------------------------------------------
+    @property
+    def outdir(self) -> Path:
+        """Return the output directory selected by the user.
+
+        If the widget is empty, fall back to *default_dir*.
+        Raises *FileNotFoundError* (and shows a dialog) when the directory
+        does not exist.
+        """
+        path = Path(self.outdir_ui.filePath() or self.default_dir).expanduser()
+        if not path.exists():
+            QMessageBox.warning(self.iface.mainWindow(), "Dossier invalide", "Veuillez choisir un répertoire valide.",)
+            raise FileNotFoundError(path)
+        return path
+
+    # ------------------------------------------------------------------
+    # Business logic
+    # ------------------------------------------------------------------
+    def is_valid(self) -> bool:
+        """Return *True* when QField packaging is requested."""
+        return self.package_ui.isChecked()
+
+    @staticmethod
+    def construct_filename(prefix: str, codes: Iterable[str]) -> str:
+        """Return the `{prefix}_{forest_prefix}_{codes}` filename.
+
+        *forest_prefix* is taken from the project variable `forest_prefix`.
+        """
+        forest_prefix = get_project_variable("forest_prefix") or ""
+        parts = [prefix, forest_prefix, "_".join(codes)]
+        return "_".join(filter(None, parts))
+
+    def package(self, prefix: str, codes: Iterable[str]) -> Optional[Path]:
+        """Package the current project for QField and return the archive path.
+
+        If the checkbox is unchecked, the method returns *None* immediately so
+        that calling code can keep its existing workflow untouched.
+        """
+        filename = self.construct_filename(prefix, codes)
+        package_for_qfield(self.iface, self.project, self.outdir, filename)
+        return self.outdir / filename
 
 class SpeciesSelector(UIBinderMixin):
     def __init__(self,

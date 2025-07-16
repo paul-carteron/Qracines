@@ -18,19 +18,14 @@ from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QFont
 
 from ...core.layer_factory import LayerFactory
-from ...core.db.manager import DatabaseManager
 from ...core.layer.manager import LayerManager
 from ...utils.layer_utils import load_gpkg, replier
-from ...utils.qfield_utils import package_for_qfield
-from ...utils.variable_utils import get_project_variable
 
 
 class TreeMarkingService:
 
     def __init__(
         self,
-        output_dir: Path,
-        package_for_qfield: bool,
         codes: list,
         dmin: int,
         dmax: int,
@@ -41,14 +36,12 @@ class TreeMarkingService:
         self.iface = iface
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
-        self.output_dir = output_dir
-        self.package_for_qfield = package_for_qfield
         self.codes = codes
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
         self.essences_layer = essences_layer
 
-    def run_full_diagnostic(self):
+    def run(self):
         """
         Runs the full workflow. 
         Returns the output_dir path (as str) if packaging was done, otherwise None.
@@ -78,13 +71,6 @@ class TreeMarkingService:
         replier()
 
         arbres_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
-
-        # Run packaging if needed
-        if self.package_for_qfield:
-            self._package_for_qfield()
-            # signal back that packaging happened
-            return str(self.output_dir)
-        return None
 
     def _create_and_load_gpkg(self):
         layers = [
@@ -268,11 +254,4 @@ class TreeMarkingService:
         arbres_manager.layer.setLabeling(labeling)
         arbres_manager.layer.setLabelsEnabled(True)
         arbres_manager.layer.triggerRepaint()
-
-    def _package_for_qfield(self):
-        forest_prefix = get_project_variable("forest_prefix")
-        codes = "_".join(self.codes)
-        filename = f"{forest_prefix}_D{self.dmax}H{self.hmax}_{codes}" if forest_prefix else f"D{self.dmax}H{self.hmax}_{codes}"
-        
-        package_for_qfield(iface, self.project, self.output_dir, filename)
 

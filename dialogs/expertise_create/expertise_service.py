@@ -21,16 +21,11 @@ from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
 from ...utils.path_manager import get_peuplements, get_limites
 from ...utils.layer_utils import load_gpkg, create_relation
-from ...utils.qfield_utils import package_for_qfield
-from ...utils.variable_utils import get_project_variable
-
 
 class ExpertiseService:
 
     def __init__(
         self,
-        output_dir: Path,
-        package_for_qfield: bool,
         codes: list,
         codes_taillis: list,
         dmin: int,
@@ -42,15 +37,13 @@ class ExpertiseService:
         self.iface = iface
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
-        self.output_dir = output_dir
-        self.package_for_qfield = package_for_qfield
         self.codes = codes
         self.codes_taillis = codes_taillis
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
         self.essences_layer = essences_layer
 
-    def run_full_diagnostic(self):
+    def run(self):
         """
         Runs the full workflow. 
         Returns the output_dir path (as str) if packaging was done, otherwise None.
@@ -116,12 +109,6 @@ class ExpertiseService:
         self._configure_essence_field(reg_manager, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
         reg_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
-        # Run packaging if needed
-        if self.package_for_qfield:
-            self._package_for_qfield()
-            # signal back that packaging happened
-            return str(self.output_dir)
-        return None
 
     def _create_and_load_gpkg(self):
 
@@ -594,11 +581,3 @@ class ExpertiseService:
         layer_manager.fields.set_constraint_expression(essence_field, ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
 
         return None
-
-    def _package_for_qfield(self):
-        forest_prefix = get_project_variable("forest_prefix")
-        codes = "_".join(self.codes)
-        filename = f"EXP_{forest_prefix}_D{self.dmax}H{self.hmax}_{codes}" if forest_prefix else f"D{self.dmax}H{self.hmax}_{codes}"
-        
-        package_for_qfield(iface, self.project, self.output_dir, filename)
-
