@@ -134,6 +134,82 @@ def _load_map_project() -> dict:
         with open(cfg_path, encoding="utf-8") as f:
             _MAP_PROJECT = yaml.safe_load(f)
     return _MAP_PROJECT
+  
+def get_map_project(project: str) -> dict:
+    """
+    Renvoie la configuration complète du projet SIG nommé `project`
+    dans la section 'map_project' du YAML.
+    
+    Args:
+        project (str): Nom du projet (ex: 'situation', 'assemblage', etc.)
+        
+    Returns:
+        dict: La config du projet.
+        
+    Raises:
+        KeyError: si le projet n'existe pas dans le YAML.
+    """
+    
+    map_project = _load_map_project()["map_project"]
+    
+    if project not in map_project:
+        raise KeyError(f"Projet '{project}' non trouvé dans map_project.yaml")
+    
+    return map_project[project]
+    
+
+def get_default(project: str, key: str):
+    """
+    Récupère la valeur associée à `key` dans la section 'defaut' du projet.
+    
+    Args:
+        project (str): nom du projet dans map_project.yaml (ex: 'situation')
+        key (str): clé recherchée dans la section 'defaut' (ex: 'theme', 'scale', 'legend')
+        
+    Returns:
+        La valeur associée à la clé.
+        
+    Raises:
+        KeyError: si le projet n'existe pas
+        ValueError: si la clé n'existe pas dans la section 'defaut'
+    """
+  
+    project_entry = get_map_project(project)
+    default_entry = project_entry.get("defaut", {})
+    
+    if key not in default_entry:
+        raise ValueError(f"Clé '{key}' non trouvée dans 'defaut' du projet '{project}'")
+    
+    return default_entry[key]
+  
+def get_type(project: str, type_: str):
+    """
+    Récupère les données complètes pour un type donné dans un projet.
+    Si le type est 'unwooded' et n'existe pas, bascule sur 'wooded'.
+
+    Args:
+        project (str): nom du projet
+        type_ (str): type de données ('wooded', 'unwooded', etc.)
+
+    Returns:
+        dict: données du type dans le projet
+
+    Raises:
+        ValueError: si le type n'existe pas dans le projet
+    """
+  
+    project_entry = get_map_project(project)
+  
+    if type_ == 'unwooded' and 'unwooded' not in project_entry:
+        type_ = 'wooded'
+  
+    map_data = project_entry.get(type_)
+    if not map_data:
+        raise ValueError(f"Le type '{type_}' n'a pas été trouvé dans le projet '{project}'")
+    
+    return map_data
+
+# endregion
 
 # region RACINES
 

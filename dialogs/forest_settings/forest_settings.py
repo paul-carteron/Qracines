@@ -7,14 +7,14 @@ from .forest_settings_dialog import Ui_ForestSettingsDialog
 from qgis.PyQt.QtCore import Qt
 
 # Import from utils folder
-from ..utils.variable_utils import (
+from ...utils.variable_utils import (
     get_project_variable, 
     set_project_variable, 
     get_formated_surface, 
     get_grouped_values_from_shapefile, 
     sum_surface_from_shapefile
     )
-from ..utils.path_manager import get_racines_path, get_path
+from ...utils.path_manager import get_racines_path, get_path
 
 class ForestSettingsDialog(QDialog):
     def __init__(self, parent=None):

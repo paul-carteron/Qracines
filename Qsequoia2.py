@@ -3,9 +3,9 @@ from PyQt5.QtWidgets import QAction, QToolButton, QMenu
 from PyQt5.QtGui import QIcon
 
 # Import from dialogs folder
-from .dialogs.global_settings import *
-from .dialogs.forest_settings import *
-from .dialogs.project_settings import *
+from .dialogs.global_settings.global_settings import *
+from .dialogs.forest_settings.forest_settings import *
+from .dialogs.project_settings.project_settings import *
 from .dialogs.diagnostic import *
 from .dialogs.pedology import *
 

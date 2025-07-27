@@ -13,7 +13,7 @@ from qgis.core import (
 from qgis.utils import iface
 from osgeo import ogr
 
-from .path_manager import get_wms, get_style, get_path, get_display_name, get_wms, get_config_path
+from .path_manager import get_wms, get_style, get_path, get_display_name, get_wms, get_config_path, get_default, get_type
 
 # region LOAD LAYERS
 
@@ -300,37 +300,23 @@ def set_layers_readonly(*keys):
             if isinstance(vector_layer, QgsVectorLayer):
                 vector_layer.setReadOnly(True)
 
-def create_map_project(map_project, type_project, layer_registry=None):
-    
-    # Lecture du YAML
-    cfg_path = get_config_path("map_project.yaml")
-    with open(cfg_path, 'r') as f:
-        config = yaml.safe_load(f)
-    
-    # Construction du nom de projet
-    project_key = map_project.lower() + "_" + type_project
-    print(f"project_key projet : {project_key}")
+def create_map_project(map_project, type_project):
+        
+    # Charge la couche legend du projet
+    legend = get_default(map_project, 'legend')
+    if legend:
+        load_vectors(legend, group_name=None)
+      
+    # Charge les données du projet
+    map_data = get_type(map_project, type_project)
 
-    # Test d'existence dans le YAML au bon niveau
-    map_projects = config.get('map_project', {})
-    if project_key not in map_projects:
-        type_project = "wooded"
-        project_key = map_project.lower() + "_" + type_project
-        print(f"project_key retenue : {project_key}")
-    
-    # Lecture du projet
-    map_data = map_projects.get(project_key)
-    if not map_data:
-        raise ValueError(f"Le projet '{project_key}' n'existe pas dans le fichier YAML.")
-
-    # Ajoute groupes vector, sequoia, wms
+    # Ajoute les groupes vector, sequoia, wms
     for group_type in ['vector', 'sequoia', 'wms']:
         group_info = map_data.get(group_type)
         if not group_info:
             continue
 
         group_name = group_info.get('group_name')
-        group_zoom = group_info.get('zoom')
         group_layers = group_info.get('layers', [])
 
         if group_layers:
@@ -338,13 +324,11 @@ def create_map_project(map_project, type_project, layer_registry=None):
                 load_vectors(*group_layers, group_name=group_name)
             else:
                 load_wms(*group_layers, group_name=group_name)
-
-        if group_zoom:
-            zoom_on_layer(group_zoom)
     
     # Gestion des groupes
     replier()
     deplier("sequoia")
+    zoom_on_layer(legend)
     
     # Gestion des thèmes
     themes = map_data.get('themes', [])
@@ -354,7 +338,7 @@ def create_map_project(map_project, type_project, layer_registry=None):
         invisible_keys = theme.get('hidden', [])
         create_map_theme(theme_name, visible_keys, invisible_keys)
 
-    # scan25grey
+    # Appliquer transparence sur la couche scan25grey si elle existe
     layer = QgsProject.instance().mapLayersByName("IGN SCAN 25 TOPO (Metropole) gray")
     if layer:
         layer[0].setOpacity(0.5)
