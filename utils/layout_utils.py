@@ -2,6 +2,8 @@ from pathlib import Path
 from qgis.utils import iface
 from qgis.core import *
 from qgis.PyQt.QtXml import QDomDocument
+from PyQt5.QtCore import Qt
+from typing import Optional
 import processing
 
 from .path_manager import get_display_name, get_default, get_type
@@ -75,6 +77,8 @@ def compute_map_info(layer_name: str,
         (fmt for fmt, mm in formats_mm.items() if bbox_fits(scaled_size(mm), orientation)),
         "A0+"
     )
+    
+    print(f"Template: {best_format}_{orientation}")
 
     return {
         "bbox": bbox,
@@ -84,57 +88,52 @@ def compute_map_info(layer_name: str,
         "geometry": geom
     }
 
-def import_layout_from_template(info: dict, models_directory: Path) -> QgsPrintLayout:
+def import_layout_from_template(info: dict, models_directory: Path) -> QgsPrintLayout | None:
     """
     Importe un layout .qpt en fonction des infos calculées (format, orientation).
+    Retourne None si échec.
     """
     models_directory = Path(models_directory)
-    fmt = info["format_papier"]
-    orientation = info["orientation"]
-    
+    fmt = info.get("format_papier")
+    orientation = info.get("orientation", "portrait")
+
     # Chemin du QPT
     qpt_path = models_directory / f"{fmt}_{orientation}.qpt"
-    
-    # Si le fichier n'existe pas et qu'on est en landscape, fallback en portrait
+
+    # Fallback portrait si landscape introuvable
     if not qpt_path.exists() and orientation.lower() == "landscape":
         orientation = "portrait"
         qpt_path = models_directory / f"{fmt}_{orientation}.qpt"
-        
-    # Chargement du layout
-    if qpt_path.exists():
+
+    try:
+        if not qpt_path.exists():
+            print(f"Template introuvable : {qpt_path}")
+
         project = QgsProject.instance()
         layout = QgsPrintLayout(project)
         layout.initializeDefaults()
-    
+
         template_doc = QDomDocument()
         with qpt_path.open('r', encoding='utf-8') as f:
             template_doc.setContent(f.read())
-    
+
         context = QgsReadWriteContext()
         layout.loadFromTemplate(template_doc, context)
-    
+
         layout.setName(f"{fmt}_{orientation}")
         project.layoutManager().addLayout(layout)
-    
+
         return layout
-      
-    else:
-        print(f"Modèle QPT introuvable : {qpt_path}")
 
-def get_main_map_item(layout: QgsPrintLayout) -> QgsLayoutItemMap:
-    """
-    Récupère le premier QgsLayoutItemMap du layout.
-    """
-    for item in layout.items():
-        if isinstance(item, QgsLayoutItemMap):
-            return item
-    raise ValueError("Aucune carte (QgsLayoutItemMap) trouvée dans le layout.")
-
+    except Exception as e:
+        return None
+    
+        
 def configure_layout(layout: QgsPrintLayout,
                      geometry: QgsGeometry,
                      project: str,
                      type_: str,
-                     hide_legend_names: bool = True
+                     hide_legend_names: bool = False
                      ) -> None:
     """
     Configure dynamiquement le layout :
@@ -152,7 +151,6 @@ def configure_layout(layout: QgsPrintLayout,
     # Récupération des paramètres YAML
     theme = get_default(project, "theme")
     scale = get_default(project, "scale")
-    legend_layers = get_type(project, type_).get('legend_layers')
 
     # Récupérer toutes les cartes dans le layout
     all_maps = [item for item in layout.items() if isinstance(item, QgsLayoutItemMap)]
@@ -180,40 +178,117 @@ def configure_layout(layout: QgsPrintLayout,
         map_item.setScale(scale)
 
     # Ajouter la légende si spécifiée
-    
-    if legend_layers:
-        add_layer_to_legend(layout, 'legend', *legend_layers, hide_name=hide_legend_names)
-    
+    legend1_layers = get_type(project, type_).get("legend1_layers")
+    if legend1_layers:
+        add_layer_to_legend(layout, "legend1", *legend1_layers, hide_name=hide_legend_names)
         
-def add_layer_to_legend(layout, legend_id='legend', *keys, hide_name=True):
+    legend2_layers = get_type(project, type_).get("legend2_layers")
+    if legend2_layers:
+        add_layer_to_legend(layout, "legend2", *legend2_layers, hide_name=hide_legend_names, map_id="map1")
+    
+    # Complète la table
+    pf_display_name = get_display_name("pf_polygon")
+    layers = QgsProject.instance().mapLayersByName(pf_display_name)
+    if layers:
+      configure_attribute_table(
+        layout,
+        table_id = "table1",
+        layer_key = "pf_polygon",
+        fields = ["N_PARFOR", "SURF_COR"],
+        map_id = "map1",
+        filter_expression = '"N_PARFOR" <> \'00\''
+      )
+        
+def add_layer_to_legend(layout: QgsPrintLayout,
+                        legend_id: str, 
+                        *layer_keys: list, 
+                        hide_name: bool = True, 
+                        map_id: str = None):
+    """
+    Ajoute des couches à une légende dans un composeur, avec option de filtrage par contenu visible sur une carte.
+
+    :param layout: QgsPrintLayout
+    :param legend_id: ID de l'objet légende dans le composeur
+    :param layer_keys: liste de clés logiques de couches à ajouter
+    :param hide_name: masque le nom de la couche dans la légende
+    :param map_id: ID de l'objet carte (QgsLayoutItemMap) pour filtrer par contenu visible
+    """
     legend = layout.itemById(legend_id)
     if not legend:
         raise ValueError(f"Élément légende '{legend_id}' non trouvé")
 
-    root = legend.model().rootGroup()  # Récupère le groupe racine de la légende
+    root = legend.model().rootGroup()
 
-    for key in keys:
-        print(f"key '{key}' in '{keys}'")
+    for key in layer_keys:
         display_name = get_display_name(key)
-        print(f"display_name to find '{display_name}'")
         layers = QgsProject.instance().mapLayersByName(display_name)
-        if not layers:
-            raise ValueError(f"La couche '{display_name}' est introuvable dans le projet")
-    
-        layer = layers[0]
-        print(f"layer to find '{layer}'")
-        
-        # Vérifier si la couche existe déjà dans la légende pour éviter les doublons
-        existing_layers = [node.layerId() for node in root.findLayers()]
-        if layer.id() in existing_layers:
-            print(f"La couche '{display_name}' est déjà dans la légende")
-            continue
+        if layers:
+            layer = layers[0]
+            existing_layers = [node.layerId() for node in root.findLayers()]
+            if layer.id() in existing_layers:
+                print(f"La couche '{display_name}' est déjà dans la légende")
+                continue
+            legend_node = root.addLayer(layer)
+            if hide_name:
+                legend_node.setName("")
 
-        # Ajouter la couche dans la légende
-        legend_node = root.addLayer(layer)
-
-        # Masquer le nom si demandé
-        if hide_name:
-            legend_node.setName("")
+    # Lier la légende à une carte spécifique pour filtrer les entités visibles
+    if map_id:
+        map_item = layout.itemById(map_id)
+        if not isinstance(map_item, QgsLayoutItemMap):
+            raise TypeError(f"L'élément '{map_id}' n'est pas une carte (QgsLayoutItemMap)")
+        legend.setLinkedMap(map_item)
+        legend.setLegendFilterByMapEnabled(True)
 
     legend.refresh()
+
+def configure_attribute_table(layout: QgsPrintLayout, 
+                              table_id: str, 
+                              layer_key: str, 
+                              fields: list,
+                              map_id: str = None,
+                              filter_expression: str = None):
+    """
+    Configure une table attributaire dans un layout QGIS 3.40.
+
+    :param layout: QgsPrintLayout contenant la table
+    :param table_id: ID de la table dans le composeur
+    :param layer_key: clé logique de la couche (convertie avec get_display_name)
+    :param fields: liste de champs à afficher
+    :param show: ne montrer que les entités visibles
+    :param filter_expression: expression QGIS pour filtrer les entités (ex: '"N_PARFOR" <> \'00\'')
+    :param alignments: dict facultatif pour aligner les colonnes, ex: {'N_PARFOR': Qt.AlignCenter}
+    """
+    item = layout.itemById(table_id)
+    if not item:
+        raise ValueError(f"Élément table '{table_id}' non trouvé dans le layout.")
+
+    if isinstance(item, QgsLayoutFrame):
+        table = item.multiFrame()
+    elif isinstance(item, QgsLayoutItemAttributeTable):
+        table = item
+    else:
+        raise TypeError(f"L'élément '{table_id}' n'est ni une table ni une frame de table.")
+
+    display_name = get_display_name(layer_key)
+    layers = QgsProject.instance().mapLayersByName(display_name)
+    if not layers:
+        raise ValueError(f"Aucune couche trouvée avec le nom '{display_name}'")
+    layer = layers[0]
+
+    table.setVectorLayer(layer)
+    table.setDisplayedFields(fields)
+    
+    # setDisplayOnlyVisibleFeatures
+    if map_id:
+      map_item = layout.itemById(map_id)
+      if map_item:
+        table.setMap(map_item)
+        table.setDisplayOnlyVisibleFeatures(True)
+    
+    # Appliquer le filtre si fourni
+    if filter_expression:
+        table.setFeatureFilter(filter_expression)
+        table.setFilterFeatures(True)
+
+    table.refresh()

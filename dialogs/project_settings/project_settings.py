@@ -10,6 +10,7 @@ from ...utils.variable_utils import get_project_variable, set_project_variable, 
 from ...utils.path_manager import get_project, get_path, get_default
 from ...utils.layer_utils import create_map_project, configure_snapping 
 from ...utils.layout_utils import compute_map_info, import_layout_from_template, configure_layout
+from ...utils.utils import show_message
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, parent=None):
@@ -37,7 +38,7 @@ class ProjectSettingsDialog(QDialog):
 
         if map_project in self.projects:
             # Récupère le type_project
-            type_project = "wooded" if float(get_project_variable("forest_surface_non_boisee")) > 0 else "unwooded"
+            type_project = "unwooded" if float(get_project_variable("forest_surface_non_boisee")) > 0 else "wooded"
             set_project_variable("forest_map_project", map_project)
             set_project_variable("forest_type_project", type_project)
             
@@ -46,7 +47,7 @@ class ProjectSettingsDialog(QDialog):
 
             # Crée le projet ciblé
             create_map_project(map_project, type_project)
-            self.iface.messageBar().pushMessage("Qsequoia2", f"Projet {map_project} généré avec succès", level=Qgis.Success, duration=10)
+            show_message(self.iface, f"Projet {map_project} généré avec succès", "success", 15)
             
             # Configure l'accrochage
             configure_snapping()
@@ -54,20 +55,21 @@ class ProjectSettingsDialog(QDialog):
             # Importe le modèle qpt du composeur
             models_directory = get_global_variable('models_directory') # récupère le répertoire
             legend = get_default(map_project, 'legend')
+            scale = get_default(map_project, 'scale')
             
-            info = compute_map_info(legend) # récupère les informations de la couche parca_polygon
+            info = compute_map_info(legend, scale) # récupère les informations de la couche parca_polygon
             
             layout = import_layout_from_template(info, models_directory)
             
             # Configure le composeur
-            configure_layout(
-                layout, 
-                info["geometry"], 
-                map_project,
-                type_project,
-                hide_legend_names=True)
-                
-            iface.openLayoutDesigner(layout)
+            if layout:
+                configure_layout(
+                    layout, 
+                    info["geometry"], 
+                    map_project,
+                    type_project)
+                    
+                iface.openLayoutDesigner(layout)
             
             # Save project qgz
             if self.ui.checkBox_saved.isChecked():
