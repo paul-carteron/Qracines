@@ -3,6 +3,7 @@ from qgis.core import (
     QgsProject,
     QgsCoordinateReferenceSystem
 )
+from PyQt5.QtCore import QTimer
 from qgis.utils import *
 from collections import *
 import geopandas as gpd 
@@ -17,29 +18,55 @@ def set_global_variable(variable_name, value):
 def get_global_variable(variable_name):
     return QgsExpressionContextUtils.globalScope().variable(variable_name)
   
-def set_project_variable(name, value):
-    QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, value)
-    return None
+def set_project_variable(name: str, value) -> None:
+    """
+    Définit une variable de projet de manière sécurisée.
+    Seuls les types primitifs sont autorisés. Les autres sont convertis en chaîne.
+    """
+    try:
+        if not isinstance(value, (str, int, float, bool)):
+            print(f"[Avertissement] Conversion automatique de la variable '{name}' en chaîne : type original = {type(value)}")
+            value = str(value)
+
+        QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, value)
+
+    except Exception as e:
+        print(f"[Erreur] Impossible de définir la variable '{name}' avec la valeur '{value}': {e}")
 
 def get_project_variable(name):
     return QgsExpressionContextUtils.projectScope(QgsProject.instance()).variable(name)
     
 def clear_project(keep_variables=True):
+    """
+    Réinitialise le projet. Optionnellement, conserve les variables personnalisées.
+    """
+    saved_variables = {}
+
     if keep_variables:
-        # Save all existing project variables
+        # Sauvegarde des variables personnalisées contenant "forest"
         project = QgsProject.instance()
         context = QgsExpressionContextUtils.projectScope(project)
         variable_names = context.variableNames()
-        saved_variables = {var: get_project_variable(var) for var in variable_names if "forest" in var}
+        for var in variable_names:
+            if "forest" in var:
+                try:
+                    value = get_project_variable(var)
+                    saved_variables[var] = value
+                except Exception as e:
+                    print(f"[Erreur] Échec de lecture de la variable '{var}': {e}")
 
-    # Clear the project
-    QgsProject.instance().clear()
-    QgsProject.instance().setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
+    # Réinitialisation du projet
+    try:
+        QgsProject.instance().clear()
+        QgsProject.instance().setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
+    except Exception as e:
+        print(f"[Erreur] Échec lors de la réinitialisation du projet : {e}")
+        return
 
+    # Restauration des variables
     if keep_variables:
-        # Restore all saved variables
         for name, value in saved_variables.items():
-            print(f"clear_project - name : {name} - value {value}")
+            print(f"[Info] Restauration de la variable : {name} = {value}")
             set_project_variable(name, value)
 
 
