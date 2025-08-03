@@ -42,7 +42,10 @@ structure:
       lieudit_point: { filename: LIEUDIT_point.shp, style: LIEUDIT_point.qml, display_name: "LIEUDIT_point" }
       parca_archive_polygon: { filename: PARCA-ARCHIVE_polygon.shp }
       parca_polygon: { filename: PARCA_polygon.shp, style: PARCA_polygon.qml, display_name: "Parcelle cadastrale" }
-      parca_polygon_legend: { filename: PARCA_polygon.shp, style: INFRASTRUCTURE_polygon.qml, display_name: "Légende" }
+      parca_polygon_lgd_situation: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_situation.qml, display_name: "Légende" }
+      parca_polygon_lgd_assemblage: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_assemblage.qml, display_name: "Légende" }
+      parca_polygon_lgd_peuplements: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_peuplements.qml, display_name: "Légende" }
+      parca_polygon_lgd_enjeux: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_enjeux.qml, display_name: "Légende" }
       parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml, display_name: "Parcelle cadastrale *"}
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
       pf_diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml, display_name: "Limite de parcelle w" }
@@ -68,6 +71,12 @@ structure:
       ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Peuplements (UA)" }
       znieff1_polygon: { filename: ZNIEFF1_polygon.shp }
       placette: {filename: Placette.shp, style: Placette.qml}
+      ppi: {filename: PPI_polygon.shp, style: PPI_polygon.qml, display_name: "Périmètre de protection immédiat"}
+      ppe: {filename: PPE_polygon.shp, style: PPE_polygon.qml, display_name: "Périmètre de protection éloigné"}
+      ppr: {filename: PPR_polygon.shp, style: PPR_polygon.qml, display_name: "Périmètre de protection rapproché"}
+      ppmh: {filename: PPMH_polygon.shp, style: PPMH_polygon.qml, display_name: "Protection aux titres des abords de monuments historiques"}
+      mh: {filename: MH_polygon.shp, style: MH_polygon.qml, display_name: "Immeubles classés ou inscrits"}
+      site: {filename: SITE_polygon.shp, style: SITE_polygon.qml, display_name: "Sites classés ou inscrits"}
       transect: {filename: Transect.shp, style: Transect.qml}
       limite: {filename: Limite.shp, style: Limite.qml}
       picto: {filename: Picto.shp, style: Picto.qml}
