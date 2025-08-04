@@ -17,9 +17,6 @@ class ExpertiseCreateDialog(QDialog):
         self.ui.setupUi(self)
         self.essences_layer = DatabaseManager().load_essences("essences")
 
-        # --- initialize forest_name if forest is selected ---
-        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-        
         # --- initialize from helpers class ---
         raster_checkbox = {
             #   'key':     'checkbox_name',
@@ -55,6 +52,11 @@ class ExpertiseCreateDialog(QDialog):
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
+
+    # override exec_ to update forest_name if changed
+    def exec_(self):
+        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
+        return super().exec_()
 
     def accept(self):
 

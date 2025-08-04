@@ -549,7 +549,9 @@ class ExpertiseService:
             label = ess['code']
             if with_variation:
                 label = f"{ess['code']}{' ' + ess['variation'] if ess['variation'] else ''}"
-            essences_list[label] = ess['fid']
+            # Avoid overwriting in case of ess whith multiple variation
+            if label not in essences_list:
+                essences_list[label] = ess['fid']
         layer_manager.fields.add_value_map(essence_field, {'map': essences_list})
 
         # 2. Ensure "selected" field for secondary essences

@@ -244,7 +244,7 @@ class GpkgLoader(UIBinderMixin):
 
     def _on_add(self):
         paths, _ = QFileDialog.getOpenFileNames(
-            self, "Sélectionner des fichiers à importer", "", "GeoPackage (*.gpkg)")
+            self.add, "Sélectionner des fichiers à importer", "", "GeoPackage (*.gpkg)")
         if paths:
             self.selected.addItems(paths)
 

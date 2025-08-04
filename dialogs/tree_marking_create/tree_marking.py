@@ -20,9 +20,6 @@ class TreeMarkingCreateDialog(QDialog):
         self.ui.setupUi(self)
         self.essences_layer = DatabaseManager().load_essences("essences")
 
-        # --- initialize forest_name if forest is selected ---
-        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-
         # --- initialize from mixin ---
         raster_checkbox = {
             #   'key':     'checkbox_name',
@@ -49,6 +46,10 @@ class TreeMarkingCreateDialog(QDialog):
             outdir_ui = 'fw_outdir'
             )
 
+    def exec_(self):
+        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
+        return super().exec_()
+        
     def accept(self):
 
         if not self.ess_selector.is_valid():

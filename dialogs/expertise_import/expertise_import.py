@@ -20,7 +20,7 @@ class ExpertiseImportDialog(QDialog):
         self.ui = Ui_ExpertiseImportDialog()  
         self.ui.setupUi(self)
         
-        self.loader = GpkgLoader(self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
+        self.loader = GpkgLoader(ui = self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
 
     def merge_files(self):
         if self.loader.is_valid():
