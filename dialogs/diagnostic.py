@@ -5,6 +5,7 @@ from .diagnostic_dialog import Ui_DiagnosticDialog
 from ..core.diagnostic_service import DiagnosticService
 from ..utils.path_manager import get_project_variable, get_racines_path
 from ..utils.variable_utils import clear_project
+from ..utils.ui_helpers import QfieldPackager
 
 class DiagnosticDialog(QDialog):
     def __init__(self, parent=None):
@@ -26,15 +27,12 @@ class DiagnosticDialog(QDialog):
         }
         self.update_raster_checkbox_states()
 
-        # --- initialise default output directory ---
-        default_dir = Path(get_racines_path("expertise", "Diagnostic"))
-        default_dir.mkdir(parents=True, exist_ok=True)
-        self.ui.fw_package_outdir.setFilePath(str(default_dir))
-        self.ui.fw_package_outdir.setStorageMode(self.ui.fw_package_outdir.GetDirectory)
-
-        # --- connect buttons ---
-        self.ui.buttonBox.accepted.connect(self._on_accept)
-        self.ui.buttonBox.rejected.connect(self.reject)
+        self.packager = QfieldPackager(
+            self.ui,
+            default_dir = Path(get_racines_path("expertise", "Diagnostic")),
+            package_ui = 'cb_package_for_qfield',
+            outdir_ui = 'fw_package_outdir'
+            )
 
          # --- connect checkbox to toggle ---
         self.setup_connections()
@@ -58,7 +56,7 @@ class DiagnosticDialog(QDialog):
         self.ui.fw_package_outdir.setEnabled(checked)
         self.ui.le_package_title.setEnabled(checked)
 
-    def _on_accept(self):
+    def accept(self):
         # 1) collect inputs
         outdir = Path(self.ui.fw_package_outdir.filePath())
         if not outdir.exists():
@@ -73,20 +71,20 @@ class DiagnosticDialog(QDialog):
         # 2) call service
         svc = DiagnosticService(
             outdir=outdir, title=self.ui.le_package_title.text(),
-            package_for_qfield=self.ui.cb_package_for_qfield.isChecked(),
             dmin=dmin, dmax=dmax, hmin=hmin, hmax=hmax,
             raster_choices = self.raster_checkboxes
         ) 
 
         try:
-            packaged_dir = svc.run_full_diagnostic()
+            svc.run_full_diagnostic()
 
-            if packaged_dir:
-                QMessageBox.information(self, "Succès", f"Diagnostic complet !\nProjet packagé dans :\n{packaged_dir}")
-            else:
-                QMessageBox.information(self, "Succès", "Diagnostic complet !")
+            msg = "Diagnostique PSG Terminé !"
+            if self.packager.is_valid():
+                packaged_dir = self.packager.package(prefix="DIAG")
+                msg += f"\nProjet packagé dans :\n{packaged_dir}"
+            QMessageBox.information(self, "Succès", msg)
 
-            self.accept()
+            super().accept()
 
         except Exception as e:
             # everything else bubbles up here

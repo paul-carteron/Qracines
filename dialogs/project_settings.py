@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from qgis.PyQt.QtWidgets import QDialog
 from qgis.core import Qgis, QgsProject
 from qgis.utils import iface
@@ -8,7 +6,7 @@ from .project_settings_dialog import Ui_ProjectSettingsDialog
 # Import from utils folder
 from ..utils.variable_utils import get_project_variable, set_project_variable, clear_project
 from ..utils.path_manager import get_project, get_path
-from .. utils.layer_utils import create_map_project, configure_snapping
+from ..utils.layer_utils import create_map_project, configure_snapping
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, parent=None):

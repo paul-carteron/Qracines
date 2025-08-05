@@ -11,12 +11,13 @@ from PyQt5.QtWidgets import QMessageBox
 
 from qgis.utils import iface
 
-from ..utils.path_manager import get_guides, get_style, get_stations, get_path
+from ..utils.path_manager import get_guides, get_style, get_stations, get_path, get_racines_path
 from ..utils.variable_utils import clear_project, get_project_variable
 from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer, load_gpkg, create_relation, set_layers_readonly
 from ..utils.qfield_utils import package_for_qfield
 from ..core.layer_factory import LayerFactory
 from ..core.layer import LayerManager
+from ..utils.ui_helpers import QfieldPackager
 
 class PedologyDialog(QDialog):
     def __init__(self, parent=None):
@@ -30,16 +31,17 @@ class PedologyDialog(QDialog):
         self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
 
         # --- Connect checkbox package_for_qfield ---
-        self.ui.cb_package_for_qfield.toggled.connect(self.toggle_fw_editability)
+        self.packager = QfieldPackager(
+            self.ui,
+            default_dir = Path(get_racines_path("expertise", "Pedologie")),
+            package_ui = 'cb_package_for_qfield',
+            outdir_ui = 'fw_package_outdir'
+            )
 
         # --- Populate cob_stations with guides ---
         guides = get_guides()
         self.ui.cob_stations.addItems(guides)
         
-        # --- Connect OK and REJECT button ---
-        self.ui.buttonBox.accepted.connect(self.create_pedology)
-        self.ui.buttonBox.rejected.connect(self.reject)
-    
     # Override exec_() so i can check that a forest is selected before loading the dialog (see self.pedology_dialog.exec_() in Qsequoia2.py)
     def exec_(self):
         pedology_path = get_path("pedology_qfield")
@@ -57,7 +59,7 @@ class PedologyDialog(QDialog):
         self.ui.fw_package_outdir.setEnabled(checked)
         self.ui.le_package_title.setEnabled(checked)
 
-    def create_pedology(self):
+    def accept(self):
 
         clear_project()
         
@@ -129,18 +131,16 @@ class PedologyDialog(QDialog):
         layer_names = ['prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon']
         set_layers_readonly(*layer_names)
     
-        if self.ui.cb_package_for_qfield.isChecked():
-            self._package_for_qfield()
+        try:
 
-    def _package_for_qfield(self):
-        forest_prefix = get_project_variable("forest_prefix")
+            msg = "Diagnostique pédologique terminé !"
+            if self.packager.is_valid():
+                packaged_dir = self.packager.package(prefix="PEDO")
+                msg += f"\nProjet packagé dans :\n{packaged_dir}"
+            QMessageBox.information(self, "Succès", msg)
 
-        outdir = Path(self.ui.fw_package_outdir.filePath())
-        if not outdir.exists():
-            QMessageBox.warning(self, "Invalid folder", "Please choose a valid directory.")
-            return
-        
-        custom_title = self.ui.le_package_title.text()
-        filename = custom_title if custom_title else f"{forest_prefix}_pedology"
-        
-        package_for_qfield(iface, self.project, outdir, filename)
+            super().accept()
+
+        except Exception as e:
+            # everything else bubbles up here
+            QMessageBox.critical(self, "Erreur", f"Une erreur est survenue :\n{e}")

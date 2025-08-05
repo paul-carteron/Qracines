@@ -33,7 +33,6 @@ class DiagnosticService:
         self,
         outdir: Path,
         title: str,
-        package_for_qfield: bool,
         dmin: int,
         dmax: int,
         hmin: int,
@@ -45,7 +44,6 @@ class DiagnosticService:
         self.root = self.project.layerTreeRoot()
         self.outdir = outdir
         self.title = title
-        self.package_for_qfield = package_for_qfield
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
         self.raster_choices = raster_choices
@@ -61,13 +59,6 @@ class DiagnosticService:
         self._create_relations()
         self._apply_styles()
         self._configure_layers()
-        
-        # Run packaging if needed
-        if self.package_for_qfield:
-            self._package_for_qfield()
-            # signal back that packaging happened
-            return str(self.outdir)
-        return None
 
     def _load_parcellaire(self):
         path = get_path("parcellaire")
@@ -226,9 +217,3 @@ class DiagnosticService:
         va_mgr.forms.add_fields_to_tab('VA_ESS','VA_STADE','VA_AGE_APP','VA_HT','VA_ELAG','VA_TX_HA','CUMUL_TX_VA')
         # set hard/soft constraints and defaults as needed
         va_mgr.fields.set_constraint('VA_TX_HA', QgsFieldConstraints.ConstraintNotNull)
-
-    def _package_for_qfield(self):
-        forest_prefix = get_project_variable("forest_prefix")
-        filename = self.title if self.title else f"{forest_prefix}_D{self.dmax}H{self.hmax}"
-        
-        package_for_qfield(iface, self.project, self.outdir, filename)
