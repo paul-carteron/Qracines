@@ -411,11 +411,22 @@ def create_project(project):
         layers = g.get("layers") or []
         loader(*layers, group_name=g.get("name"))
     
-    for t in get_project_themes(project):
+
+    themes = get_project_themes(project) or []
+    for t in themes:
         create_theme(t['name'], t['show'])
-    
+
+    if themes:
+        first_theme = themes[0]['name']
+        coll = QgsProject.instance().mapThemeCollection()
+        root = QgsProject.instance().layerTreeRoot()
+        model = iface.layerTreeView().layerTreeModel()
+        coll.applyTheme(first_theme, root, model)   # updates layer tree visibilities
+        iface.mapCanvas().setTheme(first_theme) 
+
     # Gestion des groupes
     replier()
+    deplier("SEQUOIA")
     default = get_project_default(project)
     zoom_on_layer(default["zoom_on"])
 

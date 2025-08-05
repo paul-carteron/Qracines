@@ -7,7 +7,7 @@ from .project_settings_dialog import Ui_ProjectSettingsDialog
 
 # Import from utils folder
 from ...utils.variable_utils import get_project_variable, set_project_variable, get_global_variable, clear_project
-from ...utils.path_manager import get_project, get_path, get_default
+from ...utils.path_manager import get_project, get_path, get_default, get_project_default
 from ...utils.layer_utils import create_project, configure_snapping 
 from ...utils.layout_utils import compute_map_info, import_layout_from_template, configure_layout
 from ...utils.utils import show_message
@@ -52,27 +52,24 @@ class ProjectSettingsDialog(QDialog):
             # Configure l'accrochage
             configure_snapping()
             
-            # # Importe le modèle qpt du composeur
-            # models_directory = get_global_variable('models_directory') # récupère le répertoire
-            # legend = get_default(map_project, 'legend')
-            # scale = get_default(map_project, 'scale')
+            # Importe le modèle qpt du composeur
+            default = get_project_default(map_project)
+            info = compute_map_info(default["info_layer"], default["scale"])
+            print(info)
+
+            format = info.get("format_papier")
+            orientation = info.get("orientation", "portrait")
+
+            layout = import_layout_from_template(format, orientation)
+            print(layout)
+
+            # Configure le composeur
+            if layout:
+                configure_layout(layout, map_project)
+                iface.openLayoutDesigner(layout)
             
-            # info = compute_map_info(legend, scale) # récupère les informations de la couche parca_polygon
-            
-            # layout = import_layout_from_template(info, models_directory)
-            
-            # # Configure le composeur
-            # if layout:
-            #     configure_layout(
-            #         layout, 
-            #         info["geometry"], 
-            #         map_project,
-            #         type_project)
-                    
-            #     iface.openLayoutDesigner(layout)
-            
-            # # Save project qgz
-            # if self.ui.checkBox_saved.isChecked():
-            #     project = QgsProject.instance()
-            #     save_path = get_path(map_project)
-            #     project.write(str(save_path))
+            # Save project qgz
+            if self.ui.checkBox_saved.isChecked():
+                project = QgsProject.instance()
+                save_path = get_path(map_project)
+                project.write(str(save_path))

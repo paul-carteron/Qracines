@@ -221,6 +221,13 @@ def _load_project() -> dict:
             _PROJECT = yaml.safe_load(f)
     return _PROJECT
   
+def get_project_default(name: str) -> dict:
+    return _load_project().get(name).get("default", {})
+
+def get_project_legends(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get(type).get("legends", {})
+
 def get_project_groups(name: str) -> dict:
     type = get_project_variable("forest_type_project")
     return _load_project().get(name).get(type).get("groups", {})
@@ -228,10 +235,6 @@ def get_project_groups(name: str) -> dict:
 def get_project_themes(name: str) -> dict:
     type = get_project_variable("forest_type_project")
     return _load_project().get(name).get(type).get("themes", {})
-
-def get_project_default(name: str) -> dict:
-    type = get_project_variable("forest_type_project")
-    return _load_project().get(name).get("default", {})
 
 
 # endregion

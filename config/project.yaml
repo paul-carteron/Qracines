@@ -1,9 +1,14 @@
 situation:
   default:
     scale: 25000
+    info_layer: 'prop_polygon'
     zoom_on: 'prop_line'
+    composer_theme: '1_SCAN25'
 
   wooded:
+    legends:
+      - name: "legend1"
+        layers: ['parca_polygon_lgd_peuplements']
     groups:
       - name: VECTOR
         type: vector

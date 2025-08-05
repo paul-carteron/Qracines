@@ -2,23 +2,24 @@ from pathlib import Path
 from qgis.utils import iface
 from qgis.core import *
 from qgis.PyQt.QtXml import QDomDocument
-from PyQt5.QtCore import Qt
-from typing import Optional
 import processing
 
-from .path_manager import get_display_name, get_default, get_type
+from .path_manager import get_display_name, get_project_default, get_type, get_project_legends
+from .variable_utils import get_global_variable
 
-def compute_map_info(layer_name: str,
-                     map_scale: int = 7500,
-                     buffer_distance: float = 15
-                     ) -> dict:
+def compute_map_info(
+        layer_key: str,
+        map_scale: int = 7500,
+        buffer_distance: float = 15
+        ) -> dict:
     """
     À partir d'une couche polygonale, génère un tampon, sépare les multiparts,
     conserve la plus grande entité, retourne sa bbox, son orientation et le format papier adapté.
     """
-    project = QgsProject.instance()
-    display_name = get_display_name(layer_name)
-    layers = project.mapLayersByName(display_name)
+
+    display_name = get_display_name(layer_key)
+    print(display_name)
+    layers = QgsProject.instance().mapLayersByName(display_name)
 
     if not layers:
         raise ValueError(f"La couche '{display_name}' est introuvable dans le projet.")
@@ -88,22 +89,20 @@ def compute_map_info(layer_name: str,
         "geometry": geom
     }
 
-def import_layout_from_template(info: dict, models_directory: Path) -> QgsPrintLayout | None:
+def import_layout_from_template(format, orientation = "portrait") -> QgsPrintLayout | None:
     """
     Importe un layout .qpt en fonction des infos calculées (format, orientation).
     Retourne None si échec.
     """
-    models_directory = Path(models_directory)
-    fmt = info.get("format_papier")
-    orientation = info.get("orientation", "portrait")
+    models_directory = Path(get_global_variable('models_directory'))
 
     # Chemin du QPT
-    qpt_path = models_directory / f"{fmt}_{orientation}.qpt"
+    qpt_path = models_directory / f"{format}_{orientation}.qpt"
 
     # Fallback portrait si landscape introuvable
     if not qpt_path.exists() and orientation.lower() == "landscape":
         orientation = "portrait"
-        qpt_path = models_directory / f"{fmt}_{orientation}.qpt"
+        qpt_path = models_directory / f"{format}_{orientation}.qpt"
 
     try:
         if not qpt_path.exists():
@@ -120,7 +119,7 @@ def import_layout_from_template(info: dict, models_directory: Path) -> QgsPrintL
         context = QgsReadWriteContext()
         layout.loadFromTemplate(template_doc, context)
 
-        layout.setName(f"{fmt}_{orientation}")
+        layout.setName(f"{format}_{orientation}")
         project.layoutManager().addLayout(layout)
 
         return layout
@@ -128,11 +127,8 @@ def import_layout_from_template(info: dict, models_directory: Path) -> QgsPrintL
     except Exception as e:
         return None
     
-        
 def configure_layout(layout: QgsPrintLayout,
-                     geometry: QgsGeometry,
                      project: str,
-                     type_: str,
                      hide_legend_names: bool = False
                      ) -> None:
     """
@@ -149,8 +145,9 @@ def configure_layout(layout: QgsPrintLayout,
     """
 
     # Récupération des paramètres YAML
-    theme = get_default(project, "theme")
-    scale = get_default(project, "scale")
+    default = get_project_default(project)
+    theme = default.get("composer_theme")
+    scale = default.get("scale")
 
     # Récupérer toutes les cartes dans le layout
     all_maps = [item for item in layout.items() if isinstance(item, QgsLayoutItemMap)]
@@ -178,14 +175,12 @@ def configure_layout(layout: QgsPrintLayout,
         map_item.setScale(scale)
 
     # Ajouter la légende si spécifiée
-    legend1_layers = get_type(project, type_).get("legend1_layers")
-    if legend1_layers:
-        add_layer_to_legend(layout, "legend1", *legend1_layers, hide_name=hide_legend_names)
-        
-    legend2_layers = get_type(project, type_).get("legend2_layers")
-    if legend2_layers:
-        add_layer_to_legend(layout, "legend2", *legend2_layers, hide_name=hide_legend_names, map_id="map1")
-    
+    legends = get_project_legends(project)
+    for l in legends:
+        legend_name = l.get("name")
+        legend_layers = l.get("layers")
+        add_layer_to_legend(layout, legend_name, *legend_layers, hide_name=hide_legend_names)
+
     # Complète la table
     pf_display_name = get_display_name("pf_polygon")
     layers = QgsProject.instance().mapLayersByName(pf_display_name)
