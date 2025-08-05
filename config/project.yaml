@@ -1,0 +1,38 @@
+situation:
+  default:
+    scale: 25000
+    zoom_on: 'prop_line'
+
+  wooded:
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: ['coms_line', 'coms_point', 'infra_point_acces']
+      - name: SEQUOIA
+        type: vector
+        layers: ['prop_point', 'prop_line', 'prop_polygon']
+      - name: WMS
+        type: wms
+        layers: ['wms_scan25', 'wms_scan1000']
+    themes:
+      - name: 1_SCAN25
+        show: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+      - name: 2_SCAN1000
+        show: ['prop_point', 'wms_scan1000']
+
+  unwooded:
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: ['coms_line', 'coms_point', 'infra_point_acces']
+      - name: SEQUOIA
+        type: vector
+        layers: ['prop_point', 'prop_line', 'ua_polygon_occup']
+      - name: WMS
+        type: wms
+        layers: ['wms_scan25', 'wms_scan1000']
+    themes:
+      - name: 1_SCAN25
+        show: ['ua_polygon_occup', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+      - name: 2_SCAN1000
+        show: ['prop_point', 'wms_scan1000']

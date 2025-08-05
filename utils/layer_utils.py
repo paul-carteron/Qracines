@@ -13,7 +13,7 @@ from qgis.core import (
 from qgis.utils import iface
 from osgeo import ogr
 
-from .path_manager import get_wms, get_style, get_path, get_display_name, get_wms, get_config_path, get_default, get_type
+from .path_manager import get_wms, get_style, get_path, get_display_name, get_wms, get_project_groups, get_project_themes, get_project_default
 
 # region LOAD LAYERS
 
@@ -167,6 +167,7 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
             group.addLayer(imported_layer)
 
     return None
+
     
 # endregion
 
@@ -302,11 +303,6 @@ def set_layers_readonly(*keys):
 
 def create_map_project(map_project, type_project):
         
-    # Charge la couche legend du projet
-    legend = get_default(map_project, 'legend')
-    if legend:
-        load_vectors(legend, group_name=None)
-      
     # Charge les données du projet
     map_data = get_type(map_project, type_project)
 
@@ -381,3 +377,49 @@ def configure_snapping():
     project.setSnappingConfig(cfg)                                  
 
     return None
+
+def create_theme(name, visible_keys):
+    
+    def _resolve_layer_name(key):
+        try:
+            return get_display_name(key)          # vector/alias
+        except KeyError:
+            layer_name, _ = get_wms(key)          # WMS fallback
+            return layer_name
+
+    visible_names = {_resolve_layer_name(k) for k in visible_keys}
+
+    project = QgsProject.instance()
+    root = project.layerTreeRoot()
+
+    # Toggle all layers based on membership in visible_names
+    for node in root.findLayers():
+        node.setItemVisibilityChecked(node.layer().name() in visible_names)
+
+    # Save current state as a map theme
+    theme = QgsMapThemeCollection.createThemeFromCurrentState(root, iface.layerTreeView().layerTreeModel())
+    project.mapThemeCollection().insert(name, theme)
+
+def create_project(project):
+    loading_function = {
+        "vector" : load_vectors,
+        "wms" : load_wms
+    }
+    
+    for g in get_project_groups(project):
+        loader = loading_function.get(g.get("type"))
+        layers = g.get("layers") or []
+        loader(*layers, group_name=g.get("name"))
+    
+    for t in get_project_themes(project):
+        create_theme(t['name'], t['show'])
+    
+    # Gestion des groupes
+    replier()
+    default = get_project_default(project)
+    zoom_on_layer(default["zoom_on"])
+
+    # Appliquer transparence sur la couche scan25grey si elle existe
+    layer = QgsProject.instance().mapLayersByName(get_wms("wms_scan25_grey")[0])
+    if layer:
+        layer[0].setOpacity(0.5)

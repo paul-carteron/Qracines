@@ -157,7 +157,6 @@ def get_map_project(project: str) -> dict:
     
     return map_project[project]
     
-
 def get_default(project: str, key: str):
     """
     Récupère la valeur associée à `key` dans la section 'defaut' du projet.
@@ -208,6 +207,32 @@ def get_type(project: str, type_: str):
         raise ValueError(f"Le type '{type_}' n'a pas été trouvé dans le projet '{project}'")
     
     return map_data
+
+# endregion
+
+# region PROJECT
+_PROJECT: dict | None = None
+
+def _load_project() -> dict:
+    global _PROJECT
+    if _PROJECT is None:
+        cfg_path = get_config_path("project.yaml")
+        with open(cfg_path, encoding="utf-8") as f:
+            _PROJECT = yaml.safe_load(f)
+    return _PROJECT
+  
+def get_project_groups(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get(type).get("groups", {})
+
+def get_project_themes(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get(type).get("themes", {})
+
+def get_project_default(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get("default", {})
+
 
 # endregion
 
