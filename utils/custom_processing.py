@@ -67,3 +67,21 @@ def save_as_xlsx(*layers, path):
     })
 
     return
+
+def buffer(layer, distance, segments=8):
+    buffered = processing.run("native:buffer", {
+        "INPUT": layer,
+        "DISTANCE": distance,
+        "SEGMENTS": 8,
+        "DISSOLVE": True,
+        "OUTPUT": "memory:"
+        })["OUTPUT"]
+    
+    return buffered
+
+def multipart_to_singleparts(layer):
+    singleparts = processing.run("native:multiparttosingleparts", {
+        "INPUT": layer,
+        "OUTPUT": "memory:"
+        })["OUTPUT"]
+    return singleparts

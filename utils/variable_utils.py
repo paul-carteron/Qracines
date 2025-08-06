@@ -1,73 +1,66 @@
-from qgis.core import (
-    QgsExpressionContextUtils,
-    QgsProject,
-    QgsCoordinateReferenceSystem
-)
-from PyQt5.QtCore import QTimer
-from qgis.utils import *
-from collections import *
-import geopandas as gpd 
+from typing import Any, Dict
 
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.core import (
+    QgsProject,
+    QgsExpressionContextUtils,
+    QgsCoordinateReferenceSystem,
+)
+from qgis.gui import *
+from qgis.core import *
+
+import geopandas as gpd
+from collections import defaultdict
 from pathlib import Path
 
+def get_global_variable(name: str) -> Any:
+    """Return the value of a *global* expression variable."""
+    return QgsExpressionContextUtils.globalScope().variable(name)
 
-def set_global_variable(variable_name, value):
-    QgsExpressionContextUtils.setGlobalVariable(variable_name, value)
-    return None
+def set_global_variable(name: str, value: Any) -> None:
+    """Set a global expression variable (string/int/float/bool)."""
+    _safe_set(QgsExpressionContextUtils.setGlobalVariable, name, value)
 
-def get_global_variable(variable_name):
-    return QgsExpressionContextUtils.globalScope().variable(variable_name)
-  
-def set_project_variable(name: str, value) -> None:
-    """
-    Définit une variable de projet de manière sécurisée.
-    Seuls les types primitifs sont autorisés. Les autres sont convertis en chaîne.
-    """
-    try:
-        if not isinstance(value, (str, int, float, bool)):
-            print(f"[Avertissement] Conversion automatique de la variable '{name}' en chaîne : type original = {type(value)}")
-            value = str(value)
-
-        QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(), name, value)
-
-    except Exception as e:
-        print(f"[Erreur] Impossible de définir la variable '{name}' avec la valeur '{value}': {e}")
-
-def get_project_variable(name):
+def get_project_variable(name: str) -> Any:
+    """Return a project-level variable or `None` if missing."""
     return QgsExpressionContextUtils.projectScope(QgsProject.instance()).variable(name)
-    
-def clear_project(keep_variables=True):
-    """
-    Réinitialise le projet. Optionnellement, conserve les variables personnalisées.
-    """
-    saved_variables = {}
 
-    if keep_variables:
-        # Sauvegarde des variables personnalisées contenant "forest"
-        project = QgsProject.instance()
-        context = QgsExpressionContextUtils.projectScope(project)
-        variable_names = context.variableNames()
-        for var in variable_names:
-            if "forest" in var:
-                try:
-                    value = get_project_variable(var)
-                    saved_variables[var] = value
-                except Exception as e:
-                    print(f"[Erreur] Échec de lecture de la variable '{var}': {e}")
+def set_project_variable(name: str, value: Any) -> None:
+    """
+    Set a project-level variable.
 
-    # Réinitialisation du projet
+    Anything that isn’t str/int/float/bool is auto-converted to str to avoid
+    QVariant type errors.
+    """
+    _safe_set(QgsExpressionContextUtils.setProjectVariable, name, value)
+
+def _safe_set(setter, name: str, value: Any) -> None:
+    if not isinstance(value, (str, int, float, bool)):
+        print(f"[Warn] {name!r}: {type(value).__name__} → str")
+        value = str(value)
     try:
-        QgsProject.instance().clear()
-        QgsProject.instance().setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
-    except Exception as e:
-        print(f"[Erreur] Échec lors de la réinitialisation du projet : {e}")
-        return
+        # setter signature: (project, name, value) OR (name, value) for global
+        setter(QgsProject.instance(), name, value)  # *ignored* by global setter
+    except Exception as err:
+        print(f"[Error] cannot set {name!r}: {value!r}  →  {err}")
 
-    # Restauration des variables
-    if keep_variables:
-        for name, value in saved_variables.items():
-            print(f"[Info] Restauration de la variable : {name} = {value}")
-            set_project_variable(name, value)
+
+def clear_project(keep_forest_vars: bool = True) -> None:
+
+    proj = QgsProject.instance()
+
+    saved: Dict[str, Any] = {}
+    if keep_forest_vars:
+        scope = QgsExpressionContextUtils.projectScope(proj)
+        saved = {n: scope.variable(n) for n in scope.variableNames() if "forest" in n}
+    print(saved)
+
+    proj.clear()
+    proj.setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
+    proj.setCustomVariables(saved)
+
+# ---------------------------------------------------------------- HELPERS
+
 
 
 # Ces fonctions devraient plutôt être dans projet_settings dialog car spécifiques à ce module

@@ -151,7 +151,7 @@ class Qsequoia2:
             return
           
         if not self.project_dialog:
-            self.project_dialog = ProjectSettingsDialog()
+            self.project_dialog = ProjectSettingsDialog(self.iface)
         self.project_dialog.exec_()
         
     def open_add_data(self):

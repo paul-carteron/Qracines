@@ -1,4 +1,3 @@
-from pathlib import Path
 import processing
 
 from qgis.core import (

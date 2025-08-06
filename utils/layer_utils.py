@@ -411,6 +411,11 @@ def create_project(project):
         layers = g.get("layers") or []
         loader(*layers, group_name=g.get("name"))
     
+    coll = QgsProject.instance().mapThemeCollection()
+    names = list(coll.mapThemes())
+    for name in names:
+        coll.removeMapTheme(name)
+    iface.mapCanvas().setTheme('')
 
     themes = get_project_themes(project) or []
     for t in themes:
@@ -428,7 +433,7 @@ def create_project(project):
     replier()
     deplier("SEQUOIA")
     default = get_project_default(project)
-    zoom_on_layer(default["zoom_on"])
+    zoom_on_layer(default.zoom_on)
 
     # Appliquer transparence sur la couche scan25grey si elle existe
     layer = QgsProject.instance().mapLayersByName(get_wms("wms_scan25_grey")[0])

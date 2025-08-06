@@ -3,6 +3,7 @@ from qgis.utils import iface
 from qgis.core import *
 from qgis.PyQt.QtXml import QDomDocument
 import processing
+from qgis.PyQt.QtWidgets import QApplication
 
 from .path_manager import get_display_name, get_project_default, get_type, get_project_legends
 from .variable_utils import get_global_variable
@@ -287,3 +288,24 @@ def configure_attribute_table(layout: QgsPrintLayout,
         table.setFilterFeatures(True)
 
     table.refresh()
+
+
+def close_all_layout_designers() -> int:
+    """
+    Close all open QGIS Layout Designer windows.
+    Returns the number of windows closed.
+    """
+    closed = 0
+    for w in QApplication.topLevelWidgets():
+        # Layout Designer windows expose a callable designerInterface()
+        di = getattr(w, "designerInterface", None)
+        if callable(di):
+            try:
+                w.close()
+                closed += 1
+            except Exception:
+                pass
+    # Flush close events
+    QApplication.processEvents()
+    print(f"[designer] closed {closed} layout designer window(s).")
+    return closed

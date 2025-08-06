@@ -1,75 +1,88 @@
 from pathlib import Path
 
-from qgis.PyQt.QtWidgets import QDialog
-from qgis.core import Qgis, QgsProject
-from qgis.utils import iface
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QApplication
+from qgis.PyQt.QtCore import QEventLoop  
+from qgis.core import QgsProject
 from .project_settings_dialog import Ui_ProjectSettingsDialog
+from .project_settings_service import compute_layout_info, import_layout, configure_layout, _get_layer
 
 # Import from utils folder
-from ...utils.variable_utils import get_project_variable, set_project_variable, get_global_variable, clear_project
-from ...utils.path_manager import get_project, get_path, get_default, get_project_default
+from ...utils.variable_utils import get_project_variable, set_project_variable, clear_project
+from ...utils.path_manager import get_project, get_path, get_project_default, get_project_legends
 from ...utils.layer_utils import create_project, configure_snapping 
-from ...utils.layout_utils import compute_map_info, import_layout_from_template, configure_layout
 from ...utils.utils import show_message
 
+
 class ProjectSettingsDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, iface, parent=None):
         super().__init__(parent)
         self.iface = iface
+        self.project = QgsProject.instance()
         self.ui = Ui_ProjectSettingsDialog()
         self.ui.setupUi(self)
 
         # Liste des projets possibles
-        self.projects = get_project()
-
+        self.projects_list = get_project()
+       
         cb = self.ui.comboBox_projects
         cb.addItem("") 
-        cb.addItems(self.projects.values())
+        cb.addItems(self.projects_list.values())
         cb.setCurrentIndex(0)
-        
-        # Connecter les boutons
-        self.ui.buttonBox.accepted.connect(self.save_settings)
 
-    def save_settings(self):
-      
-        # Récupère le projet
+    def _get_project_key(self):
         selected_project_name = self.ui.comboBox_projects.currentText()
-        map_project = next((key for key, name in self.projects.items() if name == selected_project_name), None)
+        project_key = next((key for key, name in self.projects_list.items() if name == selected_project_name), None)
+        return project_key
+    
+    def _create_project(self, project_key):
+        # Récupère le type_project (should be done when in forest_settings)
+        type_project = "unwooded" if float(get_project_variable("forest_surface_non_boisee")) > 0 else "wooded"
+        set_project_variable("forest_map_project", project_key)
+        set_project_variable("forest_type_project", type_project)
 
-        if map_project in self.projects:
-            # Récupère le type_project (should be done when in forest_settings)
-            type_project = "unwooded" if float(get_project_variable("forest_surface_non_boisee")) > 0 else "wooded"
-            set_project_variable("forest_map_project", map_project)
-            set_project_variable("forest_type_project", type_project)
+        print(f"Closing all layout designers for project {project_key}")
+        all_designer = [d for d in self.iface.openLayoutDesigners()]
+        for d in all_designer:
+            d.close()
             
-            # Supprime le projet actuel
-            clear_project()
+        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+        clear_project()
 
-            # Crée le projet ciblé
-            create_project(map_project)
-            show_message(self.iface, f"Projet {map_project} généré avec succès", "success", 15)
-            
-            # Configure l'accrochage
-            configure_snapping()
-            
-            # Importe le modèle qpt du composeur
-            default = get_project_default(map_project)
-            info = compute_map_info(default["info_layer"], default["scale"])
-            print(info)
+        create_project(project_key)
+        show_message(self.iface, f"Projet {project_key} généré avec succès", "success", 15)
+        
+        # Configure l'accrochage
+        configure_snapping()
 
-            format = info.get("format_papier")
-            orientation = info.get("orientation", "portrait")
+        return None
+    
+    def accept(self):
+        project_key = self._get_project_key()
+        if not project_key:
+            show_message(self.iface, f"Projet {project_key} n'existe pas", "critical", 15)
+            return 
 
-            layout = import_layout_from_template(format, orientation)
-            print(layout)
+        try:
+            self._create_project(project_key)
+            default = get_project_default(project_key)
 
-            # Configure le composeur
+            # create layout
+            info_layer = _get_layer(self.project, default.info_layer)
+            info = compute_layout_info(info_layer, default.scale, buffer_distance = 15)
+            layout = import_layout(self.project, info.paper_format, info.orientation)
+
+            # configure layout
+            legends = get_project_legends(project_key)
             if layout:
-                configure_layout(layout, map_project)
-                iface.openLayoutDesigner(layout)
-            
+                configure_layout(self.project, self.iface, layout, default.composer_theme, default.scale, legends)
+                self.iface.openLayoutDesigner(layout)
+                
             # Save project qgz
             if self.ui.checkBox_saved.isChecked():
-                project = QgsProject.instance()
-                save_path = get_path(map_project)
-                project.write(str(save_path))
+                save_path = get_path(project_key)
+                self.project.write(str(save_path))
+
+            super().accept()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Une erreur est survenue :\n{e}")

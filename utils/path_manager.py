@@ -1,5 +1,6 @@
 import yaml
 from pathlib import Path
+from dataclasses import dataclass
 
 from qgis.PyQt.QtWidgets import QMessageBox
 
@@ -220,9 +221,18 @@ def _load_project() -> dict:
         with open(cfg_path, encoding="utf-8") as f:
             _PROJECT = yaml.safe_load(f)
     return _PROJECT
-  
-def get_project_default(name: str) -> dict:
-    return _load_project().get(name).get("default", {})
+
+@dataclass
+class ProjectDefaults:
+    scale: int
+    info_layer: str
+    zoom_on: str | None = None
+    composer_theme: str | None = None
+
+# ── 2. Return a dataclass instead of a dict ──────────────────────────
+def get_project_default(name: str) -> ProjectDefaults:
+    raw = _load_project().get(name, {}).get("default", {})
+    return ProjectDefaults(**raw)
 
 def get_project_legends(name: str) -> dict:
     type = get_project_variable("forest_type_project")
