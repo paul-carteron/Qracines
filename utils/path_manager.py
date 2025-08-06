@@ -246,7 +246,6 @@ def get_project_themes(name: str) -> dict:
     type = get_project_variable("forest_type_project")
     return _load_project().get(name).get(type).get("themes", {})
 
-
 # endregion
 
 # region RACINES

@@ -61,6 +61,11 @@ def clear_project():
     for lyr in list(proj.mapLayers().values()):
         proj.removeMapLayer(lyr)
 
+    # 5) Remove every map theme
+    mtc = proj.mapThemeCollection()
+    for name in list(mtc.themes().keys()):
+        mtc.removeTheme(name)
+
     # 4) (Optional) Reset CRS if you want a known default
     proj.setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
 
