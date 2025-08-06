@@ -44,23 +44,25 @@ def _safe_set(setter, name: str, value: Any) -> None:
     except Exception as err:
         print(f"[Error] cannot set {name!r}: {value!r}  →  {err}")
 
-
-def clear_project(keep_forest_vars: bool = True) -> None:
-
+def clear_project():
     proj = QgsProject.instance()
 
-    saved: Dict[str, Any] = {}
-    if keep_forest_vars:
-        scope = QgsExpressionContextUtils.projectScope(proj)
-        saved = {n: scope.variable(n) for n in scope.variableNames() if "forest" in n}
-    print(saved)
+    # 2) Remove all print layouts
+    lm = proj.layoutManager()
+    for layout in list(lm.layouts()):
+        lm.removeLayout(layout)
 
-    proj.clear()
+    # 3) Remove every node (groups + layers) from the layer tree
+    root = proj.layerTreeRoot()
+    for node in list(root.children()):
+        root.removeChildNode(node)
+
+    # 4) Remove any “orphaned” map layers just in case
+    for lyr in list(proj.mapLayers().values()):
+        proj.removeMapLayer(lyr)
+
+    # 4) (Optional) Reset CRS if you want a known default
     proj.setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
-    proj.setCustomVariables(saved)
-
-# ---------------------------------------------------------------- HELPERS
-
 
 
 # Ces fonctions devraient plutôt être dans projet_settings dialog car spécifiques à ce module

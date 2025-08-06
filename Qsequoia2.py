@@ -141,7 +141,7 @@ class Qsequoia2:
         
     def open_forest_settings(self):
         if not self.forest_dialog:
-            self.forest_dialog = ForestSettingsDialog()
+            self.forest_dialog = ForestSettingsDialog(self.iface)
         self.forest_dialog.exec_()
 
     def open_project_settings(self):

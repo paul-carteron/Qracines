@@ -35,17 +35,11 @@ class ProjectSettingsDialog(QDialog):
         return project_key
     
     def _create_project(self, project_key):
-        # Récupère le type_project (should be done when in forest_settings)
-        type_project = "unwooded" if float(get_project_variable("forest_surface_non_boisee")) > 0 else "wooded"
-        set_project_variable("forest_map_project", project_key)
-        set_project_variable("forest_type_project", type_project)
 
-        print(f"Closing all layout designers for project {project_key}")
-        all_designer = [d for d in self.iface.openLayoutDesigners()]
-        for d in all_designer:
-            d.close()
-            
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+        manager = self.project.layoutManager()
+        for old in list(manager.layouts()):
+            manager.removeLayout(old)
+
         clear_project()
 
         create_project(project_key)
@@ -70,7 +64,7 @@ class ProjectSettingsDialog(QDialog):
             info_layer = _get_layer(self.project, default.info_layer)
             info = compute_layout_info(info_layer, default.scale, buffer_distance = 15)
             layout = import_layout(self.project, info.paper_format, info.orientation)
-
+            
             # configure layout
             legends = get_project_legends(project_key)
             if layout:

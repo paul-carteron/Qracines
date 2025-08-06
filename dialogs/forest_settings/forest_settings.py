@@ -7,19 +7,14 @@ from .forest_settings_dialog import Ui_ForestSettingsDialog
 from qgis.PyQt.QtCore import Qt
 
 # Import from utils folder
-from ...utils.variable_utils import (
-    get_project_variable, 
-    set_project_variable, 
-    get_formated_surface, 
-    get_grouped_values_from_shapefile, 
-    sum_surface_from_shapefile
-    )
+from ...utils.variable_utils import get_project_variable, set_project_variable, get_formated_surface, get_grouped_values_from_shapefile, sum_surface_from_shapefile
 from ...utils.path_manager import get_racines_path, get_path
 
 class ForestSettingsDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, iface, parent=None):
         super().__init__(parent)
         self.iface = iface
+        self.project = QgsProject.instance()
         self.ui = Ui_ForestSettingsDialog()
         self.ui.setupUi(self)
         
@@ -83,11 +78,15 @@ class ForestSettingsDialog(QDialog):
             "surface_boisee": surface_boisee,
             "surface_non_boisee": surface_non_boisee,
             "surface_totale": surface_totale,
-            "formated_surface": formated_surface
+            "formated_surface": formated_surface,
+            "type_project": "unwooded" if float(surface_non_boisee) > 0 else "wooded"
         }
 
-        for key, value in settings.items():
-            set_project_variable(f"forest_{key}", value)
+        # prefix each key with "forest_"
+        forest_vars = {f"forest_{k}": v for k, v in settings.items()}
+
+        # set them all at once
+        self.project.setCustomVariables(forest_vars)
             
         self.iface.messageBar().pushMessage("Qsequoia2", f"Dossier {dirname} sélectionné avec succès", level=Qgis.Success, duration=10)
 
@@ -228,6 +227,5 @@ class ForestSettingsDialog(QDialog):
       
     def save_current_project(self, map_project):
         if self.ui.checkBox_saved.isChecked():
-            project = QgsProject.instance()
             save_path = get_path(map_project.lower(), self.name, self.directory)
-            project.write(save_path)
+            self.project.write(save_path)

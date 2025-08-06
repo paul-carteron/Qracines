@@ -64,13 +64,15 @@ def import_layout(project, fmt: str, orient):
         else:
             raise FileNotFoundError(f"Template introuvable : {fmt}_*.qpt")
     
-    print(f"Importing layout from {qpt}")
+    manager = project.layoutManager()
+    layoutName = f"{fmt}_{orient}"
+
     layout = QgsPrintLayout(project)
     layout.initializeDefaults()
     doc = QDomDocument();  doc.setContent(qpt.read_text("utf-8"))
     layout.loadFromTemplate(doc, QgsReadWriteContext())
-    layout.setName(f"{fmt}_{orient}")
-    project.layoutManager().addLayout(layout)
+    layout.setName(layoutName)
+    manager.addLayout(layout)
     return layout
   
 # endregion
