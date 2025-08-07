@@ -11,10 +11,11 @@ from PyQt5.QtWidgets import QMessageBox
 
 from qgis.utils import iface
 
-from ..utils.path_manager import get_guides, get_style, get_stations, get_path
-from ..utils.variable_utils import clear_project, get_project_variable
-from ..utils.layer_utils import load_vectors, load_rasters, replier, create_map_theme, zoom_on_layer, load_gpkg, create_relation, set_layers_readonly
-from ..utils.qfield_utils import package_for_qfield
+from ..utils.config import get_guides, get_style, get_stations, get_path
+from ..utils.variable import get_project_variable
+from ..utils.layers import load_vectors, load_rasters, load_gpkg, create_relation, set_layers_readonly
+from ..utils.utils import zoom_on, replier, clear_project, create_theme
+from ..utils.qfield import package_for_qfield
 from ..core.layer_factory import LayerFactory
 from ..core.layer import LayerManager
 
@@ -94,7 +95,7 @@ class PedologyDialog(QDialog):
         
         # Vector import
         load_vectors('prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon', group_name="VECTOR")
-        zoom_on_layer('prop_line')
+        zoom_on('prop_line')
 
         # Raster import
         load_rasters('plt','plt_anc','irc','rgb','mnh','scan25', group_name="RASTER")
@@ -123,7 +124,7 @@ class PedologyDialog(QDialog):
                  ['plt', 'plt_anc', 'irc', 'rgb', 'mnh', 'prop_diag_line', 'pf_diag_line', 'sspf_diag_polygon'])
                 ]
         for theme in map_themes:
-            create_map_theme(*theme)
+            create_theme(*theme)
             
         # Verrouillage des couches
         layer_names = ['prop_line', 'prop_diag_line', 'pf_line', 'pf_diag_line', 'pf_polygon', 'sspf_polygon', 'sspf_diag_polygon', 'ua_polygon']

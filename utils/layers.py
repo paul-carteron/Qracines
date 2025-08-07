@@ -5,15 +5,12 @@ from qgis.core import (
     QgsVectorLayer,
     QgsMessageLog,
     Qgis,
-    QgsLayerTreeGroup,
-    QgsMapThemeCollection,
     QgsRelation,
     QgsEditorWidgetSetup,
 )
-from qgis.utils import iface
 from osgeo import ogr
 
-from .path_manager import get_wms, get_style, get_path, get_display_name, get_wms, get_project_groups, get_project_themes, get_project_default
+from .config import get_wms, get_style, get_path, get_display_name, get_wms, get_project_groups, get_project_themes, get_project_default
 
 # region LOAD LAYERS
 
@@ -35,6 +32,7 @@ def load_wms(*wms_keys, group_name = None):
         display_name, url = get_wms(key)
         if project.mapLayersByName(display_name):
             QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
+            print(f"Layer '{display_name}' already loaded, skipping.")
             continue
 
         layer = QgsRasterLayer(str(url), display_name, "wms")
@@ -167,73 +165,12 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
             group.addLayer(imported_layer)
 
     return None
-
     
 # endregion
 
-def zoom_on_layer(key):
-    layers = QgsProject.instance().mapLayersByName(get_display_name(key))
-    if not layers:
-        QgsMessageLog.logMessage(f"Layer '{key}' not found. Zoom skipped.", "Qsequoia2", Qgis.Warning)
-        return
 
-    layer = layers[0]
-    if not layer.isValid():
-        QgsMessageLog.logMessage(f"Layer '{key}' is not valid. Zoom skipped.", "Qsequoia2", Qgis.Warning)
-        return
+# endregion
 
-    canvas = iface.mapCanvas()
-    canvas.setExtent(layer.extent())
-    canvas.refresh()
-
-def _set_layer_visibility(layer_name, visible):
-    project = QgsProject.instance()
-    layers = project.mapLayersByName(layer_name)
-    if not layers:
-        QgsMessageLog.logMessage(f"Layer '{layer_name}' not found for visibility toggle", "Qsequoia2", Qgis.Warning)
-        return
-    
-    node = project.layerTreeRoot().findLayer(layers[0].id())
-    if node:
-        node.setItemVisibilityChecked(visible)
-
-def create_map_theme(theme_name, visible_keys, invisible_keys):
-  
-    def _resolve_name(key):
-        try:
-            return get_display_name(key)
-        except KeyError:
-            # fallback to WMS
-            name, _url = get_wms(key)
-            return name
-
-    for key in visible_keys:
-        layer_name = _resolve_name(key)
-        _set_layer_visibility(layer_name, True)
-
-    for key in invisible_keys:
-        layer_name = _resolve_name(key)
-        _set_layer_visibility(layer_name, False)
-
-    project = QgsProject.instance()
-    root = project.layerTreeRoot()
-    map_theme = QgsMapThemeCollection.createThemeFromCurrentState(root, iface.layerTreeView().layerTreeModel())
-    project.mapThemeCollection().insert(theme_name, map_theme)
-         
-def replier():
-    root = QgsProject.instance().layerTreeRoot()
-    for node in root.children():
-        node.setExpanded(False)  # Replie le groupe ou la couche
-        if isinstance(node, QgsLayerTreeGroup):  # Si c'est un groupe, on repli ses enfants aussi
-            for enfant in node.children():
-                enfant.setExpanded(False)
-
-def deplier(group_name):
-    root = QgsProject.instance().layerTreeRoot()
-    group = root.findGroup(group_name)
-  
-    if group:
-        group.setExpanded(True)
 
 def create_relation(parent_name, child_name, parent_field, child_field, relation_id, relation_name):
     """
@@ -301,44 +238,6 @@ def set_layers_readonly(*keys):
             if isinstance(vector_layer, QgsVectorLayer):
                 vector_layer.setReadOnly(True)
 
-def create_map_project(map_project, type_project):
-        
-    # Charge les données du projet
-    map_data = get_type(map_project, type_project)
-
-    # Ajoute les groupes vector, sequoia, wms
-    for group_type in ['vector', 'sequoia', 'wms']:
-        group_info = map_data.get(group_type)
-        if not group_info:
-            continue
-
-        group_name = group_info.get('group_name')
-        group_layers = group_info.get('layers', [])
-
-        if group_layers:
-            if group_type in ['vector', 'sequoia']:
-                load_vectors(*group_layers, group_name=group_name)
-            else:
-                load_wms(*group_layers, group_name=group_name)
-    
-    # Gestion des groupes
-    replier()
-    deplier("sequoia")
-    zoom_on_layer(legend)
-    
-    # Gestion des thèmes
-    themes = map_data.get('themes', [])
-    for theme in themes:
-        theme_name = f"{theme['name']}"
-        visible_keys = theme.get('visible', [])
-        invisible_keys = theme.get('hidden', [])
-        create_map_theme(theme_name, visible_keys, invisible_keys)
-
-    # Appliquer transparence sur la couche scan25grey si elle existe
-    layer = QgsProject.instance().mapLayersByName("IGN SCAN 25 TOPO (Metropole) gray")
-    if layer:
-        layer[0].setOpacity(0.5)
-
 def configure_snapping():
     project = QgsProject.instance()
     cfg = project.snappingConfig()       # référence vers la config actuelle
@@ -377,65 +276,3 @@ def configure_snapping():
     project.setSnappingConfig(cfg)                                  
 
     return None
-
-def create_theme(name, visible_keys):
-    
-    def _resolve_layer_name(key):
-        try:
-            return get_display_name(key)          # vector/alias
-        except KeyError:
-            layer_name, _ = get_wms(key)          # WMS fallback
-            return layer_name
-
-    visible_names = {_resolve_layer_name(k) for k in visible_keys}
-
-    project = QgsProject.instance()
-    root = project.layerTreeRoot()
-
-    # Toggle all layers based on membership in visible_names
-    for node in root.findLayers():
-        node.setItemVisibilityChecked(node.layer().name() in visible_names)
-
-    # Save current state as a map theme
-    theme = QgsMapThemeCollection.createThemeFromCurrentState(root, iface.layerTreeView().layerTreeModel())
-    project.mapThemeCollection().insert(name, theme)
-
-def create_project(project):
-    loading_function = {
-        "vector" : load_vectors,
-        "wms" : load_wms
-    }
-    
-    for g in get_project_groups(project):
-        loader = loading_function.get(g.get("type"))
-        layers = g.get("layers") or []
-        loader(*layers, group_name=g.get("name"))
-    
-    coll = QgsProject.instance().mapThemeCollection()
-    names = list(coll.mapThemes())
-    for name in names:
-        coll.removeMapTheme(name)
-    iface.mapCanvas().setTheme('')
-
-    themes = get_project_themes(project) or []
-    for t in themes:
-        create_theme(t['name'], t['show'])
-
-    if themes:
-        first_theme = themes[0]['name']
-        coll = QgsProject.instance().mapThemeCollection()
-        root = QgsProject.instance().layerTreeRoot()
-        model = iface.layerTreeView().layerTreeModel()
-        coll.applyTheme(first_theme, root, model)   # updates layer tree visibilities
-        iface.mapCanvas().setTheme(first_theme) 
-
-    # Gestion des groupes
-    replier()
-    deplier("SEQUOIA")
-    default = get_project_default(project)
-    zoom_on_layer(default.zoom_on)
-
-    # Appliquer transparence sur la couche scan25grey si elle existe
-    layer = QgsProject.instance().mapLayersByName(get_wms("wms_scan25_grey")[0])
-    if layer:
-        layer[0].setOpacity(0.5)

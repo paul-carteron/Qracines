@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 
 from .diagnostic_dialog import Ui_DiagnosticDialog
 from ..core.diagnostic_service import DiagnosticService
-from ..utils.path_manager import get_project_variable, get_racines_path
-from ..utils.variable_utils import clear_project
+from ..utils.config import get_project_variable, get_racines_path
+from ..utils.utils import clear_project
 
 class DiagnosticDialog(QDialog):
     def __init__(self, parent=None):

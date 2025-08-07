@@ -1,17 +1,9 @@
-from typing import Any, Dict
+from typing import Any
 
-from qgis.PyQt.QtWidgets import QApplication
-from qgis.core import (
-    QgsProject,
-    QgsExpressionContextUtils,
-    QgsCoordinateReferenceSystem,
-)
-from qgis.gui import *
-from qgis.core import *
+from qgis.core import QgsProject,QgsExpressionContextUtils,QgsCoordinateReferenceSystem
 
 import geopandas as gpd
 from collections import defaultdict
-from pathlib import Path
 
 def get_global_variable(name: str) -> Any:
     """Return the value of a *global* expression variable."""
@@ -43,32 +35,6 @@ def _safe_set(setter, name: str, value: Any) -> None:
         setter(QgsProject.instance(), name, value)  # *ignored* by global setter
     except Exception as err:
         print(f"[Error] cannot set {name!r}: {value!r}  →  {err}")
-
-def clear_project():
-    proj = QgsProject.instance()
-
-    # 2) Remove all print layouts
-    lm = proj.layoutManager()
-    for layout in list(lm.layouts()):
-        lm.removeLayout(layout)
-
-    # 3) Remove every node (groups + layers) from the layer tree
-    root = proj.layerTreeRoot()
-    for node in list(root.children()):
-        root.removeChildNode(node)
-
-    # 4) Remove any “orphaned” map layers just in case
-    for lyr in list(proj.mapLayers().values()):
-        proj.removeMapLayer(lyr)
-
-    # 5) Remove every map theme
-    mtc = proj.mapThemeCollection()
-    for name in list(mtc.themes().keys()):
-        mtc.removeTheme(name)
-
-    # 4) (Optional) Reset CRS if you want a known default
-    proj.setCrs(QgsCoordinateReferenceSystem.fromEpsgId(2154))
-
 
 # Ces fonctions devraient plutôt être dans projet_settings dialog car spécifiques à ce module
 

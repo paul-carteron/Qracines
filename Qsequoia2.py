@@ -16,9 +16,9 @@ from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
 # Import from utils folder
-from .utils.variable_utils import *
-from .utils.layer_utils import *
-from .utils.qfield_utils import *
+from .utils.variable import *
+from .utils.layers import *
+from .utils.qfield import *
 
 from pathlib import Path
 

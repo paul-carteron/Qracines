@@ -4,9 +4,9 @@ from pathlib import Path
 from qgis.core import QgsProject, QgsWkbTypes, QgsPrintLayout, QgsReadWriteContext, QgsLayoutItemMap, QgsRectangle
 from qgis.PyQt.QtXml import QDomDocument
 
-from ...utils.variable_utils import get_global_variable
-from ...utils.custom_processing import buffer, multipart_to_singleparts
-from ... utils.path_manager import get_display_name
+from ...utils.variable import get_global_variable
+from ...utils.processing import buffer, multipart_to_singleparts
+from ...utils.config import get_display_name
 
 # region LAYOUT CREATION
 @dataclass

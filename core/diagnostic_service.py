@@ -13,10 +13,11 @@ from qgis.utils import iface
 from ..core.layer_factory import LayerFactory
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
-from ..utils.path_manager import get_path, get_style
-from ..utils.qfield_utils import package_for_qfield
-from ..utils.layer_utils import create_map_theme, load_gpkg, load_vectors, load_rasters, create_relation, zoom_on_layer
-from ..utils.variable_utils import get_project_variable
+from ..utils.config import get_path, get_style
+from ..utils.qfield import package_for_qfield
+from ..utils.layers import load_gpkg, load_vectors, load_rasters, create_relation
+from ..utils.variable import get_project_variable
+from ..utils.utils import zoom_on, create_theme
 
 
 class DiagnosticService:
@@ -57,7 +58,7 @@ class DiagnosticService:
         self._create_and_load_gpkg()
         self._load_and_style_vectors()
         self._load_and_style_rasters()
-        self._create_map_themes()
+        self._create_themes()
         self._create_relations()
         self._apply_styles()
         self._configure_layers()
@@ -104,14 +105,14 @@ class DiagnosticService:
 
     def _load_and_style_vectors(self):
         load_vectors("prop_line", "prop_diag_line", "pf_line", "pf_diag_line", "ua_polygon", group_name= "VECTOR")
-        zoom_on_layer("ua_polygon")
+        zoom_on("ua_polygon")
 
     def _load_and_style_rasters(self):
         keys = [key for key, cb in self.raster_choices.items() if cb.isChecked()]
         if keys:
             load_rasters(*keys, group_name="RASTER")
 
-    def _create_map_themes(self):
+    def _create_themes(self):
         themes = [
             ("1_plt",
              ['plt', 'prop_line', 'pf_line', 'ua_polygon'],
@@ -133,7 +134,7 @@ class DiagnosticService:
              ['plt', 'plt_anc', 'irc', 'rgb', 'mnh', 'prop_diag_line', 'pf_diag_line'])
         ]
         for theme in themes:
-            create_map_theme(*theme)
+            create_theme(*theme)
 
     def _apply_styles(self):
         name_key = [

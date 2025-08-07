@@ -5,10 +5,11 @@ from .expertise_service import ExpertiseService
 
 from ...core.db.manager import DatabaseManager
 
-from ...utils.path_manager import get_racines_path
-from ...utils.variable_utils import clear_project, get_project_variable
-from ...utils.layer_utils import load_vectors
-from ...utils.ui_helpers import RasterController, QfieldPackager, SpeciesSelector
+from ...utils.config import get_racines_path
+from ...utils.variable import get_project_variable
+from ...utils.layers import load_vectors
+from ...utils.utils import clear_project
+from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector
 
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):
