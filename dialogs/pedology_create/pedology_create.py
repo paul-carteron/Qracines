@@ -38,13 +38,14 @@ class PedologyCreateDialog(QDialog):
             }
         self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
         
+        print("create packager")
         self.packager = QfieldPackager(
             self.ui,
             default_dir = get_racines_path("expertise", "Qfield", "Pedology"),
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
-
+        print(f"packager:{self.packager}")
         # --- Populate cob_stations with guides ---
         guides = get_guides()
         self.ui.cob_stations.addItems(guides)
@@ -83,22 +84,19 @@ class PedologyCreateDialog(QDialog):
 
     def accept(self):
 
+        print("clearing project")
         clear_project()
 
         try:
-            print("start pedology")
             self.create_pedology()
-            
-            print("start load_vectors")
             load_vectors("ua_polygon", group_name= "VECTOR")
-
-            print("start load_selected_rasters")
             self.raster_controller.load_selected_rasters()
 
             msg = "Projet pedologique terminé !"
             if self.packager.is_valid():
                 packaged_dir = self.packager.package(prefix="PEDO")
                 msg += f"\nProjet packagé dans :\n{packaged_dir}"
+
             QMessageBox.information(self, "Succès", msg)
 
             super().accept()

@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog
+from qgis.PyQt.QtCore import QCoreApplication, Qt
 
 from qgis.core import QgsProject
 from qgis.gui import QgsFileWidget
@@ -135,10 +136,26 @@ class QfieldPackager(UIBinderMixin):
 
     def package(self, prefix: str, codes: Optional[Iterable[str]] = None) -> Optional[Path]:
         """Package the current project for QField and return the archive path or None if disabled."""
-
         filename = self.construct_filename(prefix, codes)
-        package_for_qfield(self.iface, self.project, self.outdir, filename)
-        return self.outdir / filename
+
+        # ─── 1) Show a modal “please wait” dialog with no buttons ─────────
+        busy = QMessageBox(self.iface.mainWindow())
+        busy.setWindowTitle("Packaging for QField")
+        busy.setText("Please wait while your project is being packaged…")
+        busy.setStandardButtons(QMessageBox.NoButton)    # no “OK” or cancel
+        busy.setWindowModality(Qt.WindowModal)
+        busy.show()
+        QCoreApplication.processEvents()                 # force it to paint immediately
+
+        try:
+            # ─── 2) Do the actual packaging work ───────────────────────────
+            out = package_for_qfield(self.iface, self.project, self.outdir, filename)
+        finally:
+            busy.accept()                    # mark as done (closes the dialog)
+            busy.deleteLater()               # schedule for deletion
+            QCoreApplication.processEvents()
+
+        return out
 
 class SpeciesSelector(UIBinderMixin):
     def __init__(self,
