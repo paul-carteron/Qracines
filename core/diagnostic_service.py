@@ -9,9 +9,7 @@ from ..core.layer_factory import LayerFactory
 from ..core.db.manager import DatabaseManager
 from ..core.layer.manager import LayerManager
 from ..utils.config import get_path, get_style
-from ..utils.qfield import package_for_qfield
 from ..utils.layers import load_gpkg, load_vectors, load_rasters, create_relation
-from ..utils.variable import get_project_variable
 from ..utils.utils import zoom_on, create_theme
 
 

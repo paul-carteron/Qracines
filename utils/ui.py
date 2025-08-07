@@ -81,7 +81,7 @@ class QfieldPackager(UIBinderMixin):
         self.outdir_ui: QgsFileWidget = self._bind_widget(outdir_ui, QgsFileWidget)
 
         # ─── Default directory ───────────────────────────────────────────────
-        self.default_dir = Path(default_dir).expanduser()
+        self.default_dir = Path(default_dir)
         self._ensure_default_dir()
 
         # ─── Configure *outdir* widget ───────────────────────────────────────
@@ -99,7 +99,7 @@ class QfieldPackager(UIBinderMixin):
         """Create *default_dir* if it does not already exist."""
         try:
             self.default_dir.mkdir(parents=True, exist_ok=True)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             QMessageBox.warning(self.iface.mainWindow(),"Erreur disque",f"Impossible de créer\n{self.default_dir}:\n{exc}",)
     # ------------------------------------------------------------------
     # Public helpers
@@ -112,7 +112,8 @@ class QfieldPackager(UIBinderMixin):
         Raises *FileNotFoundError* (and shows a dialog) when the directory
         does not exist.
         """
-        path = Path(self.outdir_ui.filePath() or self.default_dir).expanduser()
+        path = Path(self.outdir_ui.filePath() or self.default_dir)
+        print(path)
         if not path.exists():
             QMessageBox.warning(self.iface.mainWindow(), "Dossier invalide", "Veuillez choisir un répertoire valide.",)
             raise FileNotFoundError(path)

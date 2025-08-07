@@ -36,11 +36,8 @@ def package_for_qfield(iface, project, outdir, filename):
         dlg = PackageDialog(iface, project, QgsOfflineEditing())
         dlg.packagedProjectFileWidget.setFilePath(str(qgs_path))
         dlg.packagedProjectTitleLineEdit.setText(project.baseName())
-        dlg._validate_packaged_project_filename()
         dlg.package_project()
-        dlg.close()
-        dlg.deleteLater()
-        QCoreApplication.processEvents()
+        dlg.do_post_offline_convert_action(True)
 
         # 4) Zip up the folder if you still want a .zip
         zip_path = outdir / f"{filename}.zip"
