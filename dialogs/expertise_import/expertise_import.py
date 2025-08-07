@@ -4,9 +4,9 @@ from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
 
 # Import from utils folder
-from ...utils.layer_utils import get_path, load_gpkg
-from ...utils.custom_processing import calculate_essence_id, merge_with_ess, save_as_xlsx
-from ...utils.ui_helpers import GpkgLoader
+from ...utils.layers import get_path, load_gpkg
+from ...utils.processing import calculate_essence_id, merge_with_ess, save_as_xlsx
+from ...utils.ui import GpkgLoader
 
 from ...core.layer_factory import LayerFactory
 

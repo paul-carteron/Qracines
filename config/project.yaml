@@ -1,0 +1,300 @@
+situation:
+  default:
+    scale: 25000
+    info_layer: 'prop_polygon'
+    zoom_on: 'prop_line'
+    composer_theme: '1_SCAN25'
+
+  wooded:
+    legends:
+      - name: "legend1"
+        layers: ['parca_polygon_lgd_peuplements']
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: ['coms_line', 'coms_point', 'infra_point_acces', 'parca_polygon_lgd_peuplements']
+      - name: SEQUOIA
+        type: vector
+        layers: ['prop_point', 'prop_line', 'prop_polygon']
+      - name: WMS
+        type: wms
+        layers: ['wms_scan25', 'wms_scan1000']
+    themes:
+      - name: 1_SCAN25
+        show: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+      - name: 2_SCAN1000
+        show: ['prop_point', 'wms_scan1000']
+
+  unwooded:
+    legends:
+      - name: "legend1"
+        layers: ['parca_polygon_lgd_peuplements']
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: ['coms_line', 'coms_point', 'infra_point_acces']
+      - name: SEQUOIA
+        type: vector
+        layers: ['prop_point', 'prop_line', 'ua_polygon_occup']
+      - name: WMS
+        type: wms
+        layers: ['wms_scan25', 'wms_scan1000']
+    themes:
+      - name: 1_SCAN25
+        show: ['ua_polygon_occup', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+      - name: 2_SCAN1000
+        show: ['prop_point', 'wms_scan1000']
+
+assemblage:
+  defaut:
+    scale: 7500
+    info_layer: 'prop_polygon'
+    zoom_on: 'prop_line'
+    composer_theme: '1_VECTOR+SEQUOIA'
+
+  wooded:
+    legends:
+      - name: "legend1"
+        layers: ['parca_polygon_lgd_assemblage', 'parca_polygon']
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: &assemblage_w_vect 
+          - 'com_line'
+          - 'com_point'
+          - 'infra_line'
+          - 'infra_polygon'
+          - 'infra_point'
+          - 'lieudit_point'
+          - 'road_line'
+          - 'road_polygon'
+          - 'route_line'
+          - 'route_polygon'
+
+      - name: SEQUOIA
+        type: vector
+        layers: &assemblage_w_seq
+          - 'prop_line'
+          - 'parca_polygon'
+
+      - name: WMS
+        type: wms
+        layers: &assemblage_w_wms
+          - 'wms_scan25_grey'
+          - 'wms_scan100'
+          - 'wms_scan1000'
+          - 'wms_pci'
+          - 'wms_irc'
+          - 'wms_rgb'
+
+    themes:
+      - name: 1_VECTOR+SEQUOIA
+        visible: [*assemblage_w_vect, *assemblage_w_seq]
+      - name: 2_VECTOR+SEQUOIA+WMS
+        visible: [*assemblage_w_vect, *assemblage_w_seq, *assemblage_w_wms]
+      - name: 3_SEQUOIA+WMS
+        visible: [*assemblage_w_vect, *assemblage_w_wms]
+
+  unwooded:
+    legends:
+      - name: "legend1"
+        layers: ['parca_polygon_lgd_assemblage', 'parca_polygon_occup', 'ua_polygon_occup']
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: &assemblage_u_vect
+          - 'com_line'
+          - 'com_point'
+          - 'infra_line'
+          - 'infra_polygon'
+          - 'infra_point'
+          - 'lieudit_point'
+          - 'road_line'
+          - 'road_polygon'
+          - 'route_line'
+          - 'route_polygon'
+
+      - name: SEQUOIA
+        type: vector
+        layers: &assemblage_u_seq 
+          - 'prop_line'
+          - 'parca_polygon_occup'
+          - 'ua_polygon_occup'
+
+      - name: WMS
+        type: wms
+        layers: &assemblage_u_wms
+          - 'wms_scan25_grey'
+          - 'wms_scan100'
+          - 'wms_scan1000'
+          - 'wms_pci'
+          - 'wms_irc'
+          - 'wms_rgb'
+
+    themes:
+      - name: 1_VECTOR+SEQUOIA
+        visible: [*assemblage_u_vect, *assemblage_u_seq]
+      - name: 2_VECTOR+SEQUOIA+WMS
+        visible: [*assemblage_u_vect, *assemblage_u_seq, *assemblage_u_wms]
+      - name: 3_SEQUOIA+WMS
+        visible: [*assemblage_u_vect, *assemblage_u_wms]
+
+peuplements:
+  defaut:
+    scale: 7500
+    info_layer: 'prop_polygon'
+    zoom_on: 'prop_line'
+    composer_theme: '1_VECTOR+SEQUOIA'
+
+  wooded:
+    legends:
+      - name: "legend1"
+        layers: ['parca_polygon_lgd_peuplements']
+      - name: "legend2"
+        layers: ['sspf_polygon_plt']
+
+    groups:
+      - name: VECTOR
+        type: vector
+        layers: &peuplements_w_vect
+          - 'com_line'
+          - 'com_point'
+          - 'infra_line'
+          - 'infra_polygon'
+          - 'infra_point'
+          - 'lieudit_point'
+          - 'road_line'
+          - 'road_polygon'
+          - 'route_line'
+          - 'route_polygon'
+
+      - name: SEQUOIA
+        type: vector
+        layers: &peuplements_w_seq
+          - 'pf_line'
+          - 'pf_polygon'
+          - 'sspf_polygon'
+          - 'sspf_polygon_plt'
+          - 'parca_polygon_occup'
+          - 'ua_polygon'
+          - 'ua_polygon_plt'
+          - 'ua_polygon_ame'
+
+      - name: WMS
+        type: wms
+        layers: &peuplements_w_wms
+          - 'wms_scan25_grey'
+          - 'wms_scan100'
+          - 'wms_scan1000'
+          - 'wms_pci'
+          - 'wms_irc'
+          - 'wms_rgb'
+
+    themes:
+      - name: 1_VECTOR+SEQUOIA
+        visible: [*peuplements_w_vect, *peuplements_w_seq]
+      - name: 2_VECTOR+SEQUOIA+WMS
+        visible: [*peuplements_w_vect, *peuplements_w_seq, *peuplements_w_wms]
+      - name: 3_SEQUOIA+WMS
+        visible: [*peuplements_w_vect, *peuplements_w_wms]
+
+enjeux_environnementaux:
+  defaut:
+    scale: 15000
+    info_layer: 'prop_polygon'
+    zoom_on: 'prop_line'
+    composer_theme: '1_SEQUOIA+WMS'
+  
+  wooded:
+    legends:
+      - name: legend1
+        layers: 'parca_polygon_lgd_enjeux'
+
+    groups:
+      - name : SEQUOIA
+        type : vector
+        layers : &enjeux_env_w_seq
+          - 'prop_line'
+          - 'pf_line'
+          - 'pf_polygon'
+
+      - name : WMS
+        type : wms
+        layers : &enjeux_env_w_wms
+          - 'wms_scan25_grey'
+
+    themes:
+      - name: 1_SEQUOIA+WMS
+        visible: [*enjeux_env_w_seq, *enjeux_env_w_wms]
+
+enjeux_sociaux:
+  defaut:
+    scale: 15000
+    info_layer: 'prop_polygon'
+    zoom_on: 'prop_line'
+    composer_theme: '1_SEQUOIA+WMS'
+  
+  wooded:
+    legends:
+      - name: legend1
+        layers: 
+          - 'parca_polygon_lgd_enjeux'
+          - 'ppi'
+          - 'ppr'
+          - 'ppe'
+
+    groups:
+      - name : SEQUOIA
+        type : vector
+        layers : &enjeux_sociaux_w_seq
+          - 'prop_line'
+          - 'pf_line'
+          - 'pf_polygon'
+          - 'ppi'
+          - 'ppr'
+          - 'ppe'
+
+      - name : WMS
+        type : wms
+        layers : &enjeux_sociaux_w_wms
+          - 'wms_scan25_grey'
+
+    themes:
+      - name: 1_SEQUOIA+WMS
+        visible: [*enjeux_sociaux_w_seq, *enjeux_sociaux_w_wms]
+
+enjeux_patrimoniaux:
+  defaut:
+    scale: 15000
+    info_layer: 'prop_polygon'
+    zoom_on: 'prop_line'
+    composer_theme: '1_SEQUOIA+WMS'
+  
+  wooded:
+    legends:
+      - name: legend1
+        layers: 
+          - 'parca_polygon_lgd_enjeux'
+          - 'mh'
+          - 'ppmh'
+          - 'site'
+
+    groups:
+      - name : SEQUOIA
+        type : vector
+        layers : &enjeux_pat_w_seq
+          - 'prop_line'
+          - 'pf_line'
+          - 'pf_polygon'
+          - 'mh'
+          - 'ppmh'
+          - 'site'
+
+      - name : WMS
+        type : wms
+        layers : &enjeux_pat_w_wms
+          - 'wms_scan25_grey'
+
+    themes:
+      - name: 1_SEQUOIA+WMS
+        visible: [*enjeux_pat_w_seq, *enjeux_pat_w_wms]

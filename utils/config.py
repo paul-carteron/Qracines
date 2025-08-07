@@ -1,9 +1,10 @@
 import yaml
 from pathlib import Path
+from dataclasses import dataclass
 
 from qgis.PyQt.QtWidgets import QMessageBox
 
-from .variable_utils import get_project_variable, get_global_variable
+from .variable import get_project_variable, get_global_variable
 
 # region PLUGIN PATH
 
@@ -18,6 +19,26 @@ def get_config_path(filename: str) -> Path:
     Returns the full path to a file under the plugin's 'config' folder.
     """
     return get_plugin_root() / "config" / filename
+
+# endregion
+
+# region RACINES
+
+def get_racines_path(site, *subpaths):
+    site_map = {
+        "cartographie": "Cartographie - Documents",
+        "expertise": "Equipe - Expertise",
+        "foret": "Equipe - Forêts",
+        "racines": "Equipe - Racines",
+        "transaction": "Equipe - Transaction",
+    }
+
+    folder = site_map.get(site.lower())
+    if folder is None:
+        raise ValueError(f"Unknown site '{site}'. Must be one of: {', '.join(site_map)}")
+
+    base = Path.home() / "Racines" / folder
+    return base.joinpath(*subpaths)
 
 # endregion
 
@@ -124,34 +145,40 @@ def get_wms(logical_key):
 
 # endregion
 
-# region MAP_PROJECT
-_MAP_PROJECT: dict | None = None
+# region PROJECT
+_PROJECT: dict | None = None
 
-def _load_map_project() -> dict:
-    global _MAP_PROJECT
-    if _MAP_PROJECT is None:
-        cfg_path = get_config_path("map_project.yaml")
+def _load_project() -> dict:
+    global _PROJECT
+    if _PROJECT is None:
+        cfg_path = get_config_path("project.yaml")
         with open(cfg_path, encoding="utf-8") as f:
-            _MAP_PROJECT = yaml.safe_load(f)
-    return _MAP_PROJECT
+            _PROJECT = yaml.safe_load(f)
+    return _PROJECT
 
-# region RACINES
+@dataclass
+class ProjectDefaults:
+    scale: int
+    info_layer: str
+    zoom_on: str | None = None
+    composer_theme: str | None = None
 
-def get_racines_path(site, *subpaths):
-    site_map = {
-        "cartographie": "Cartographie - Documents",
-        "expertise": "Equipe - Expertise",
-        "foret": "Equipe - Forêts",
-        "racines": "Equipe - Racines",
-        "transaction": "Equipe - Transaction",
-    }
+# ── 2. Return a dataclass instead of a dict ──────────────────────────
+def get_project_default(name: str) -> ProjectDefaults:
+    raw = _load_project().get(name, {}).get("default", {})
+    return ProjectDefaults(**raw)
 
-    folder = site_map.get(site.lower())
-    if folder is None:
-        raise ValueError(f"Unknown site '{site}'. Must be one of: {', '.join(site_map)}")
+def get_project_legends(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get(type).get("legends", {})
 
-    base = Path.home() / "Racines" / folder
-    return base.joinpath(*subpaths)
+def get_project_groups(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get(type).get("groups", {})
+
+def get_project_themes(name: str) -> dict:
+    type = get_project_variable("forest_type_project")
+    return _load_project().get(name).get(type).get("themes", {})
 
 # endregion
 

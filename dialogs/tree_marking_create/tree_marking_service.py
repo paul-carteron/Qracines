@@ -1,4 +1,3 @@
-from pathlib import Path
 import processing
 
 from qgis.core import (
@@ -19,7 +18,8 @@ from PyQt5.QtGui import QFont
 
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
-from ...utils.layer_utils import load_gpkg, replier
+from ...utils.layers import load_gpkg
+from ...utils.utils import replier
 
 
 class TreeMarkingService:

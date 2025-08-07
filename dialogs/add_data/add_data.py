@@ -3,8 +3,8 @@ from .add_data_dialog import Ui_AddDataDialog
 from itertools import chain
 
 # Import from utils folder
-from ...utils.variable_utils import get_global_variable, get_project_variable, get_project_variable
-from ...utils.layer_utils import *
+from ...utils.variable import get_global_variable, get_project_variable, get_project_variable
+from ...utils.layers import *
 
 class AddDataDialog(QDialog):
     def __init__(self, parent=None):

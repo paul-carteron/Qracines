@@ -19,8 +19,8 @@ from PyQt5.QtGui import QColor
 
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
-from ...utils.path_manager import get_peuplements, get_limites
-from ...utils.layer_utils import load_gpkg, create_relation
+from ...utils.config import get_peuplements, get_limites
+from ...utils.layers import load_gpkg, create_relation
 
 class ExpertiseService:
 

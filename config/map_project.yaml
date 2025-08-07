@@ -1,136 +1,199 @@
 map_project:
-  situation_wooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend', 'coms_line', 'coms_point', 'infra_point_acces']
-    sequoia:
-      group_name: sequoia
-      layers: ['prop_point', 'prop_polygon']
-    wms:
-      group_name: wms
-      layers: ['wms_scan25', 'wms_scan1000']
-    themes:
-      - name: 1_scan25
-        visible: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
-        hidden: ['prop_point', 'parca_polygon_legend', 'wms_scan1000']
-      - name: 2_scan1000
-        visible: ['prop_point', 'wms_scan1000']
-        hidden: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_legend', 'wms_scan25']
+  situation:
+    defaut:
+      theme: '1_scan25'
+      scale: 25000
+      legend: 'parca_polygon_lgd_situation'
 
-  situation_unwooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend', 'coms_line', 'coms_point', 'infra_point_acces']
-    sequoia:
-      group_name: sequoia
-      layers: ['prop_point', 'prop_polygon', 'ua_polygon_occup']
-    wms:
-      group_name: wms
-      layers: ['wms_scan25', 'wms_scan1000']
-    themes:
-      - name: 1_scan25
-        visible: ['ua_polygon_occup', 'prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
-        hidden: ['prop_point', 'parca_polygon_legend', 'wms_scan1000']
-      - name: 2_scan1000
-        visible: ['prop_point', 'wms_scan1000']
-        hidden: ['ua_polygon_occup', 'prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_legend', 'wms_scan25']
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_situation', 'prop_polygon']
+      vector:
+        group_name: vector
+        layers: ['coms_line', 'coms_point', 'infra_point_acces']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_point', 'prop_line', 'prop_polygon']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25', 'wms_scan1000']
+      themes:
+        - name: 1_scan25
+          visible: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+          hidden: ['prop_point', 'parca_polygon_lgd_situation', 'wms_scan1000']
+        - name: 2_scan1000
+          visible: ['prop_point', 'wms_scan1000']
+          hidden: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_lgd_situation', 'wms_scan25']
 
-  assemblage_wooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend', 'com_line', 'com_point', 'infra_line', 'infra_polygon', 'infra_point', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
-    sequoia:
-      group_name: sequoia
-      layers: ['prop_line', 'parca_polygon']
-    wms:
-      group_name: wms
-      layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-    themes:
-      - name: 1_vector+sequoia
-        visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
-        hidden: ['parca_polygon_legend', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-      - name: 2_vector+sequoia+wms
-        visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
-        hidden: ['parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-      - name: 3_sequoia+wms
-        visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
-        hidden: ['road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+    unwooded:
+      legend1_layers: ['parca_polygon_lgd_situation', 'ua_polygon_occup']
+      vector: 
+        group_name: vector
+        layers: ['coms_line', 'coms_point', 'infra_point_acces']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_point', 'prop_line', 'ua_polygon_occup']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25', 'wms_scan1000']
+      themes:
+        - name: 1_scan25
+          visible: ['ua_polygon_occup', 'prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+          hidden: ['prop_point', 'parca_polygon_lgd_situation', 'wms_scan1000']
+        - name: 2_scan1000
+          visible: ['prop_point', 'wms_scan1000']
+          hidden: ['ua_polygon_occup', 'prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'parca_polygon_lgd_situation', 'wms_scan25']
 
-  assemblage_unwooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend', 'com_line', 'com_point', 'infra_line', 'infra_polygon', 'infra_point', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
-    sequoia:
-      group_name: sequoia
-      layers: ['prop_line', 'parca_polygon_occup', 'ua_polygon_occup']
-    wms:
-      group_name: wms
-      layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-    themes:
-      - name: 1_vector+sequoia
-        visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
-        hidden: ['parca_polygon_legend', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-      - name: 2_vector+sequoia+wms
-        visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
-        hidden: ['parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-      - name: 3_sequoia+wms
-        visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
-        hidden: ['road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+  assemblage:
+    defaut:
+      theme: '1_vector+sequoia'
+      scale: 7500
+      legend: 'parca_polygon_lgd_assemblage'
 
-  peuplements_wooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend', 'com_line', 'com_point', 'infra_line', 'infra_polygon', 'infra_point', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
-    sequoia:
-      group_name: sequoia
-      layers: ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
-    wms:
-      group_name: wms
-      layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-    themes:
-      - name: 1_vector+sequoia
-        visible: ['ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
-        hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-      - name: 2_vector+sequoia+wms
-        visible: ['ua_polygon',  'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
-        hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
-      - name: 3_sequoia+wms
-        visible: ['ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
-        hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_legend', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_assemblage', 'parca_polygon']
+      vector:
+        group_name: vector
+        layers: ['com_line', 'com_point', 'infra_line', 'infra_polygon', 'infra_point', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_line', 'parca_polygon']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
+          hidden: ['parca_polygon_lgd_assemblage', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+        - name: 2_vector+sequoia+wms
+          visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
+          hidden: ['parca_polygon_lgd_assemblage', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+        - name: 3_sequoia+wms
+          visible: ['parca_polygon', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
+          hidden: ['road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_lgd_assemblage', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
 
-  geologie_wooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend']
-    sequoia:
-      group_name: sequoia
-      layers: ['prop_line', 'pf_line', 'pf_polygon', 'geol_polygon' ]
-    wms:
-      group_name: wms
-      layers: ['wms_geol']
-    themes:
-      - name: 1_geol
-        visible: ['geol_polygon', 'pf_polygon', 'pf_line', 'prop_line', wms_geol]
-        hidden: ['parca_polygon_legend']
+    unwooded:
+      legend1_layers: ['parca_polygon_lgd_assemblage', 'parca_polygon_occup', 'ua_polygon_occup']
+      vector:
+        group_name: vector
+        layers: ['com_line', 'com_point', 'infra_line', 'infra_polygon', 'infra_point', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_line', 'parca_polygon_occup', 'ua_polygon_occup']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
+          hidden: ['parca_polygon_lgd_assemblage', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+        - name: 2_vector+sequoia+wms
+          visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
+          hidden: ['parca_polygon_lgd_assemblage', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+        - name: 3_sequoia+wms
+          visible: ['ua_polygon_occup', 'parca_polygon_occup', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
+          hidden: ['road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_lgd_assemblage', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+
+  peuplements:
+    defaut:
+      theme: '1_vector+sequoia'
+      scale: 7500
+      legend: 'parca_polygon_lgd_peuplements'
+
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_peuplements']
+      legend2_layers: ['sspf_polygon_plt']
+      vector:
+        group_name: vector
+        layers: ['com_line', 'com_point', 'infra_line', 'infra_polygon', 'infra_point', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
+      sequoia:
+        group_name: sequoia
+        layers: ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line']
+          hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_lgd_peuplements', 'wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+        - name: 2_vector+sequoia+wms
+          visible: ['ua_polygon',  'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'wms_scan25_grey']
+          hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'parca_polygon_lgd_peuplements', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+        - name: 3_sequoia+wms
+          visible: ['ua_polygon', 'sspf_polygon', 'pf_polygon', 'pf_line', 'prop_line',  'route_polygon',  'route_line', 'wms_scan25_grey']
+          hidden: ['ua_polygon_ame', 'ua_polygon_plt', 'parca_polygon_occup', 'sspf_polygon_plt', 'road_polygon', 'road_line', 'lieudit_point', 'infra_point', 'infra_polygon', 'infra_line', 'com_point', 'com_line', 'parca_polygon_lgd_peuplements', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+
+  geologie:
+    defaut:
+      theme: '1_vector+sequoia'
+      scale: 15000
+      legend: 'parca_polygon_lgd_enjeux'
+    
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_enjeux', 'geol_polygon']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_line', 'pf_line', 'pf_polygon', 'geol_polygon' ]
+      wms:
+        group_name: wms
+        layers: ['wms_geol']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['geol_polygon', 'pf_polygon', 'pf_line', 'prop_line', wms_geol]
+          hidden: ['parca_polygon_lgd_enjeux']
         
-  enjeux_wooded:
-    vector:
-      group_name: vector
-      zoom: 'parca_polygon_legend'
-      layers: ['parca_polygon_legend']
-    sequoia:
-      group_name: sequoia
-      layers: ['prop_line', 'pf_line', 'pf_polygon']
-    wms:
-      group_name: wms
-      layers: ['wms_scan25_grey']
-    themes:
-      - name: 1_enjeux
-        visible: ['pf_polygon', 'pf_line', 'prop_line', 'wms_scan25_grey']
-        hidden: ['parca_polygon_legend']
+  enjeux_environnementaux:
+    defaut:
+      scale: 15000
+      theme: '1_vector+sequoia'
+      legend: 'parca_polygon_lgd_enjeux'
+    
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_enjeux']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_line', 'pf_line', 'pf_polygon']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25_grey']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['pf_polygon', 'pf_line', 'prop_line', 'wms_scan25_grey']
+          hidden: ['parca_polygon_lgd_enjeux']
+        
+  enjeux_sociaux:
+    defaut:
+      scale: 15000
+      theme: '1_vector+sequoia'
+      legend: 'parca_polygon_lgd_enjeux'
+    
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_enjeux', 'ppi', 'ppr', 'ppe']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_line', 'pf_line', 'pf_polygon', 'ppi', 'ppr', 'ppe']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25_grey']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['pf_polygon', 'pf_line', 'prop_line', 'ppi', 'ppr', 'ppe', 'wms_scan25_grey']
+          hidden: ['parca_polygon_lgd_enjeux']
+                  
+  enjeux_patrimoniaux:
+    defaut:
+      scale: 15000
+      theme: '1_vector+sequoia'
+      legend: 'parca_polygon_lgd_enjeux'
+    
+    wooded:
+      legend1_layers: ['parca_polygon_lgd_enjeux', 'mh', 'ppmh', 'site']
+      sequoia:
+        group_name: sequoia
+        layers: ['prop_line', 'pf_line', 'pf_polygon', 'mh', 'ppmh', 'site']
+      wms:
+        group_name: wms
+        layers: ['wms_scan25_grey']
+      themes:
+        - name: 1_vector+sequoia
+          visible: ['pf_polygon', 'pf_line', 'prop_line', 'mh', 'ppmh', 'site', 'wms_scan25_grey']
+          hidden: ['parca_polygon_lgd_enjeux']

@@ -4,9 +4,10 @@ from qgis.core import QgsProject
 from qgis.gui import QgsFileWidget
 from qgis.utils import iface
 
-from .variable_utils import get_project_variable
-from .layer_utils import load_rasters, zoom_on_layer, replier
-from .qfield_utils import package_for_qfield
+from .variable import get_project_variable
+from .layers import load_rasters
+from .qfield import package_for_qfield
+from .utils import zoom_on, replier
 
 import unicodedata
 from pathlib import Path
@@ -50,7 +51,7 @@ class RasterController(UIBinderMixin):
 
         loaded_keys = load_rasters(*asked_keys, group_name="RASTER")
         if loaded_keys:
-            zoom_on_layer(loaded_keys[0])
+            zoom_on(loaded_keys[0])
         
         replier()
 
