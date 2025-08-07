@@ -1,24 +1,27 @@
-# -*- coding: utf-8 -*-
-from PyQt5.QtWidgets import QAction, QToolButton, QMenu
-from PyQt5.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QMessageBox, QAction, QToolButton, QMenu
+from qgis.PyQt.QtGui import QIcon
 
 # Import from dialogs folder
-from .dialogs.global_settings.global_settings import *
-from .dialogs.forest_settings.forest_settings import *
-from .dialogs.project_settings.project_settings import *
-from .dialogs.diagnostic import *
-from .dialogs.pedology import *
-
 from .dialogs.add_data.add_data import AddDataDialog
+
 from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
 from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+
+from .dialogs.forest_settings.forest_settings import ForestSettingsDialog
+
+from .dialogs.global_settings.global_settings import GlobalSettingsDialog
+
+from .dialogs.pedology_create.pedology_create import PedologyCreateDialog
+
+from .dialogs.project_settings.project_settings import ProjectSettingsDialog
+
 from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
-# Import from utils folder
-from .utils.variable import *
-from .utils.layers import *
-from .utils.qfield import *
+from .dialogs.diagnostic import DiagnosticDialog
+
+# import utils
+from .utils.variable import get_project_variable
 
 from pathlib import Path
 
@@ -147,7 +150,7 @@ class Qsequoia2:
     def open_project_settings(self):
         forest = get_project_variable("forest_prefix")
         if not forest:
-            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer un projet de carte.")
+            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer un projet de carte.")
             return
           
         if not self.project_dialog:
@@ -170,9 +173,14 @@ class Qsequoia2:
         
     # PEDOLOGY
     def open_pedology_create(self):
-        if not self.pedology_create:
-            self.pedology_create = PedologyDialog()
-        self.pedology_create.exec_()
+        forest = get_project_variable("forest_prefix")
+        if not forest:
+            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer un projet de carte.")
+            return
+          
+        if not self.project_dialog:
+            self.project_dialog = PedologyCreateDialog(self.iface)
+        self.project_dialog.exec_()
 
     def open_pedology_import(self):
         return
@@ -207,14 +215,12 @@ class Qsequoia2:
         
     # endregion
     
-    @staticmethod
-    def _check_forest_is_selected():
+    def _check_forest_is_selected(self):
         forest = get_project_variable("forest_prefix")
         if not forest:
-            QMessageBox.warning(iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
+            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
             return False
         return True
-        
 
         
     def unload(self):

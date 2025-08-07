@@ -1,12 +1,7 @@
 from pathlib import Path
 import processing
 
-from qgis.core import (
-    QgsProject,
-    QgsVectorLayer,
-    QgsFieldConstraints,
-    QgsProcessing
-)
+from qgis.core import QgsProject, QgsVectorLayer, QgsFieldConstraints, QgsProcessing
 
 from qgis.utils import iface
 
