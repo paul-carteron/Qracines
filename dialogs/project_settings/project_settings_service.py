@@ -114,7 +114,6 @@ def configure_layout(
         map_item.setScale(scale)
 
     # Ajouter la légende si spécifiée
-    
     for l in legends:
         legend_name = l.get("name")
         legend_layers = l.get("layers")
