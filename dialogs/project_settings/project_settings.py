@@ -4,7 +4,7 @@ from .project_settings_dialog import Ui_ProjectSettingsDialog
 from .project_settings_service import compute_layout_info, import_layout, configure_layout
 
 # Import from utils folder
-from ...utils.config import get_project, get_path, get_project_default, get_project_legends
+from ...utils.config import get_project, get_path, get_project_canvas, get_project_layout
 from ...utils.layers import configure_snapping 
 from ...utils.utils import show_message, clear_project, create_project
 from ...utils.variable import set_project_variable
@@ -41,19 +41,20 @@ class ProjectSettingsDialog(QDialog):
             clear_project()
             create_project(project_key)
             configure_snapping()
+            
             show_message(self.iface, f"Projet {project_key} généré avec succès", "success", 15)
             
-            default = get_project_default(project_key)
+            canvas_cfg = get_project_canvas(project_key)
+            layout_cfg = get_project_layout(project_key)
 
             # Create layout
             # "parca_polygon" is used inside compute_layout_info considering all project should have downloaded parca
-            info = compute_layout_info(scale = default.scale)
+            info = compute_layout_info(scale = canvas_cfg.scale)
             layout = import_layout(self.project, info.paper_format, info.orientation)
             
             # configure layout
-            legends = get_project_legends(project_key)
             if layout:
-                configure_layout(self.project, self.iface, layout, default.composer_theme, default.scale, legends)
+                configure_layout(self.project, self.iface, layout, layout_cfg.theme, canvas_cfg.scale, layout_cfg.legends)
                 self.iface.openLayoutDesigner(layout)
                 
             # Save project qgz

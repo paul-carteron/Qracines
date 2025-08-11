@@ -157,28 +157,35 @@ def _load_project() -> dict:
     return _PROJECT
 
 @dataclass
-class ProjectDefaults:
+class ProjectCanvas:
     scale: int
-    info_layer: str
-    zoom_on: str | None = None
-    composer_theme: str | None = None
+    zoom_on: str
+    groups: list
+    themes: list
 
-# ── 2. Return a dataclass instead of a dict ──────────────────────────
-def get_project_default(name: str) -> ProjectDefaults:
-    raw = _load_project().get(name, {}).get("default", {})
-    return ProjectDefaults(**raw)
+@dataclass
+class ProjectLayout:
+    theme: str
+    legends: list
 
-def get_project_legends(name: str) -> dict:
-    type = get_project_variable("forest_type_project")
-    return _load_project().get(name).get(type).get("legends", {})
+def _flatten(seq):
+    for x in seq:
+        if isinstance(x, (list, tuple)):
+            yield from _flatten(x)
+        else:
+            yield x
 
-def get_project_groups(name: str) -> dict:
-    type = get_project_variable("forest_type_project")
-    return _load_project().get(name).get(type).get("groups", {})
+def get_project_canvas(name: str) -> ProjectCanvas:
+    raw = _load_project().get(name, {}).get("canvas", {})
+    if "themes" in raw:
+        for t in raw["themes"]:
+            if isinstance(t, dict) and "show" in t:
+                t["show"] = list(_flatten(t["show"]))
+    return ProjectCanvas(**raw)
 
-def get_project_themes(name: str) -> dict:
-    type = get_project_variable("forest_type_project")
-    return _load_project().get(name).get(type).get("themes", {})
+def get_project_layout(name: str) -> ProjectLayout:
+    raw = _load_project().get(name, {}).get("layout", {})
+    return ProjectLayout(**raw)
 
 # endregion
 
