@@ -1,24 +1,26 @@
 situation:
   default:
     scale: 25000
-    info_layer: 'prop_polygon'
+    info_layer: 'parca_polygon_lgd_situation'
     zoom_on: 'prop_line'
     composer_theme: '1_SCAN25'
 
   wooded:
     legends:
       - name: "legend1"
-        layers: ['parca_polygon_lgd_peuplements']
+        layers: ['parca_polygon_lgd_situation', 'prop_polygon']
+
     groups:
       - name: VECTOR
         type: vector
-        layers: ['coms_line', 'coms_point', 'infra_point_acces', 'parca_polygon_lgd_peuplements']
+        layers: ['coms_line', 'coms_point', 'infra_point_acces', 'parca_polygon_lgd_situation']
       - name: SEQUOIA
         type: vector
         layers: ['prop_point', 'prop_line', 'prop_polygon']
       - name: WMS
         type: wms
         layers: ['wms_scan25', 'wms_scan1000']
+
     themes:
       - name: 1_SCAN25
         show: ['prop_polygon', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
@@ -26,13 +28,14 @@ situation:
         show: ['prop_point', 'wms_scan1000']
 
   unwooded:
+    # Legends : Ce sont les couches importées dans le composeurs
     legends:
       - name: "legend1"
-        layers: ['parca_polygon_lgd_peuplements']
+        layers: ['parca_polygon_lgd_peuplements', 'ua_polygon_occup']
     groups:
       - name: VECTOR
         type: vector
-        layers: ['coms_line', 'coms_point', 'infra_point_acces']
+        layers: ['coms_line', 'coms_point', 'infra_point_acces', 'parca_polygon_lgd_situation']
       - name: SEQUOIA
         type: vector
         layers: ['prop_point', 'prop_line', 'ua_polygon_occup']
@@ -56,6 +59,7 @@ assemblage:
     legends:
       - name: "legend1"
         layers: ['parca_polygon_lgd_assemblage', 'parca_polygon']
+
     groups:
       - name: VECTOR
         type: vector
@@ -142,7 +146,7 @@ assemblage:
 peuplements:
   defaut:
     scale: 7500
-    info_layer: 'prop_polygon'
+    info_layer: 'parca_polygon_lgd_peuplements'
     zoom_on: 'prop_line'
     composer_theme: '1_VECTOR+SEQUOIA'
 
@@ -167,6 +171,7 @@ peuplements:
           - 'road_polygon'
           - 'route_line'
           - 'route_polygon'
+          - 'parca_polygon_lgd_peuplements'
 
       - name: SEQUOIA
         type: vector

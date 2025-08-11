@@ -1,13 +1,13 @@
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox
 from qgis.core import QgsProject
 from .project_settings_dialog import Ui_ProjectSettingsDialog
-from .project_settings_service import compute_layout_info, import_layout, configure_layout, _get_layer
+from .project_settings_service import compute_layout_info, import_layout, configure_layout
 
 # Import from utils folder
 from ...utils.config import get_project, get_path, get_project_default, get_project_legends
 from ...utils.layers import configure_snapping 
 from ...utils.utils import show_message, clear_project, create_project
-
+from ...utils.variable import set_project_variable
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, iface, parent=None):
@@ -37,7 +37,7 @@ class ProjectSettingsDialog(QDialog):
             return 
 
         try:
-
+            set_project_variable("forest_map_project", project_key) #why do i need that ? I think is because of composer but i'm not sure anymore
             clear_project()
             create_project(project_key)
             configure_snapping()
@@ -45,9 +45,9 @@ class ProjectSettingsDialog(QDialog):
             
             default = get_project_default(project_key)
 
-            # create layout
-            info_layer = _get_layer(self.project, default.info_layer)
-            info = compute_layout_info(info_layer, default.scale, buffer_distance = 15)
+            # Create layout
+            # "parca_polygon" is used inside compute_layout_info considering all project should have downloaded parca
+            info = compute_layout_info(scale = default.scale)
             layout = import_layout(self.project, info.paper_format, info.orientation)
             
             # configure layout

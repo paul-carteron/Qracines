@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional, Tuple, Iterable
 
-from qgis.core import QgsProject, QgsWkbTypes, QgsPrintLayout, QgsReadWriteContext, QgsLayoutItemMap, QgsRectangle
+from qgis.core import QgsVectorLayer, QgsRectangle, QgsWkbTypes, QgsUnitTypes, QgsPrintLayout, QgsReadWriteContext, QgsLayoutItemMap
 from qgis.PyQt.QtXml import QDomDocument
 
 from ...utils.variable import get_global_variable
 from ...utils.processing import buffer, multipart_to_singleparts
-from ...utils.config import get_display_name
+from ...utils.config import get_display_name, get_path
 
 # region LAYOUT CREATION
 @dataclass
@@ -16,62 +17,121 @@ class MapInfo:
     paper_format: str         # 'A4', 'A3', …, 'A0+'
     area: float
 
-FORMATS_MM = {"A4": (210, 297), "A3": (297, 420), "A2": (420, 594), "A1": (594, 841), "A0": (841, 1189)}
+FORMATS_MM: Tuple[Tuple[str, Tuple[int, int]], ...] = (
+    ("A4", (210, 297)),
+    ("A3", (297, 420)),
+    ("A2", (420, 594)),
+    ("A1", (594, 841)),
+    ("A0", (841, 1189)),
+)
 
-def _get_layer(project, key):
-        name = get_display_name(key)
-        try:
-            layer = project.mapLayersByName(name)[0]
-        except IndexError:
-            raise ValueError(f"Couche '{name}' introuvable")
-        if layer.geometryType() != QgsWkbTypes.PolygonGeometry:
-            raise TypeError("La couche doit être polygonale")
-        return layer
+def _fits_bbox(mm: Tuple[float, float], scale: int, bbox: QgsRectangle) -> bool:
+    """
+    True if the paper size `mm` (in millimetres) at `scale` can contain
+    the given map extent `bbox` (in map units) in *either* orientation.
+    """
+    # Required paper dimensions in mm at this scale
+    needed_mm = ((bbox.width() / scale) * 1000.0, (bbox.height() / scale) * 1000.0)
 
-def _fits(mm, scale, w, h, orient):
-    fw, fh = (mm[0] /1000*scale, mm[1]/1000*scale)
-    return (fw >= w and fh >= h) if orient == "portrait" else (fw >= h and fh >= w)
+    # always comparing “short side with short side” and “long side with long side”, so rotation is automatically accounted for.
+    needed_small, needed_large = sorted(needed_mm)
+    paper_small, paper_large = sorted(mm)
+
+    return paper_small >= needed_small and paper_large >= needed_large
+
+def _pick_format(scale: int, bbox: QgsRectangle) -> str:
+    """
+    Return the smallest paper format that fits the given `bbox` at `scale`.
+    If none fit, return 'A0+'.
+    """
+    for name, mm in FORMATS_MM:
+        if _fits_bbox(mm, scale, bbox):
+            return name
+    return "A0+"
+
+def _pick_orient(bbox: QgsRectangle) -> str:
+    return "portrait" if bbox.height() >= bbox.width() else "landscape"
 
 def compute_layout_info(
-        info_layer,
-        scale : int, 
-        buffer_distance: float = 15) -> MapInfo:
+        uri = None,
+        scale: int = 15000,
+        buffer_distance: float = 15,
+        provider: str = "ogr") -> MapInfo:
 
+    if uri is None:
+        uri = str(get_path("parca_polygon"))
+
+    info_layer = QgsVectorLayer(uri, "tmp", provider)
+    if not info_layer.isValid():
+        raise ValueError(f"Invalid layer URI: {uri}")
+    if QgsWkbTypes.geometryType(info_layer.wkbType()) != QgsWkbTypes.PolygonGeometry:
+        raise TypeError("Layer must be polygonal.")
+    
+    if info_layer.crs().mapUnits() != QgsUnitTypes.DistanceMeters:
+        print("Warning: buffer_distance is interpreted in layer CRS units, not meters.")
+     
     buffered_layer = buffer(info_layer, buffer_distance)
     single_parts_layer = multipart_to_singleparts(buffered_layer)
 
-    feat = max(single_parts_layer.getFeatures(), key=lambda f: f.geometry().area())
+    # Safe max with default
+    feat = max(single_parts_layer.getFeatures(), key=lambda f: f.geometry().area(), default=None)
+    if feat is None or feat.geometry() is None or feat.geometry().isEmpty():
+        raise ValueError("No valid geometry found after buffering/splitting.")
+
     geom = feat.geometry()
     bbox = geom.boundingBox()
-    w, h = bbox.width(), bbox.height()
-    orient = "portrait" if h > w else "landscape"
-    fmt = next((f for f, mm in FORMATS_MM.items() if _fits(mm, scale, w, h, orient)), "A0+")
 
-    return MapInfo(bbox, orient, fmt, geom.area())
+    fmt = _pick_format(scale, bbox)
+    orient = _pick_orient(bbox)
+
+    return MapInfo(bbox=bbox, orientation=orient, paper_format=fmt, area=geom.area())
+
+def _find_template(models_dir, fmt, orient):
+    """
+    Look for {fmt}_{orient}.qpt; if not found, try the opposite orientation.
+    Returns the found path and orientation used.
+    Raises FileNotFoundError if neither exists.
+    """
+    # Normalize to lower case for file naming
+    fmt = fmt.strip()
+    orient = orient.strip().lower()  # type: ignore
+
+    # 1) Exact orientation
+    qpt = models_dir / f"{fmt}_{orient}.qpt"
+    if qpt.exists():
+        return qpt, orient  # found exact
+
+    # 2) Else try the other orientation
+    orient = "portrait" if orient == "landscape" else "landscape"
+    qpt = models_dir / f"{fmt}_{orient}.qpt"
+    if qpt.exists():
+        return qpt, orient
+
+    # 3) Nothing found
+    raise FileNotFoundError(
+        f"Template introuvable : {fmt}_{orient}.qpt ni {fmt}_{orient}.qpt"
+    )
 
 def import_layout(project, fmt: str, orient):
     models_dir = Path(get_global_variable('models_directory'))
-    qpt = models_dir / f"{fmt}_{orient}.qpt"
-
-    # If orientation doesn't exist, try switch it
-    if not qpt.exists():
-        fallback_orient = "portrait" if orient.lower() == "landscape" else "landscape"
-
-        qpt = models_dir / f"{fmt}_{fallback_orient}.qpt"
-        
-        if qpt.exists():
-          orient = fallback_orient 
-        else:
-            raise FileNotFoundError(f"Template introuvable : {fmt}_*.qpt")
+    qpt, orient = _find_template(models_dir, fmt, orient)
     
     manager = project.layoutManager()
-    layoutName = f"{fmt}_{orient}"
+    layout_name = f"{fmt}_{orient}"
 
     layout = QgsPrintLayout(project)
     layout.initializeDefaults()
-    doc = QDomDocument();  doc.setContent(qpt.read_text("utf-8"))
+
+    # Read & parse XML
+    doc = QDomDocument()
+    with open(qpt, "r", encoding="utf-8") as fh:
+        xml = fh.read()
+    if not doc.setContent(xml):
+        raise ValueError(f"QPT invalide (XML): {qpt}")
+
+    # Load template and register
     layout.loadFromTemplate(doc, QgsReadWriteContext())
-    layout.setName(layoutName)
+    layout.setName(layout_name)
     manager.addLayout(layout)
     return layout
   
