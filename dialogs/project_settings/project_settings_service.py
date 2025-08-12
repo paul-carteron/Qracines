@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Tuple, Iterable
+from typing import Tuple
 
-from qgis.core import QgsVectorLayer, QgsRectangle, QgsWkbTypes, QgsUnitTypes, QgsPrintLayout, QgsReadWriteContext, QgsLayoutItemMap
+from qgis.core import QgsVectorLayer, QgsRectangle, QgsWkbTypes, QgsUnitTypes, QgsPrintLayout, QgsReadWriteContext, QgsLayoutItemMap, QgsLayoutFrame, QgsLayoutItemAttributeTable
 from qgis.PyQt.QtXml import QDomDocument
 
 from ...utils.variable import get_global_variable

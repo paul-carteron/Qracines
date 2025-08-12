@@ -2,7 +2,7 @@ from qgis.core import Qgis, QgsProject, QgsMessageLog, QgsLayerTreeGroup, QgsCoo
 from qgis.utils import iface
 
 from .layers import load_vectors, load_wms
-from .config import get_wms, get_display_name, get_wms, get_project_groups, get_project_themes, get_project_default
+from .config import get_wms, get_display_name, get_wms, get_project_canvas
 
 def create_theme(name: str, visible_keys: list[str]) -> None:
 
@@ -45,22 +45,22 @@ def create_project(project_key):
         "wms" : load_wms
     }
     
-    for g in get_project_groups(project_key):
+    canvas_cfg = get_project_canvas(project_key)
+    for g in canvas_cfg.groups:
         loader = loading_function.get(g.get("type"))
         layers = g.get("layers") or []
-        print(f"Loading group '{g.get('name')}' with layers: {layers} and loader: {loader}")
         loader(*layers, group_name=g.get("name"))
 
-    themes = get_project_themes(project_key) or []
-    # I use reversed order to ensure the first theme is applied last which is the one that should be visible by default
-    for t in reversed(themes):
-        create_theme(t['name'], t['show'])
+    for t in reversed(canvas_cfg.themes):
+        print(t)
+        create_theme(t.get("name"), t.get("show"))
 
     # Gestion des groupes
     replier()
     deplier("SEQUOIA")
-    default = get_project_default(project_key)
-    zoom_on(default.zoom_on)
+    print("start zoom on")
+    zoom_on(canvas_cfg.zoom_on)
+    print("end zoom on")
 
     # Appliquer transparence sur la couche scan25grey si elle existe
     layer = QgsProject.instance().mapLayersByName(get_wms("wms_scan25_grey")[0])

@@ -10,7 +10,7 @@ from qgis.core import (
 )
 from osgeo import ogr
 
-from .config import get_wms, get_style, get_path, get_display_name, get_wms, get_project_groups, get_project_themes, get_project_default
+from .config import get_wms, get_style, get_path, get_display_name, get_wms
 
 # region LOAD LAYERS
 
