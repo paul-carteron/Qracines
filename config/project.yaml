@@ -74,7 +74,7 @@ peuplements:
         layers: ['parca_polygon_lgd_peuplements']
       - name: VECTOR
         type: vector
-        layers: &peuplements_w_vect ['com_line', 'com_point', 'infra_point', 'infra_line', 'topo_line', 'infra_polygon', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
+        layers: &peuplements_w_vect ['com_line', 'com_point', 'infra_point', 'infra_line', 'topo', 'infra_polygon', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
       - name: SEQUOIA
         type: vector
         layers: &peuplements_w_seq ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
@@ -124,7 +124,7 @@ enjeux_environnementaux:
       - name: legend1
         layers: ['parca_polygon_lgd_enjeux']
       - name: legend2
-        layers: ['prop_line', 'pf_line', 'pf_polygon', 'znieff1_polygon', 'znieff2_polygon', 'pn_polygon', 'zico']
+        layers: ['prop_line', 'pf_line', 'pf_polygon', 'pnr', 'znieff1', 'znieff2', 'zico', 'pn', 'sic', 'zps', 'ramsar', 'bios']
 
 enjeux_sociaux:
   canvas:
@@ -179,3 +179,30 @@ enjeux_patrimoniaux:
         layers: ['parca_polygon_lgd_enjeux']
       - name: legend2
         layers: ['mh', 'ppmh', 'site']
+
+geologie:
+  canvas:
+    scale: 15000
+    zoom_on: 'parca_polygon_lgd_enjeux'
+
+    groups:
+      - name : LEGEND
+        type : vector
+        layers : ['parca_polygon_lgd_enjeux']
+      - name : SEQUOIA
+        type : vector
+        layers : &enjeux_pat_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'geol']
+      - name : WMS
+        type : wms
+        layers : &enjeux_pat_w_wms ['wms_scan25_grey']
+    themes:
+      - name: 1_SEQUOIA+WMS
+        show: [*enjeux_pat_w_seq, *enjeux_pat_w_wms]
+
+  layout:
+    theme: '1_SEQUOIA+WMS'
+    legends:
+      - name: legend1
+        layers: ['parca_polygon_lgd_enjeux']
+      - name: legend2
+        layers: ['geol']

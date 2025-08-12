@@ -2,90 +2,85 @@ structure:
   output_folder:
     path: [SIG, 0_OUTPUT]
     files:
-      amenagements: { filename: AMENAGEMENTS.qgz, display_name: Aménagements }
-      assemblage: { filename: ASSEMBLAGE.qgz, display_name: Assemblage }
+      assemblage: { filename: ASSEMBLAGE.qgz, display_name: "Assemblage" }
+      situation: { filename: SITUATION.qgz, display_name: "Situation" }
+      peuplements: { filename: PEUPLEMENTS.qgz, display_name: "Peuplements" }
+      amenagements: { filename: AMENAGEMENTS.qgz, display_name: "Aménagements" }
       enjeux_environnementaux: { filename: ENJEUX_ENVIRONNEMENTAUX.qgz, display_name: "Enjeux environnementaux" }
       enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, display_name: "Enjeux patrimoniaux" }
       enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, display_name: "Enjeux sociaux" }
-      geologie: { filename: GEOLOGIE.qgz, display_name: Géologie }
-      peuplements: { filename: PEUPLEMENTS.qgz, display_name: Peuplements }
-      situation: { filename: SITUATION.qgz, display_name: Situation }
+      geologie: { filename: GEOLOGIE.qgz, display_name: "Géologie" }
 
   raster_folder:
     path: [SIG, 1_RASTER]
     files:
-      mns: { filename: "MNS.tif", display_name: Modèle Numérique de Surface }
-      mnt: { filename: "MNT.tif", display_name: Modèle Numérique de Terrain }
-      mnh: { filename: "MNH.tif", style: "MNH.qml", display_name: Modèle Numérique de Hauteur }
-      plt: { filename: "PLT.tif", display_name: "Carte des Peuplements" }
-      plt_anc: { filename: "PLT_ANC.tif", display_name: "Carte des Peuplements Ancienne" }
-      irc: { filename: "IRC.tif", display_name: "BD ORTHO - Infra-rouge couleur" }
-      rgb: { filename: "RGB.tif", display_name: "BD ORTHO - Couleur"}
-      scan25: { filename: "SCAN25.tif", style: "SCAN25.qml", display_name: "Scan 25"}
-
-  vector_folder:
-    path: [SIG, 2_VECTOR]
-    files:
-      ame_polygon: { filename: AME_polygon.shp }
-      batica_polygon: { filename: BATICA_polygon.shp }
+      ame: { filename: AME.shp }
+      batica: { filename: BATICA.shp }
+      bios: { filename: BIOS_polygon.shp, style: BIOS_polygon.qml, display_name:"Réserve de biosphère"}
       com_line: { filename: COM_line.shp, style: COMS_line.qml, display_name: "COM_line" }
       com_point: { filename: COM_point.shp, style: COMS_point.qml, display_name: "COM_point" }
       coms_line: { filename: COMS_line.shp, style: COMS_line.qml, display_name: "COMS_line" }
       coms_point: { filename: COMS_point.shp, style: COMS_point.qml, display_name: "COMS_point" }
       coms_polygon: { filename: COMS_polygon.shp }
-      geol_polygon: { filename: GEOL_polygon.shp, style: GEOL_polygon.qml, display_name: "Géologie"}
+      ess: {filename: Ess.shp, style: Ess.qml}
+      geol: { filename: GEOL_polygon.shp, style: GEOL_polygon.qml, display_name: "Géologie"}
+      gha: {filename: Gha.shp, style: Gha.qml}
+      horizons: {filename: horizons.shp, style: horizons.qml}
       infra_line: { filename: INFRA_line.shp, style: INFRA_line.qml, display_name: "INFRA_line" }
-      infra_point_acces: { filename: INFRA_point.shp, style: INFRA_point_ACCES.qml, display_name: "INFRA_point_ACCES" }
       infra_point: { filename: INFRA_point.shp, style: INFRA_point.qml, display_name: "INFRA_point" }
+      infra_point_acces: { filename: INFRA_point.shp, style: INFRA_point_ACCES.qml, display_name: "INFRA_point_ACCES" }
       infra_polygon: { filename: INFRA_polygon.shp, style: INFRA_polygon.qml, display_name: "INFRA_polygon" }
       lieudit_point: { filename: LIEUDIT_point.shp, style: LIEUDIT_point.qml, display_name: "LIEUDIT_point" }
+      limite: {filename: Limite.shp, style: Limite.qml}
+      mh: {filename: MH_polygon.shp, style: MH_polygon.qml, display_name: "Immeubles classés ou inscrits"}
       parca_archive_polygon: { filename: PARCA-ARCHIVE_polygon.shp }
       parca_polygon: { filename: PARCA_polygon.shp, style: PARCA_polygon.qml, display_name: "Parcelle cadastrale" }
-      parca_polygon_lgd_situation: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_situation.qml, display_name: "Légende" }
       parca_polygon_lgd_assemblage: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_assemblage.qml, display_name: "Légende" }
-      parca_polygon_lgd_peuplements: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_peuplements.qml, display_name: "Légende" }
       parca_polygon_lgd_enjeux: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_enjeux.qml, display_name: "Légende" }
+      parca_polygon_lgd_peuplements: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_peuplements.qml, display_name: "Légende" }
+      parca_polygon_lgd_situation: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_situation.qml, display_name: "Légende" }
       parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml, display_name: "Parcelle cadastrale *"}
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
       pf_diag_line: { filename: PROP_line.shp, style: PF-Diag_line.qml, display_name: "Limite de parcelle w" }
       pf_line: { filename: PF_line.shp, style: PF_line.qml, display_name: "Limite de parcelle forestière"}
       pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"}
-      pn_polygon: { filename: PN_polygon.shp }
+      picto: {filename: Picto.shp, style: Picto.qml}
+      placette: {filename: Placette.shp, style: Placette.qml}
+      pn: { filename: PN_polygon.shp, style: PN_polygon.qml, display_name: "Parc national"}
+      pnr: { filename: PNR_polygon.shp, style: PNR_polygon.qml, display_name: "Parc naturel régional"}
+      ppe: {filename: PPE_polygon.shp, style: PPE_polygon.qml, display_name: "Périmètre de protection éloigné"}
+      ppi: {filename: PPI_polygon.shp, style: PPI_polygon.qml, display_name: "Périmètre de protection immédiat"}
+      ppmh: {filename: PPMH_polygon.shp, style: PPMH_polygon.qml, display_name: "Protection aux titres des abords de monuments historiques"}
+      ppr: {filename: PPR_polygon.shp, style: PPR_polygon.qml, display_name: "Périmètre de protection rapproché"}
       prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml, display_name: "Limite de propriété w"}
       prop_line: { filename: PROP_line.shp, style: PROP_line.qml, display_name: "Limite de propriété" }
       prop_point: { filename: PROP_point.shp, style: PROP_point.qml, display_name: "Centroid de propriété" }
       prop_polygon: { filename: PROP_polygon.shp, style: PROP_polygon.qml, display_name : Propriété }
+      ramsar: {filename: RAMSAR_polygon.shp, style: RAMSAR_polygon.qml, display_name: "Zones humides d'importance internationale"}
+      reg: {filename: Reg.shp, style: Reg.qml}
       road_line: { filename: ROAD_line.shp, style: ROAD_line.qml, display_name: "ROAD_line" }
       road_polygon: { filename: ROAD_polygon.shp, style: ROAD_polygon.qml, display_name: "ROAD_polygon"}
       route_line: { filename: ROUTE_line.shp, style: ROUTE_line.qml, display_name: "ROUTE_line" }
       route_polygon: { filename: ROUTE_polygon.shp, style: ROUTE_polygon.qml, display_name: "ROUTE_polygon"}
+      sic: { filename: SIC_polygon.shp, style: SIC_polygon.qml, display_name: "Natura 2000: Zone spéciale de conservation"}
+      site: {filename: SITE_polygon.shp, style: SITE_polygon.qml, display_name: "Sites classés ou inscrits"}
+      sondage: {filename: sondage.shp, style: sondage.qml}
       sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, display_name: "Sous-parcelle forestière w"}
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle forestière"}
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
-      topo_line: { filename: TOPO_line.shp, style: TOPO_line.qml }
+      topo: { filename: TOPO_line.shp, style: TOPO_line.qml, display_name: "Courbe de niveau"}
+      transect: {filename: Transect.shp, style: Transect.qml}
+      tse: {filename: Tse.shp, style: Tse.qml}
       ua_polygon: { filename: UA_polygon.shp, style: UA_polygon.qml, display_name: "Unité d analyse" }
       ua_polygon_ame: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Aménagements (UA)" }
       ua_polygon_occup: { filename: UA_polygon.shp, style: UA3_polygon.qml, display_name: "Occupation du sol"}
       ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Peuplements (UA)" }
-      znieff1_polygon: { filename: ZNIEFF1_polygon.shp }
-      placette: {filename: Placette.shp, style: Placette.qml}
-      ppi: {filename: PPI_polygon.shp, style: PPI_polygon.qml, display_name: "Périmètre de protection immédiat"}
-      ppe: {filename: PPE_polygon.shp, style: PPE_polygon.qml, display_name: "Périmètre de protection éloigné"}
-      ppr: {filename: PPR_polygon.shp, style: PPR_polygon.qml, display_name: "Périmètre de protection rapproché"}
-      ppmh: {filename: PPMH_polygon.shp, style: PPMH_polygon.qml, display_name: "Protection aux titres des abords de monuments historiques"}
-      mh: {filename: MH_polygon.shp, style: MH_polygon.qml, display_name: "Immeubles classés ou inscrits"}
-      site: {filename: SITE_polygon.shp, style: SITE_polygon.qml, display_name: "Sites classés ou inscrits"}
-      transect: {filename: Transect.shp, style: Transect.qml}
-      limite: {filename: Limite.shp, style: Limite.qml}
-      picto: {filename: Picto.shp, style: Picto.qml}
-      gha: {filename: Gha.shp, style: Gha.qml}
-      tse: {filename: Tse.shp, style: Tse.qml}
-      reg: {filename: Reg.shp, style: Reg.qml}
       va_ess: {filename: Va_ess.shp, style: Va_ess.qml}
-      ess: {filename: Ess.shp, style: Ess.qml}
-      sondage: {filename: sondage.shp, style: sondage.qml}
-      horizons: {filename: horizons.shp, style: horizons.qml}
+      zico: { filename: ZICO_polygon.shp, style: ZICO_polygon.qml}
+      znieff1: { filename: ZNIEFF1_polygon.shp, style: ZNIEFF1_polygon.qml}
+      znieff2: { filename: ZNIEFF2_polygon.shp, style: ZNIEFF2_polygon.qml }
+      zps: { filename: ZPS_polygon.shp, style: ZPS_polygon.qml, display_name: "Natura 2000: Zone de protection spéciale"}
 
   other_folder:
     path: [SIG, 3_OTHER]
