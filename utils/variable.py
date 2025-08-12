@@ -11,7 +11,8 @@ def get_global_variable(name: str) -> Any:
 
 def set_global_variable(name: str, value: Any) -> None:
     """Set a global expression variable (string/int/float/bool)."""
-    _safe_set(QgsExpressionContextUtils.setGlobalVariable, name, value)
+    QgsExpressionContextUtils.setGlobalVariable(name, value)
+    return None
 
 def get_project_variable(name: str) -> Any:
     """Return a project-level variable or `None` if missing."""
