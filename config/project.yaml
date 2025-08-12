@@ -1,7 +1,7 @@
 assemblage:
   canvas:
     scale: 7500
-    zoom_on: ['parca_polygon_lgd_assemblage']
+    zoom_on: 'parca_polygon_lgd_assemblage'
     groups:
       - name: LEGEND
         type: vector

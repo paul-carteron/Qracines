@@ -8,7 +8,6 @@ structure:
       enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, display_name: "Enjeux patrimoniaux" }
       enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, display_name: "Enjeux sociaux" }
       geologie: { filename: GEOLOGIE.qgz, display_name: Géologie }
-      pedology: { filename: PEDOLOGY.qgz, display_name: Pédologie }
       peuplements: { filename: PEUPLEMENTS.qgz, display_name: Peuplements }
       situation: { filename: SITUATION.qgz, display_name: Situation }
 
