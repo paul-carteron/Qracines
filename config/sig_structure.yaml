@@ -14,6 +14,18 @@ structure:
   raster_folder:
     path: [SIG, 1_RASTER]
     files:
+      mns: { filename: "MNS.tif", display_name: Modèle Numérique de Surface }
+      mnt: { filename: "MNT.tif", display_name: Modèle Numérique de Terrain }
+      mnh: { filename: "MNH.tif", style: "MNH.qml", display_name: Modèle Numérique de Hauteur }
+      plt: { filename: "PLT.tif", display_name: "Carte des Peuplements" }
+      plt_anc: { filename: "PLT_ANC.tif", display_name: "Carte des Peuplements Ancienne" }
+      irc: { filename: "IRC.tif", display_name: "BD ORTHO - Infra-rouge couleur" }
+      rgb: { filename: "RGB.tif", display_name: "BD ORTHO - Couleur"}
+      scan25: { filename: "SCAN25.tif", style: "SCAN25.qml", display_name: "Scan 25"}
+
+  vector_folder:
+    path: [SIG, 2_VECTOR]
+    files:
       ame: { filename: AME.shp }
       batica: { filename: BATICA.shp }
       bios: { filename: BIOS_polygon.shp, style: BIOS_polygon.qml, display_name:"Réserve de biosphère"}
