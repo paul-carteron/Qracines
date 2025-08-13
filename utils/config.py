@@ -160,6 +160,7 @@ def _load_project() -> dict:
 class ProjectCanvas:
     scale: int
     zoom_on: str
+    readonly: list
     groups: list
     themes: list
 

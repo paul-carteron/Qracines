@@ -170,8 +170,6 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
 
 
 # endregion
-
-
 def create_relation(parent_name, child_name, parent_field, child_field, relation_id, relation_name):
     """
     Crée une relation de composition et configure le champ child_field pour RelationReference.

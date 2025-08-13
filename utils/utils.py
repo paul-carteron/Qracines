@@ -1,7 +1,7 @@
 from qgis.core import Qgis, QgsProject, QgsMessageLog, QgsLayerTreeGroup, QgsCoordinateReferenceSystem, QgsMapThemeCollection
 from qgis.utils import iface
 
-from .layers import load_vectors, load_wms
+from .layers import load_vectors, load_wms, set_layers_readonly
 from .config import get_wms, get_display_name, get_wms, get_project_canvas
 
 def create_theme(name: str, visible_keys: list[str]) -> None:
@@ -50,9 +50,10 @@ def create_project(project_key):
         loader = loading_function.get(g.get("type"))
         layers = g.get("layers") or []
         loader(*layers, group_name=g.get("name"))
+    
+    set_layers_readonly(*canvas_cfg.readonly)
 
     for t in reversed(canvas_cfg.themes):
-        print(t)
         create_theme(t.get("name"), t.get("show"))
 
     # Gestion des groupes

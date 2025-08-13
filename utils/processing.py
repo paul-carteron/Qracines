@@ -68,12 +68,12 @@ def save_as_xlsx(*layers, path):
 
     return
 
-def buffer(layer, distance, segments=8):
+def buffer(layer, distance, dissolve = True, segments=8):
     buffered = processing.run("native:buffer", {
         "INPUT": layer,
         "DISTANCE": distance,
-        "SEGMENTS": 8,
-        "DISSOLVE": True,
+        "SEGMENTS": segments,
+        "DISSOLVE": dissolve,
         "OUTPUT": "memory:"
         })["OUTPUT"]
     

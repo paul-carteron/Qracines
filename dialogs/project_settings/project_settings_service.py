@@ -25,19 +25,23 @@ FORMATS_MM: Tuple[Tuple[str, Tuple[int, int]], ...] = (
     ("A0", (841, 1189)),
 )
 
-def _fits_bbox(mm: Tuple[float, float], scale: int, bbox: QgsRectangle) -> bool:
+def _fits_bbox(
+        mm: Tuple[float, float],
+        scale: int,
+        bbox: QgsRectangle,
+        marge_mm=6,
+        coef_cadre=0.95,
+        coef_securite=0.03) -> bool:
     """
     True if the paper size `mm` (in millimetres) at `scale` can contain
     the given map extent `bbox` (in map units) in *either* orientation.
     """
     # Required paper dimensions in mm at this scale
-    needed_mm = ((bbox.width() / scale) * 1000.0, (bbox.height() / scale) * 1000.0)
+    guard = 1.0 - coef_securite
+    needed_w, needed_h = ((bbox.width() / scale) * 1000.0, (bbox.height() / scale) * 1000.0)
+    available_w, available_h = ((d - 2 * marge_mm) * coef_cadre * guard for d in mm)
 
-    # always comparing “short side with short side” and “long side with long side”, so rotation is automatically accounted for.
-    needed_small, needed_large = sorted(needed_mm)
-    paper_small, paper_large = sorted(mm)
-
-    return paper_small >= needed_small and paper_large >= needed_large
+    return needed_w <= available_w and needed_h <= available_h
 
 def _pick_format(scale: int, bbox: QgsRectangle) -> str:
     """
@@ -55,7 +59,7 @@ def _pick_orient(bbox: QgsRectangle) -> str:
 def compute_layout_info(
         uri = None,
         scale: int = 15000,
-        buffer_distance: float = 15,
+        snap_distance : int = 200,
         provider: str = "ogr") -> MapInfo:
 
     if uri is None:
@@ -69,9 +73,13 @@ def compute_layout_info(
     
     if info_layer.crs().mapUnits() != QgsUnitTypes.DistanceMeters:
         print("Warning: buffer_distance is interpreted in layer CRS units, not meters.")
-     
-    buffered_layer = buffer(info_layer, buffer_distance)
-    single_parts_layer = multipart_to_singleparts(buffered_layer)
+    
+    # Process
+    # 1 : buffer each part to profit of dissolve arg
+    # 2 : unbuffer to have real size of the forest
+    buffered_and_dissolve = buffer(info_layer, distance=snap_distance/2, dissolve=True)
+    dissolved = buffer(buffered_and_dissolve, distance=-snap_distance/2)
+    single_parts_layer = multipart_to_singleparts(dissolved)
 
     # Safe max with default
     feat = max(single_parts_layer.getFeatures(), key=lambda f: f.geometry().area(), default=None)
