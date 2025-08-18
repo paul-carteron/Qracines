@@ -7,7 +7,7 @@ from ...utils.variable import get_global_variable, get_project_variable, get_pro
 from ...utils.layers import *
 
 class AddDataDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, iface, parent=None):
         super().__init__(parent)
         self.iface = iface
         self.ui = Ui_AddDataDialog()

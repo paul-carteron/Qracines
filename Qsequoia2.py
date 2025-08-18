@@ -159,7 +159,7 @@ class Qsequoia2:
         
     def open_add_data(self):
         if not self.add_data_dialog:
-            self.add_data_dialog = AddDataDialog()
+            self.add_data_dialog = AddDataDialog(self.iface)
         self.add_data_dialog.exec_()
     
     # DIAGNOSTIC
