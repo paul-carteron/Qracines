@@ -12,7 +12,7 @@ assemblage:
         layers: &assemblage_w_vect 
           - com_line
           - com_point
-          - infra_point
+          - infra_point_assemblage
           - infra_line
           - infra_polygon
           - lieudit_point
@@ -62,7 +62,7 @@ situation:
         layers: ['parca_polygon_lgd_situation']
       - name: VECTOR
         type: vector
-        layers: ['coms_point', 'coms_line', 'infra_point_acces']
+        layers: ['coms_point', 'coms_line', 'infra_point_situation']
       - name: SEQUOIA
         type: vector
         layers: ['prop_point', 'prop_line', 'ua_polygon_occup']
@@ -72,7 +72,7 @@ situation:
 
     themes:
       - name: 1_SCAN25
-        show: ['ua_polygon_occup', 'prop_line', 'infra_point_acces', 'coms_point', 'coms_line', 'wms_scan25']
+        show: ['ua_polygon_occup', 'prop_line', 'infra_point_situation', 'coms_point', 'coms_line', 'wms_scan25']
       - name: 2_SCAN1000
         show: ['prop_point', 'wms_scan1000']
 
@@ -88,14 +88,14 @@ peuplements:
   canvas:
     scale: 7500
     zoom_on: 'parca_polygon_lgd_peuplements'
-    readonly: [parca_polygon_lgd_peuplements]
+    readonly: [parca_polygon_lgd_peuplements, parca_polygon_occup]
     groups:
       - name: LEGEND
         type: vector
         layers: ['parca_polygon_lgd_peuplements']
       - name: VECTOR
         type: vector
-        layers: &peuplements_w_vect ['com_line', 'com_point', 'infra_point', 'infra_line', 'topo', 'infra_polygon', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
+        layers: &peuplements_w_vect ['com_line', 'com_point', 'infra_point_peuplements', 'infra_line', 'topo', 'infra_polygon', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
       - name: SEQUOIA
         type: vector
         layers: &peuplements_w_seq ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']

@@ -14,9 +14,9 @@ structure:
   raster_folder:
     path: [SIG, 1_RASTER]
     files:
-      mns: { filename: "MNS.tif", display_name: Modèle Numérique de Surface }
-      mnt: { filename: "MNT.tif", display_name: Modèle Numérique de Terrain }
-      mnh: { filename: "MNH.tif", style: "MNH.qml", display_name: Modèle Numérique de Hauteur }
+      mns: { filename: "MNS.tif", display_name: "Modèle Numérique de Surface" }
+      mnt: { filename: "MNT.tif", display_name: "Modèle Numérique de Terrain" }
+      mnh: { filename: "MNH.tif", style: "MNH.qml", display_name: "Modèle Numérique de Hauteur" }
       plt: { filename: "PLT.tif", display_name: "Carte des Peuplements" }
       plt_anc: { filename: "PLT_ANC.tif", display_name: "Carte des Peuplements Ancienne" }
       irc: { filename: "IRC.tif", display_name: "BD ORTHO - Infra-rouge couleur" }
@@ -40,7 +40,9 @@ structure:
       horizons: {filename: horizons.shp, style: horizons.qml}
       infra_line: { filename: INFRA_line.shp, style: INFRA_line.qml, display_name: "INFRA_line" }
       infra_point: { filename: INFRA_point.shp, style: INFRA_point.qml, display_name: "INFRA_point" }
-      infra_point_acces: { filename: INFRA_point.shp, style: INFRA_point_ACCES.qml, display_name: "INFRA_point_ACCES" }
+      infra_point_assemblage: { filename: INFRA_point.shp, style: INFRA_point_assemblage.qml, display_name: "INFRA_point" }
+      infra_point_peuplements: { filename: INFRA_point.shp, style: INFRA_point_peuplements.qml, display_name: "INFRA_point" }
+      infra_point_situation: { filename: INFRA_point.shp, style: INFRA_point_situation.qml, display_name: "INFRA_point" }
       infra_polygon: { filename: INFRA_polygon.shp, style: INFRA_polygon.qml, display_name: "INFRA_polygon" }
       lieudit_point: { filename: LIEUDIT_point.shp, style: LIEUDIT_point.qml, display_name: "LIEUDIT_point" }
       limite: {filename: Limite.shp, style: Limite.qml}
