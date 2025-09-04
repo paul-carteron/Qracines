@@ -5,6 +5,7 @@ from .diagnostic_dialog import Ui_DiagnosticDialog
 from ..core.diagnostic_service import DiagnosticService
 from ..utils.config import get_project_variable, get_racines_path
 from ..utils.utils import clear_project
+from ..utils.ui import  QfieldPackager
 
 class DiagnosticDialog(QDialog):
     def __init__(self, parent=None):

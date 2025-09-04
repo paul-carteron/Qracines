@@ -7,12 +7,22 @@ from .config import get_wms, get_display_name, get_wms, get_project_canvas
 def create_theme(name: str, visible_keys: list[str]) -> None:
 
     # 1. Resolve display names once
-    def _resolve_layer_name(key):
+    def _resolve_layer_name(key: str) -> str:
+        # try alias lookup
         try:
-            return get_display_name(key)          # vector/alias
+            return get_display_name(key)   # vector/alias
         except KeyError:
-            layer_name, _ = get_wms(key)          # WMS fallback
+            pass
+
+        # try WMS lookup
+        try:
+            layer_name, _ = get_wms(key)   # WMS fallback
             return layer_name
+        except KeyError:
+            pass
+
+        # final fallback: assume it's already a layer name
+        return key
         
     resolved_names = {_resolve_layer_name(key) for key in visible_keys}
 

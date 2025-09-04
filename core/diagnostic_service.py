@@ -97,25 +97,14 @@ class DiagnosticService:
             load_rasters(*keys, group_name="RASTER")
 
     def _create_themes(self):
+        always_visible = ['Placette', 'Transect', 'Picto', 'Limite']
         themes = [
-            ("1_plt",
-             ['plt', 'prop_line', 'pf_line', 'ua_polygon'],
-             ['plt_anc', 'irc', 'rgb', 'mnh', 'scan25', 'prop_diag_line', 'pf_diag_line']),
-            ("2_plt_anc",
-             ['plt_anc', 'prop_line', 'pf_line'],
-             ['plt', 'irc', 'rgb', 'mnh', 'scan25', 'prop_diag_line', 'pf_diag_line', 'ua_polygon']),
-            ("3_irc",
-             ['irc', 'prop_diag_line', 'pf_diag_line', 'ua_polygon'],
-             ['plt', 'plt_anc', 'rgb', 'mnh', 'scan25', 'prop_line', 'pf_line']),
-            ("4_rgb",
-             ['rgb', 'prop_diag_line', 'pf_diag_line', 'ua_polygon'],
-             ['plt', 'plt_anc', 'irc', 'mnh', 'scan25', 'prop_line', 'pf_line']),
-            ("5_mnh",
-             ['mnh', 'prop_line', 'pf_line', 'ua_polygon'],
-             ['plt', 'plt_anc', 'irc', 'rgb', 'scan25', 'prop_diag_line', 'pf_diag_line']),
-            ("6_scan25",
-             ['scan25', 'prop_line', 'pf_line', 'ua_polygon'],
-             ['plt', 'plt_anc', 'irc', 'rgb', 'mnh', 'prop_diag_line', 'pf_diag_line'])
+            ("1_plt", always_visible + ['plt', 'prop_line', 'pf_line', 'ua_polygon']),
+            ("2_plt_anc", always_visible +['plt_anc', 'prop_line', 'pf_line']),
+            ("3_irc", always_visible + ['irc', 'prop_diag_line', 'pf_diag_line', 'ua_polygon']),
+            ("4_rgb", always_visible + ['rgb', 'prop_diag_line', 'pf_diag_line', 'ua_polygon']),
+            ("5_mnh", always_visible + ['mnh', 'prop_line', 'pf_line', 'ua_polygon']),
+            ("6_scan25", always_visible + ['scan25', 'prop_line', 'pf_line', 'ua_polygon']),
         ]
         for theme in themes:
             create_theme(*theme)

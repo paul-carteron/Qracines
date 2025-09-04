@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QCompleter
+from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QCompleter, QMessageBox
 from qgis.core import Qgis, QgsProject
 from qgis.utils import iface
 from .forest_settings_dialog import Ui_ForestSettingsDialog
@@ -185,13 +185,15 @@ class ForestSettingsDialog(QDialog):
 
     def _set_surface(self, ua_path, parca_path):
         surface_boisee = surface_non_boisee = 0
-        if ua_path.exists():
-            surface_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "BOISEE")
-            surface_non_boisee = sum_surface_from_shapefile(ua_path, "SURF_COR", "OCCUP_SOL", "NON BOISEE") or 0
-        else:
-            if parca_path.exists():
-                surface_boisee = sum_surface_from_shapefile(parca_path, "SURF_CA") or 0
-                surface_non_boisee = sum_surface_from_shapefile(parca_path, "SURF_COR", "OCCUP_SOL", "NON BOISEE") or 0
+
+        if not ua_path.exists() and not parca_path.exists():
+            QMessageBox.warning(None, "Couches manquantes",f"Pas de couches UA ou PARCA trouvées dans {self.directory}. Impossible de calculer les surfaces.")
+            return
+        
+        surface_field = "SURF_COR" if ua_path.exists() else "SURF_CA"
+            
+        surface_boisee = sum_surface_from_shapefile(ua_path, surface_field, "OCCUP_SOL", "BOISEE") or 0
+        surface_non_boisee = sum_surface_from_shapefile(ua_path, surface_field, "OCCUP_SOL", "NON BOISEE") or 0
 
         surface_totale = surface_boisee + surface_non_boisee
         set_project_variable("forest_surface_totale", surface_totale)
