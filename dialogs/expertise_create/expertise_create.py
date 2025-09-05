@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
-
+from qgis.core import QgsProject
 from .expertise_create_dialog import Ui_ExpertiseCreateDialog
 from .expertise_service import ExpertiseService
 
@@ -9,7 +9,7 @@ from ...utils.config import get_racines_path
 from ...utils.variable import get_project_variable
 from ...utils.layers import load_vectors
 from ...utils.utils import clear_project
-from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector
+from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController
 
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):
@@ -53,6 +53,12 @@ class ExpertiseCreateDialog(QDialog):
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
+        
+        self.grid_controller = GridController(
+            self.ui,
+            create_grid_ui = 'cb_create_grid',
+            points_per_ha_ui = 'dsp_points_per_ha'
+        )
 
     # override exec_ to update forest_name if changed
     def exec_(self):
@@ -84,6 +90,9 @@ class ExpertiseCreateDialog(QDialog):
             svc.run()
             load_vectors("parca_polygon", group_name= "VECTOR")
             self.raster_controller.load_selected_rasters()
+
+            if self.grid_controller.is_valid():
+                self.grid_controller.add_grid(parca_key="parca_polygon")
 
             msg = "Expertise complète !"
             if self.packager.is_valid():

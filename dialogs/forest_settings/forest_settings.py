@@ -191,9 +191,10 @@ class ForestSettingsDialog(QDialog):
             return
         
         surface_field = "SURF_COR" if ua_path.exists() else "SURF_CA"
-            
-        surface_boisee = sum_surface_from_shapefile(ua_path, surface_field, "OCCUP_SOL", "BOISEE") or 0
-        surface_non_boisee = sum_surface_from_shapefile(ua_path, surface_field, "OCCUP_SOL", "NON BOISEE") or 0
+        path = ua_path if ua_path.exists() else parca_path
+
+        surface_boisee = sum_surface_from_shapefile(path, surface_field, "OCCUP_SOL", "BOISEE") or 0
+        surface_non_boisee = sum_surface_from_shapefile(path, surface_field, "OCCUP_SOL", "NON BOISEE") or 0
 
         surface_totale = surface_boisee + surface_non_boisee
         set_project_variable("forest_surface_totale", surface_totale)

@@ -67,7 +67,6 @@ def package_for_qfield(iface, project, outdir, filename):
             pass
         shutil.rmtree(base_tmp, ignore_errors=True)
 
-
 def zip_folder_contents(folder_path, output_zip_path):
     """
     Zips all contents (files and subfolders) of folder_path

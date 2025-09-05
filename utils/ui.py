@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog, QDoubleSpinBox
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsMarkerSymbol
 from qgis.gui import QgsFileWidget
 from qgis.utils import iface
 
@@ -9,6 +9,8 @@ from .variable import get_project_variable
 from .layers import load_rasters
 from .qfield import package_for_qfield
 from .utils import zoom_on, replier
+from .processing import create_grid
+from .config import get_display_name
 
 import unicodedata
 from pathlib import Path
@@ -114,7 +116,6 @@ class QfieldPackager(UIBinderMixin):
         does not exist.
         """
         path = Path(self.outdir_ui.filePath() or self.default_dir)
-        print(path)
         if not path.exists():
             QMessageBox.warning(self.iface.mainWindow(), "Dossier invalide", "Veuillez choisir un répertoire valide.",)
             raise FileNotFoundError(path)
@@ -298,3 +299,53 @@ class GpkgLoader(UIBinderMixin):
 
         # All good!
         return True
+    
+class GridController(UIBinderMixin):
+    def __init__(self, ui, create_grid_ui, points_per_ha_ui):
+        self.ui = ui
+        self.create_grid_ui = self._bind_widget(create_grid_ui, QCheckBox)
+        self.points_per_ha = self._bind_widget(points_per_ha_ui, QDoubleSpinBox)
+
+        # ─── UI interactions ────────────────────────────────────────────────
+        self.create_grid_ui.toggled.connect(self.points_per_ha.setEnabled)
+
+    def is_valid(self) -> bool:
+        """Return *True* when QField packaging is requested."""
+        enabled = self.create_grid_ui.isChecked()
+        if not enabled:
+            return False
+    
+        if float(self.points_per_ha.value()) <= 0:
+            QMessageBox.warning(self.ui, "Valeur invalide", "Veuillez entrer une valeur positive pour le nombre de points par hectare.")
+            return False
+        return True
+
+    def add_grid(self, parca_key="parca_polygon"):
+        project = QgsProject.instance()
+
+        parca_layer_name = get_display_name(parca_key)
+        matches = project.mapLayersByName(parca_layer_name)
+        if not matches:
+            raise ValueError(f"Layer {parca_layer_name} not found.")
+        parca_layer = matches[0]
+
+        grid = create_grid(parca_layer, points_per_ha=float(self.points_per_ha.value()))
+        sym = QgsMarkerSymbol.createSimple({
+            'name': 'cross',
+            'size': '3',
+            'color': '#000000',
+        })
+        sym.setOpacity(0.9)
+        grid.setRenderer(QgsSingleSymbolRenderer(sym))
+        grid.triggerRepaint()
+
+        # Add the grid into the group
+        project.addMapLayer(grid, False)
+        root = project.layerTreeRoot()
+        parca_node = root.findLayer(parca_layer.id())
+        if parca_node:
+            parent = parca_node.parent()
+            idx = parent.children().index(parca_node)
+            parent.insertLayer(idx, grid)
+        
+        return

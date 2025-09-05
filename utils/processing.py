@@ -1,4 +1,5 @@
 import processing
+import math
 
 def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID'):
     """
@@ -85,3 +86,30 @@ def multipart_to_singleparts(layer):
         "OUTPUT": "memory:"
         })["OUTPUT"]
     return singleparts
+
+def create_grid(layer, points_per_ha = 1, clip = True):
+    if points_per_ha <= 0:
+        raise ValueError("points_per_ha must be > 0.")
+
+    spacing = math.sqrt(10000.0 / float(points_per_ha))
+    buffered_layer = buffer(layer, spacing, dissolve=True)
+
+    grid = processing.run('native:creategrid', {
+        'TYPE': 0,                
+        'EXTENT': buffered_layer.extent(),
+        'HSPACING': spacing,
+        'VSPACING': spacing,
+        'HOVERLAY': 0,
+        'VOVERLAY': 0,
+        'CRS': buffered_layer.crs(),
+        'OUTPUT': "memory:"
+    })['OUTPUT']
+
+    if clip:
+        grid = processing.run('native:clip', {
+            'INPUT': grid,
+            'OVERLAY': buffered_layer,
+            'OUTPUT': "memory:"
+            })['OUTPUT']
+    
+    return grid
