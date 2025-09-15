@@ -17,11 +17,7 @@ class ForestSettingsDialog(QDialog):
         self.project = QgsProject.instance()
         self.ui = Ui_ForestSettingsDialog()
         self.ui.setupUi(self)
-        
-        # Connecter les boutons
-        self.ui.buttonBox.accepted.connect(self.save_settings)
-        self.ui.pushButton.clicked.connect(self.select_directory)
-
+    
         # Connection des checkboxes
         self.nom_checkbox = {
             self.ui.checkBox_domaine: "Domaine",
@@ -44,6 +40,10 @@ class ForestSettingsDialog(QDialog):
         # Charger les paramètres existants
         self.load_settings()
 
+        # Connecter les boutons
+        self.ui.buttonBox.accepted.connect(self.save_settings)
+        self.ui.pushButton.clicked.connect(self.select_directory)
+
     def load_settings(self):
         self.ui.forest_path.setCurrentText(get_project_variable("forest_dirname") or "")
         self.directory = get_project_variable("forest_directory") or ""
@@ -55,7 +55,7 @@ class ForestSettingsDialog(QDialog):
         self.ui.doubleSpinBox_2.setValue(float(get_project_variable("surface_non_boisee") or 0))
 
     def save_settings(self):
-      
+        print("Saving forest settings...")
         # Récupère les paramètres
         directory = self.directory
         dirname = self.ui.forest_path.currentText()
@@ -68,6 +68,7 @@ class ForestSettingsDialog(QDialog):
         surface_totale = surface_boisee + surface_non_boisee
         formated_surface = get_formated_surface(surface_boisee * 10000, surface_non_boisee * 10000)
 
+        # Create a dictionary of all settings
         settings = {
             "directory": str(directory),
             "dirname": dirname,
@@ -84,9 +85,17 @@ class ForestSettingsDialog(QDialog):
 
         # prefix each key with "forest_"
         forest_vars = {f"forest_{k}": v for k, v in settings.items()}
-
-        # set them all at once
-        self.project.setCustomVariables(forest_vars)
+        if not dirname:
+            reset_vars = {key: None for key in forest_vars.keys()}
+            self.project.setCustomVariables(reset_vars)
+            self.ui.lineEdit_prefixe.setText("")
+            self.ui.lineEdit_name.setText("")
+            self.ui.lineEdit_city.setText("")
+            self.ui.lineEdit_owner.setText("")
+            self.ui.doubleSpinBox_1.setValue(0)
+            self.ui.doubleSpinBox_2.setValue(0)
+        else:
+            self.project.setCustomVariables(forest_vars)
             
         self.iface.messageBar().pushMessage("Qsequoia2", f"Dossier {dirname} sélectionné avec succès", level=Qgis.Success, duration=10)
 

@@ -40,6 +40,7 @@ class RasterController(UIBinderMixin):
         self.cbs = {key: self._bind_widget(attr, QCheckBox) for key, attr in raster_checkbox.items()}
 
         is_forest_selected = bool(get_project_variable("forest_prefix"))
+        print(f"RasterController: forest selected? {is_forest_selected}")
         if not is_forest_selected:
             # Disable + uncheck all
             for cb in self.cbs.values():
@@ -320,7 +321,7 @@ class GridController(UIBinderMixin):
             return False
         return True
 
-    def add_grid(self, parca_key="parca_polygon"):
+    def create_grid(self, parca_key="parca_polygon"):
         project = QgsProject.instance()
 
         parca_layer_name = get_display_name(parca_key)
@@ -338,14 +339,5 @@ class GridController(UIBinderMixin):
         sym.setOpacity(0.9)
         grid.setRenderer(QgsSingleSymbolRenderer(sym))
         grid.triggerRepaint()
-
-        # Add the grid into the group
-        project.addMapLayer(grid, False)
-        root = project.layerTreeRoot()
-        parca_node = root.findLayer(parca_layer.id())
-        if parca_node:
-            parent = parca_node.parent()
-            idx = parent.children().index(parca_node)
-            parent.insertLayer(idx, grid)
         
-        return
+        return grid

@@ -7,9 +7,11 @@ from ...core.db.manager import DatabaseManager
 
 from ...utils.config import get_racines_path
 from ...utils.variable import get_project_variable
-from ...utils.layers import load_vectors
+from ...utils.layers import load_vectors, load_gpkg
 from ...utils.utils import clear_project
 from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController
+
+import processing
 
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):
@@ -83,16 +85,13 @@ class ExpertiseCreateDialog(QDialog):
             dmax=self.ui.sp_dmax.value(),
             hmin=self.ui.sp_hmin.value(),
             hmax=self.ui.sp_hmax.value(),
-            essences_layer = self.essences_layer
+            essences_layer = self.essences_layer,
+            grid_controller = self.grid_controller
         )
 
         try:
             svc.run()
-            load_vectors("parca_polygon", group_name= "VECTOR")
             self.raster_controller.load_selected_rasters()
-
-            if self.grid_controller.is_valid():
-                self.grid_controller.add_grid(parca_key="parca_polygon")
 
             msg = "Expertise complète !"
             if self.packager.is_valid():

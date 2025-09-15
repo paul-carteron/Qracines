@@ -1,7 +1,8 @@
 import processing
 import math
+from qgis.core import QgsProcessing
 
-def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID'):
+def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID_KEY'):
     """
     Adds a calculated ESSENCE_ID field to a layer by combining two existing fields.
 
@@ -43,7 +44,7 @@ def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID'):
 
     return layer_with_ess_id
 
-def merge_with_ess(layer, ess, f_ess_id ='ESSENCE_ID'):
+def merge_with_ess(layer, ess, f_ess_id ='ESSENCE_ID_KEY'):
     layer_with_ess = processing.run("qgis:joinattributestable", {
             'INPUT': layer,
             'FIELD': f_ess_id,
@@ -102,14 +103,14 @@ def create_grid(layer, points_per_ha = 1, clip = True):
         'HOVERLAY': 0,
         'VOVERLAY': 0,
         'CRS': buffered_layer.crs(),
-        'OUTPUT': "memory:"
+        'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
     })['OUTPUT']
 
     if clip:
         grid = processing.run('native:clip', {
             'INPUT': grid,
             'OVERLAY': buffered_layer,
-            'OUTPUT': "memory:"
+            'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
             })['OUTPUT']
-    
+    grid.setName("grid")
     return grid

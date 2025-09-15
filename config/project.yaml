@@ -88,7 +88,7 @@ peuplements:
   canvas:
     scale: 7500
     zoom_on: 'parca_polygon_lgd_peuplements'
-    readonly: [parca_polygon_lgd_peuplements, parca_polygon_occup]
+    readonly: [parca_polygon_lgd_peuplements, parca_polygon_occup, ua_polygon_plt]
     groups:
       - name: LEGEND
         type: vector

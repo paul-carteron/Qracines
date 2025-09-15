@@ -19,7 +19,7 @@ class TreeMarkingImportDialog(QDialog):
         self.ui = Ui_TreeMarkingImportDialog()  
         self.ui.setupUi(self)
         
-        self.loader = GpkgLoader(self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
+        self.loader = GpkgLoader(ui = self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
 
     def merge_files(self):
         if self.loader.is_valid():
@@ -101,8 +101,8 @@ class TreeMarkingImportDialog(QDialog):
         try:
             self.merge_files()
 
-            self.arbres = self.project.instance().mapLayersByName('arbres')[0]
-            self.ess = self.project.instance().mapLayersByName('essences')[0]
+            self.arbres = self.project.mapLayersByName('arbres')[0]
+            self.ess = self.project.mapLayersByName('essences')[0]
 
             formated_tra = self.format_arbres()
 

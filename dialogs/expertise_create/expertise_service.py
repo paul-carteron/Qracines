@@ -20,7 +20,7 @@ from PyQt5.QtGui import QColor
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
 from ...utils.config import get_peuplements, get_limites
-from ...utils.layers import load_gpkg, create_relation
+from ...utils.layers import load_gpkg, create_relation, load_vectors
 
 class ExpertiseService:
 
@@ -32,7 +32,8 @@ class ExpertiseService:
         dmax: int,
         hmin: int,
         hmax: int,
-        essences_layer: dict
+        essences_layer: dict,
+        grid_controller
     ):
         self.iface = iface
         self.project = QgsProject.instance()
@@ -42,6 +43,7 @@ class ExpertiseService:
         self.dmin, self.dmax = dmin, dmax
         self.hmin, self.hmax = hmin, hmax
         self.essences_layer = essences_layer
+        self.grid_controller = grid_controller
 
     def run(self):
         """
@@ -49,6 +51,9 @@ class ExpertiseService:
         Returns the output_dir path (as str) if packaging was done, otherwise None.
         Raises on any error.
         """
+
+        load_vectors("parca_polygon", group_name= "VECTOR")
+
         print("_create_and_load_gpkg")
         self._create_and_load_gpkg()
         print("_create_relations")
@@ -109,31 +114,37 @@ class ExpertiseService:
         self._configure_essence_field(reg_manager, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
         reg_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
+        return self.gpkg_path
 
     def _create_and_load_gpkg(self):
+
+        if self.grid_controller.is_valid():
+            grid = self.grid_controller.create_grid(parca_key="parca_polygon")
 
         layers = [
             LayerFactory.create("placette", "EXPERTISE"),
             LayerFactory.create("transect", "EXPERTISE"),
+            grid,
             LayerFactory.create("limite", "EXPERTISE"),
             LayerFactory.create("gha", "EXPERTISE"),
             LayerFactory.create("tse", "EXPERTISE"),
             LayerFactory.create("reg", "EXPERTISE"),
             LayerFactory.create("va", "EXPERTISE"),
-            self.essences_layer
+            self.essences_layer,
         ]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
             'OUTPUT':      QgsProcessing.TEMPORARY_OUTPUT,
             'OVERWRITE':   True,
-            'SAVE_STYLES': False
+            'SAVE_STYLES': True
         })
 
         self.gpkg_path = result['OUTPUT']
+        load_gpkg(self.gpkg_path, "placette", "transect", "limite", "gha", "tse", "reg", "va", "essences", group_name="EXPERTISE")
+        load_gpkg(self.gpkg_path, "grid", group_name="VECTOR")
 
         # 5) load it back into the project
-        load_gpkg(self.gpkg_path, group_name="EXPERTISE")
 
     def _create_relations(self):
         pairs = [

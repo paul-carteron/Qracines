@@ -30,42 +30,34 @@ def package_for_qfield(iface, project, outdir, filename):
     packaged_qgs = qfield_dir / f"{filename}.qgs"
     zip_path  = outdir / f"{filename}.zip"
 
-    try:
-        # ─── 3) Dump your live project into src_dir ────────────────────
-        project.write(str(src_qgs))
+    # ─── 3) Dump your live project into src_dir ────────────────────
+    project.write(str(src_qgs))
 
-        # ─── 4) Load staging copy into a fresh QgsProject ─────────────
-        temp_project = QgsProject()
-        if not temp_project.read(str(src_qgs)):
-            raise RuntimeError(f"Failed to load staging project at {src_qgs}")
+    # ─── 4) Load staging copy into a fresh QgsProject ─────────────
+    temp_project = QgsProject()
+    if not temp_project.read(str(src_qgs)):
+        raise RuntimeError(f"Failed to load staging project at {src_qgs}")
 
-        # ─── 5) Run QFieldSync, targeting qfield_dir ──────────────────
-        dlg = PackageDialog(iface, temp_project, QgsOfflineEditing())
-        dlg.setAttribute(Qt.WA_DeleteOnClose, True)
-        dlg.packagedProjectFileWidget.setFilePath(str(packaged_qgs))
-        dlg.packagedProjectTitleLineEdit.setText(temp_project.baseName())
-        dlg._validate_packaged_project_filename()
-        dlg.package_project()
-        dlg.close(); dlg.deleteLater(); QCoreApplication.processEvents()
+    # ─── 5) Run QFieldSync, targeting qfield_dir ──────────────────
+    dlg = PackageDialog(iface, temp_project, QgsOfflineEditing())
+    dlg.setAttribute(Qt.WA_DeleteOnClose, True)
+    dlg.packagedProjectFileWidget.setFilePath(str(packaged_qgs))
+    dlg.packagedProjectTitleLineEdit.setText(temp_project.baseName())
+    dlg._validate_packaged_project_filename()
+    dlg.package_project()
+    dlg.close(); dlg.deleteLater(); QCoreApplication.processEvents()
 
-        # ─── 6) Zip *only* the qfield_dir ─────────────────────────────
-        with zipfile.ZipFile(zip_path, "w", allowZip64=True) as zf:
-            for fp in qfield_dir.rglob("*"):
-                if fp.is_file():
-                    # preserve the top-level folder name in the archive
-                    arc = fp.relative_to(qfield_dir)
-                    zf.write(fp, str(arc))
+    # ─── 6) Zip *only* the qfield_dir ─────────────────────────────
+    with zipfile.ZipFile(zip_path, "w", allowZip64=True) as zf:
+        for fp in qfield_dir.rglob("*"):
+            if fp.is_file():
+                # preserve the top-level folder name in the archive
+                arc = fp.relative_to(qfield_dir)
+                zf.write(fp, str(arc))
 
-        iface.messageBar().pushInfo("QFieldSync", f"Packaged to {zip_path}")
-        return zip_path
+    iface.messageBar().pushInfo("QFieldSync", f"Packaged to {zip_path}")
+    return zip_path
 
-    finally:
-        # ─── 7) Clean up both temp dirs and the temp project ───────────
-        try:
-            temp_project.clear()
-        except Exception:
-            pass
-        shutil.rmtree(base_tmp, ignore_errors=True)
 
 def zip_folder_contents(folder_path, output_zip_path):
     """
