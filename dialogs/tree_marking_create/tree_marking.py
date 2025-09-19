@@ -32,7 +32,7 @@ class TreeMarkingCreateDialog(QDialog):
                 'rgb':     'cb_rgb',
             }
         self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
-        
+
         self.ess_selector = SpeciesSelector(
             ui = self.ui, layer = self.essences_layer,
             choices="lw_species", selected="lw_selected_species",
@@ -50,6 +50,7 @@ class TreeMarkingCreateDialog(QDialog):
     # override exec_ to update forest_name if changed
     def exec_(self):
         self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
+        self.raster_controller.set_checkbox_states()
         return super().exec_()
         
     def accept(self):

@@ -173,14 +173,12 @@ class Qsequoia2:
         
     # PEDOLOGY
     def open_pedology_create(self):
-        forest = get_project_variable("forest_prefix")
-        if not forest:
-            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer un projet de carte.")
-            return
-          
-        if not self.project_dialog:
-            self.project_dialog = PedologyCreateDialog(self.iface)
-        self.project_dialog.exec_()
+        if not self._check_forest_is_selected():
+            return None
+        
+        if not self.expertise_create:
+            self.expertise_create = PedologyCreateDialog(self.iface)
+        self.expertise_create.exec_()
 
     def open_pedology_import(self):
         return

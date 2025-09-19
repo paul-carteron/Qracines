@@ -38,9 +38,9 @@ class RasterController(UIBinderMixin):
     def __init__(self, ui, raster_checkbox):
         self.ui  = ui
         self.cbs = {key: self._bind_widget(attr, QCheckBox) for key, attr in raster_checkbox.items()}
-
+        
+    def set_checkbox_states(self):
         is_forest_selected = bool(get_project_variable("forest_prefix"))
-        print(f"RasterController: forest selected? {is_forest_selected}")
         if not is_forest_selected:
             # Disable + uncheck all
             for cb in self.cbs.values():

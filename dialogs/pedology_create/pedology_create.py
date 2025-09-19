@@ -23,9 +23,6 @@ class PedologyCreateDialog(QDialog):
         self.iface = iface
         self.project = QgsProject.instance()
         
-        # --- initialise forest name ---
-        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-
         # --- initialize from helpers class ---
         raster_checkbox = {
             #   'key':     'checkbox_name',

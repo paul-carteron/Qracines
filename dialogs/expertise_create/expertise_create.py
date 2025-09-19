@@ -58,11 +58,6 @@ class ExpertiseCreateDialog(QDialog):
             points_per_ha_ui = 'dsp_points_per_ha'
         )
 
-    # override exec_ to update forest_name if changed
-    def exec_(self):
-        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-        return super().exec_()
-
     def accept(self):
 
         if not self.gha_tra_selector.is_valid(): return
