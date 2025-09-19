@@ -47,18 +47,19 @@ class ProjectSettingsDialog(QDialog):
             canvas_cfg = get_project_canvas(project_key)
             layout_cfg = get_project_layout(project_key)
 
-            # Create layout
-            # "parca_polygon" is used inside compute_layout_info considering all project should have downloaded parca
-            info = compute_layout_info(scale = canvas_cfg.scale)
-            layout = import_layout(self.project, info.paper_format, info.orientation)
-            
-            # configure layout
-            if layout:
-                configure_layout(self.project, self.iface, layout, layout_cfg.theme, canvas_cfg.scale, layout_cfg.legends)
-                self.iface.openLayoutDesigner(layout)
+            if self.ui.cb_composeur.isChecked():
+                # Create layout
+                # "parca_polygon" is used inside compute_layout_info considering all project should have downloaded parca
+                info = compute_layout_info(scale = canvas_cfg.scale)
+                layout = import_layout(self.project, info.paper_format, info.orientation)
                 
+                # configure layout
+                if layout:
+                    configure_layout(self.project, self.iface, layout, layout_cfg.theme, canvas_cfg.scale, layout_cfg.legends)
+                    self.iface.openLayoutDesigner(layout)
+                    
             # Save project qgz
-            if self.ui.checkBox_saved.isChecked():
+            if self.ui.cb_save_project.isChecked():
                 save_path = get_path(project_key)
                 self.project.write(str(save_path))
 
