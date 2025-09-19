@@ -52,7 +52,7 @@ class ExpertiseService:
         Raises on any error.
         """
 
-        load_vectors("parca_polygon", group_name= "VECTOR")
+        load_vectors("parca_polygon_occup", group_name= "VECTOR")
 
         print("_create_and_load_gpkg")
         self._create_and_load_gpkg()
@@ -119,7 +119,7 @@ class ExpertiseService:
     def _create_and_load_gpkg(self):
 
         if self.grid_controller.is_valid():
-            grid = self.grid_controller.create_grid(parca_key="parca_polygon")
+            grid = self.grid_controller.create_grid(parca_key="parca_polygon_occup")
 
         layers = [
             LayerFactory.create("placette", "EXPERTISE"),
@@ -379,7 +379,7 @@ class ExpertiseService:
                 get_feature(
                     'essences',
                     'fid',
-                    coalesce(NULLIF("GHA_ESSENCE_ID", ''), "ghA_ESSENCE_SECONDAIRE_ID")
+                    coalesce(NULLIF("GHA_ESSENCE_ID", ''), "GHA_ESSENCE_SECONDAIRE_ID")
                 ),
                 concat(attribute(@ess, 'essence_variation'),
                 ' : ',
@@ -559,6 +559,8 @@ class ExpertiseService:
         for ess in essences_manager.layer.getFeatures(QgsFeatureRequest(QgsExpression(selected_code_query))):
             label = ess['code']
             if with_variation:
+                if ess['variation'] in ('foudroyé', 'nécrosé', 'dépérissant'):
+                    continue # Exclude these variations
                 label = f"{ess['code']}{' ' + ess['variation'] if ess['variation'] else ''}"
             # Avoid overwriting in case of ess whith multiple variation
             if label not in essences_list:

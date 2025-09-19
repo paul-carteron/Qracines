@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from qgis.core import QgsProject
 from .expertise_create_dialog import Ui_ExpertiseCreateDialog
 from .expertise_service import ExpertiseService
 
@@ -7,11 +6,8 @@ from ...core.db.manager import DatabaseManager
 
 from ...utils.config import get_racines_path
 from ...utils.variable import get_project_variable
-from ...utils.layers import load_vectors, load_gpkg
 from ...utils.utils import clear_project
 from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController
-
-import processing
 
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):

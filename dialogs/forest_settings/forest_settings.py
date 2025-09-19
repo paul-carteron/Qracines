@@ -2,7 +2,6 @@ from pathlib import Path
 
 from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QCompleter, QMessageBox
 from qgis.core import Qgis, QgsProject
-from qgis.utils import iface
 from .forest_settings_dialog import Ui_ForestSettingsDialog
 from qgis.PyQt.QtCore import Qt
 
@@ -17,8 +16,23 @@ class ForestSettingsDialog(QDialog):
         self.project = QgsProject.instance()
         self.ui = Ui_ForestSettingsDialog()
         self.ui.setupUi(self)
-    
-        # Connection des checkboxes
+
+        # Récupérer les forêts
+        self.forest_path_lookup = self.get_forest_path_lookup()
+        forest_keys = sorted(self.forest_path_lookup.keys())
+        self.setup_forest_combobox(self.ui.forest_path, forest_keys)
+
+        # Charger les paramètres existants
+        self.load_settings()
+
+        # Connections
+        ## Update dialog when forest is selected
+        self.ui.forest_path.currentIndexChanged.connect(self.select_directory_from_forest_name)
+
+        ## refresh button
+        self.ui.pushButton_refresh.clicked.connect(self.fill_in_cartouche)
+
+        ## Connection des checkboxes
         self.nom_checkbox = {
             self.ui.checkBox_domaine: "Domaine",
             self.ui.checkBox_massif: "Massif",
@@ -28,21 +42,11 @@ class ForestSettingsDialog(QDialog):
         for cb in self.nom_checkbox:
             cb.toggled.connect(self.update_forest_name)
 
-        self.ui.pushButton_refresh.clicked.connect(self.fill_in_cartouche)
-
-        # Récupérer les forêts
-        self.forest_path_lookup = self.get_forest_path_lookup()
-        forest_keys = sorted(self.forest_path_lookup.keys())
-
-        self.setup_forest_combobox(self.ui.forest_path, forest_keys)
-        self.ui.forest_path.currentIndexChanged.connect(self.select_directory_from_forest_name)
-
-        # Charger les paramètres existants
-        self.load_settings()
-
-        # Connecter les boutons
-        self.ui.buttonBox.accepted.connect(self.save_settings)
+        ## Directory selection
         self.ui.pushButton.clicked.connect(self.select_directory)
+        
+        ## Save
+        self.ui.buttonBox.accepted.connect(self.save_settings)
 
     def load_settings(self):
         self.ui.forest_path.setCurrentText(get_project_variable("forest_dirname") or "")
@@ -55,7 +59,6 @@ class ForestSettingsDialog(QDialog):
         self.ui.doubleSpinBox_2.setValue(float(get_project_variable("surface_non_boisee") or 0))
 
     def save_settings(self):
-        print("Saving forest settings...")
         # Récupère les paramètres
         directory = self.directory
         dirname = self.ui.forest_path.currentText()
@@ -97,7 +100,13 @@ class ForestSettingsDialog(QDialog):
         else:
             self.project.setCustomVariables(forest_vars)
             
-        self.iface.messageBar().pushMessage("Qsequoia2", f"Dossier {dirname} sélectionné avec succès", level=Qgis.Success, duration=10)
+        link = f'<a href="file:///{directory}">{directory}</a>'
+        self.iface.messageBar().pushMessage(
+            "Qsequoia2",
+            f"Dossier {dirname} sélectionné avec succès : {link}",
+            level=Qgis.Success,
+            duration=10
+        )
 
     def select_directory(self):
 
@@ -124,6 +133,7 @@ class ForestSettingsDialog(QDialog):
         prefix = self._get_prefix_from_directory(self.directory)
         parca_path = get_path("parca_polygon", prefix, self.directory)
         ua_path = get_path("ua_polygon", prefix, self.directory)
+        print(prefix, parca_path, ua_path)
 
         # fill in cartouche
         self._set_directory_and_prefix(self.directory, prefix)

@@ -321,7 +321,7 @@ class GridController(UIBinderMixin):
             return False
         return True
 
-    def create_grid(self, parca_key="parca_polygon"):
+    def create_grid(self, parca_key="parca_polygon_occup"):
         project = QgsProject.instance()
 
         parca_layer_name = get_display_name(parca_key)
