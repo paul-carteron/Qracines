@@ -118,13 +118,9 @@ class ExpertiseService:
 
     def _create_and_load_gpkg(self):
 
-        if self.grid_controller.is_valid():
-            grid = self.grid_controller.create_grid(parca_key="parca_polygon_occup")
-
         layers = [
             LayerFactory.create("placette", "EXPERTISE"),
             LayerFactory.create("transect", "EXPERTISE"),
-            grid,
             LayerFactory.create("limite", "EXPERTISE"),
             LayerFactory.create("gha", "EXPERTISE"),
             LayerFactory.create("tse", "EXPERTISE"),
@@ -132,6 +128,10 @@ class ExpertiseService:
             LayerFactory.create("va", "EXPERTISE"),
             self.essences_layer,
         ]
+
+        if self.grid_controller.is_valid():
+            grid = self.grid_controller.create_grid(parca_key="parca_polygon_occup")
+            layers = layers + [grid]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
@@ -142,7 +142,9 @@ class ExpertiseService:
 
         self.gpkg_path = result['OUTPUT']
         load_gpkg(self.gpkg_path, "placette", "transect", "limite", "gha", "tse", "reg", "va", "essences", group_name="EXPERTISE")
-        load_gpkg(self.gpkg_path, "grid", group_name="VECTOR")
+
+        if self.grid_controller.is_valid():
+            load_gpkg(self.gpkg_path, "grid", group_name="VECTOR")
 
         # 5) load it back into the project
 
