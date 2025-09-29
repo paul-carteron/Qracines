@@ -35,14 +35,14 @@ class PedologyCreateDialog(QDialog):
             }
         self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
         
-        print("create packager")
+
         self.packager = QfieldPackager(
             self.ui,
             default_dir = get_racines_path("expertise", "Qfield", "Pedology"),
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
-        print(f"packager:{self.packager}")
+        
         # --- Populate cob_stations with guides ---
         guides = get_guides()
         self.ui.cob_stations.addItems(guides)
@@ -80,8 +80,7 @@ class PedologyCreateDialog(QDialog):
         sondage_mgr.fields.add_value_map('station', {'map': [{str(s): str(s)} for s in stations]})
 
     def accept(self):
-
-        print("clearing project")
+        
         clear_project()
 
         try:

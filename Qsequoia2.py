@@ -176,9 +176,9 @@ class Qsequoia2:
         if not self._check_forest_is_selected():
             return None
         
-        if not self.expertise_create:
-            self.expertise_create = PedologyCreateDialog(self.iface)
-        self.expertise_create.exec_()
+        if not self.pedology_create:
+            self.pedology_create = PedologyCreateDialog(self.iface)
+        self.pedology_create.exec_()
 
     def open_pedology_import(self):
         return

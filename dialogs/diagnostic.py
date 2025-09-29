@@ -13,9 +13,6 @@ class DiagnosticDialog(QDialog):
         self.ui = Ui_DiagnosticDialog()
         self.ui.setupUi(self)
 
-        # --- initialise default output directory ---
-        self.ui.le_forest_name.setText(get_project_variable("forest_prefix") or "Pas de forêt sélectionnée")
-
         # --- initialize raster checkboxes ---
         self.raster_checkboxes = {
             "plt_anc": self.ui.cb_plt_anc,

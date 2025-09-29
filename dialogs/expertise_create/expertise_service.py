@@ -177,7 +177,7 @@ class ExpertiseService:
         gha_ve = """left("PLTM_TYPE",2) IN ('FR','FI','MF','PE')"""
         tse_ve = """"PLTM_TYPE"<>''"""
         reg_ve = tse_ve
-        va_ve = """left("PLTM_TYPE",2) IN ('FR','FI','PE')"""
+        va_ve = """left("PLTM_TYPE",2) IN ('FR','FI','PE','REG')"""
 
         placette_fb.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
         placette_fb.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis")
