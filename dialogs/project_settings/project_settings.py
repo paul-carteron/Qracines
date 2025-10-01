@@ -25,6 +25,9 @@ class ProjectSettingsDialog(QDialog):
         cb.addItems(self.projects_list.values())
         cb.setCurrentIndex(0)
 
+        # Connect composeur chekbox to occup percentage
+        self.ui.cb_composeur.toggled.connect(self.ui.dsb_occup.setEnabled)
+
     def _get_project_key(self):
         selected_project_name = self.ui.comboBox_projects.currentText()
         project_key = next((key for key, name in self.projects_list.items() if name == selected_project_name), None)
@@ -50,7 +53,7 @@ class ProjectSettingsDialog(QDialog):
             if self.ui.cb_composeur.isChecked():
                 # Create layout
                 # "parca_polygon" is used inside compute_layout_info considering all project should have downloaded parca
-                info = compute_layout_info(scale = canvas_cfg.scale)
+                info = compute_layout_info(scale = canvas_cfg.scale, coeff_cadre = self.ui.dsb_occup.value()/100)
                 layout = import_layout(self.project, info.paper_format, info.orientation)
                 
                 # configure layout

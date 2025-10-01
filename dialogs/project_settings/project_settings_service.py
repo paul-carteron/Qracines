@@ -29,25 +29,25 @@ def _fits_bbox(
         mm: Tuple[float, float],
         scale: int,
         bbox: QgsRectangle,
-        marge_mm=6,
-        coef_cadre=0.90) -> bool:
+        coeff_cadre=0.90,
+        marge_mm=6) -> bool:
     """
     True if the paper size `mm` (in millimetres) at `scale` can contain
     the given map extent `bbox` (in map units) in *either* orientation.
     """
     # Required paper dimensions in mm at this scale
     needed_w, needed_h = ((bbox.width() / scale) * 1000.0, (bbox.height() / scale) * 1000.0)
-    available_w, available_h = ((d - 2 * marge_mm) * coef_cadre for d in mm)
+    available_w, available_h = ((d - 2 * marge_mm) * coeff_cadre for d in mm)
 
     return needed_w <= available_w and needed_h <= available_h
 
-def _pick_format(scale: int, bbox: QgsRectangle) -> str:
+def _pick_format(scale: int, bbox: QgsRectangle, coeff_cadre = 0.90) -> str:
     """
     Return the smallest paper format that fits the given `bbox` at `scale`.
     If none fit, return 'A0+'.
     """
     for name, mm in FORMATS_MM:
-        if _fits_bbox(mm, scale, bbox):
+        if _fits_bbox(mm, scale, bbox, coeff_cadre):
             return name
     return "A0+"
 
@@ -58,6 +58,7 @@ def compute_layout_info(
         uri = None,
         scale: int = 15000,
         snap_distance : int = 200,
+        coeff_cadre = 0.90,
         provider: str = "ogr") -> MapInfo:
 
     if uri is None:
@@ -87,7 +88,7 @@ def compute_layout_info(
     geom = feat.geometry()
     bbox = geom.boundingBox()
 
-    fmt = _pick_format(scale, bbox)
+    fmt = _pick_format(scale, bbox, coeff_cadre)
     orient = _pick_orient(bbox)
 
     return MapInfo(bbox=bbox, orientation=orient, paper_format=fmt, area=geom.area())
