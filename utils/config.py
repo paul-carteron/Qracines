@@ -126,16 +126,16 @@ def get_project(folder: str = "output_folder"):
   
 # endregion
 
-# region WMS
+# region WMTS
 
-def get_wms(logical_key):
-    wms_config_path = get_config_path("wms.yaml")
-    with open(wms_config_path, "r", encoding="utf-8") as f:
-        wms_config = yaml.safe_load(f)
+def get_wmts(logical_key):
+    wmts_config_path = get_config_path("wmts.yaml")
+    with open(wmts_config_path, "r", encoding="utf-8") as f:
+        wmts_config = yaml.safe_load(f)
     
-    entry = wms_config.get("wms", {}).get(logical_key)
+    entry = wmts_config.get("wmts", {}).get(logical_key)
     if not entry:
-        raise KeyError(f"No WMS config for key {logical_key}")
+        raise KeyError(f"No WMTS config for key {logical_key}")
 
     # Extract the two fields
     display_name = entry.get("display_name")

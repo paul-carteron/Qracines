@@ -10,13 +10,13 @@ from qgis.core import (
 )
 from osgeo import ogr
 
-from .config import get_wms, get_style, get_path, get_display_name, get_wms
+from .config import get_wmts, get_style, get_path, get_display_name, get_wmts
 
 # region LOAD LAYERS
 
-def load_wms(*wms_keys, group_name = None):
+def load_wmts(*wmts_keys, group_name = None):
     """
-    Load WMS layers by key (from wms.yaml) into the project.
+    Load WMTS layers by key (from wmts.yaml) into the project.
     If group_name is given, layers go into that group (hidden at root); 
     otherwise they appear at the root legend.
     """
@@ -28,8 +28,8 @@ def load_wms(*wms_keys, group_name = None):
     if group_name:
         group = root.findGroup(group_name) or root.addGroup(group_name)
 
-    for key in wms_keys:
-        display_name, url = get_wms(key)
+    for key in wmts_keys:
+        display_name, url = get_wmts(key)
         if project.mapLayersByName(display_name):
             QgsMessageLog.logMessage(f"Layer '{display_name}' already loaded, skipping.", "Qsequoia2", Qgis.Info)
             print(f"Layer '{display_name}' already loaded, skipping.")
@@ -38,7 +38,7 @@ def load_wms(*wms_keys, group_name = None):
         layer = QgsRasterLayer(str(url), display_name, "wms")
 
         if not layer.isValid():
-            QgsMessageLog.logMessage(f"Failed to load WMS '{key}' from {url}", "Qsequoia2", Qgis.Warning)
+            QgsMessageLog.logMessage(f"Failed to load WMTS '{key}' from {url}", "Qsequoia2", Qgis.Warning)
             continue
 
         # add to project, optionally hide it from the legend

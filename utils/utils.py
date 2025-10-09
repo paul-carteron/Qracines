@@ -1,8 +1,8 @@
 from qgis.core import Qgis, QgsProject, QgsMessageLog, QgsLayerTreeGroup, QgsCoordinateReferenceSystem, QgsMapThemeCollection
 from qgis.utils import iface
 
-from .layers import load_vectors, load_wms, set_layers_readonly
-from .config import get_wms, get_display_name, get_wms, get_project_canvas
+from .layers import load_vectors, load_wmts, set_layers_readonly
+from .config import get_wmts, get_display_name, get_wmts, get_project_canvas
 
 def create_theme(name: str, visible_keys: list[str]) -> None:
 
@@ -14,9 +14,9 @@ def create_theme(name: str, visible_keys: list[str]) -> None:
         except KeyError:
             pass
 
-        # try WMS lookup
+        # try WTMS lookup
         try:
-            layer_name, _ = get_wms(key)   # WMS fallback
+            layer_name, _ = get_wmts(key)   # WMTS fallback
             return layer_name
         except KeyError:
             pass
@@ -52,7 +52,7 @@ def create_theme(name: str, visible_keys: list[str]) -> None:
 def create_project(project_key):
     loading_function = {
         "vector" : load_vectors,
-        "wms" : load_wms
+        "wmts" : load_wmts
     }
     
     canvas_cfg = get_project_canvas(project_key)
@@ -74,7 +74,7 @@ def create_project(project_key):
     print("end zoom on")
 
     # Appliquer transparence sur la couche scan25grey si elle existe
-    layer = QgsProject.instance().mapLayersByName(get_wms("wms_scan25_grey")[0])
+    layer = QgsProject.instance().mapLayersByName(get_wmts("wmts_scan25_grey")[0])
     if layer:
         layer[0].setOpacity(0.5)
 

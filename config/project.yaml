@@ -26,22 +26,22 @@ assemblage:
           - prop_line
           - parca_polygon_occup
           - ua_polygon_occup
-      - name: WMS
-        type: wms
-        layers: &assemblage_w_wms
-          - wms_scan25_grey
-          - wms_scan100
-          - wms_scan1000
-          - wms_pci
-          - wms_irc
-          - wms_rgb
+      - name: WMTS
+        type: wmts
+        layers: &assemblage_w_wmts
+          - wmts_scan25_grey
+          - wmts_scan100
+          - wmts_scan1000
+          - wmts_pci
+          - wmts_irc
+          - wmts_rgb
     themes:
       - name: 1_VECTOR+SEQUOIA
         show: [*assemblage_w_vect, *assemblage_w_seq]
-      - name: 2_VECTOR+SEQUOIA+WMS
-        show: [*assemblage_w_vect, *assemblage_w_seq, *assemblage_w_wms]
-      - name: 3_SEQUOIA+WMS
-        show: [*assemblage_w_vect, *assemblage_w_wms]
+      - name: 2_VECTOR+SEQUOIA+WMTS
+        show: [*assemblage_w_vect, *assemblage_w_seq, *assemblage_w_wmts]
+      - name: 3_SEQUOIA+WMTS
+        show: [*assemblage_w_vect, *assemblage_w_wmts]
   
   layout:
     theme: '1_VECTOR+SEQUOIA'
@@ -66,15 +66,15 @@ situation:
       - name: SEQUOIA
         type: vector
         layers: ['prop_point', 'prop_line', 'ua_polygon_occup']
-      - name: WMS
-        type: wms
-        layers: ['wms_scan25', 'wms_scan1000']
+      - name: WMTS
+        type: wmts
+        layers: ['wmts_scan25', 'wmts_scan1000']
 
     themes:
       - name: 1_SCAN25
-        show: ['ua_polygon_occup', 'prop_line', 'infra_point_situation', 'coms_point', 'coms_line', 'wms_scan25']
+        show: ['ua_polygon_occup', 'prop_line', 'infra_point_situation', 'coms_point', 'coms_line', 'wmts_scan25']
       - name: 2_SCAN1000
-        show: ['prop_point', 'wms_scan1000']
+        show: ['prop_point', 'wmts_scan1000']
 
   layout:
     theme: '1_SCAN25'
@@ -99,17 +99,17 @@ peuplements:
       - name: SEQUOIA
         type: vector
         layers: &peuplements_w_seq ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
-      - name: WMS
-        type: wms
-        layers: &peuplements_w_wms ['wms_scan25_grey', 'wms_scan100', 'wms_scan1000', 'wms_pci', 'wms_irc', 'wms_rgb']
+      - name: WMTS
+        type: wmts
+        layers: &peuplements_w_wmts ['wmts_scan25_grey', 'wmts_scan100', 'wmts_scan1000', 'wmts_pci', 'wmts_irc', 'wmts_rgb']
 
     themes:
       - name: 1_VECTOR+SEQUOIA
         show: [*peuplements_w_vect, *peuplements_w_seq]
-      - name: 2_VECTOR+SEQUOIA+WMS
-        show: [*peuplements_w_vect, *peuplements_w_seq, *peuplements_w_wms]
-      - name: 3_SEQUOIA+WMS
-        show: [*peuplements_w_vect, *peuplements_w_wms]
+      - name: 2_VECTOR+SEQUOIA+WMTS
+        show: [*peuplements_w_vect, *peuplements_w_seq, *peuplements_w_wmts]
+      - name: 3_SEQUOIA+WMTS
+        show: [*peuplements_w_vect, *peuplements_w_wmts]
 
   layout:
     theme: '1_VECTOR+SEQUOIA'
@@ -132,16 +132,16 @@ enjeux_environnementaux:
       - name : SEQUOIA
         type : vector
         layers : &enjeux_env_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'znieff1_polygon', 'znieff2_polygon', 'pn_polygon', 'zico']
-      - name : WMS
-        type : wms
-        layers : &enjeux_env_w_wms ['wms_scan25_grey']
+      - name : WMTS
+        type : wmts
+        layers : &enjeux_env_w_wmts ['wmts_scan25_grey']
 
     themes:
-      - name: 1_SEQUOIA+WMS
-        show: [*enjeux_env_w_seq, *enjeux_env_w_wms]
+      - name: 1_SEQUOIA+WMTS
+        show: [*enjeux_env_w_seq, *enjeux_env_w_wmts]
 
   layout:
-    theme: '1_SEQUOIA+WMS'
+    theme: '1_SEQUOIA+WMTS'
     legends:
       - name: legend1
         layers: ['parca_polygon_lgd_enjeux']
@@ -160,16 +160,16 @@ enjeux_sociaux:
       - name : SEQUOIA
         type : vector
         layers : &enjeux_sociaux_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'ppi', 'ppr', 'ppe']
-      - name : WMS
-        type : wms
-        layers : &enjeux_sociaux_w_wms ['wms_scan25_grey']
+      - name : WMTS
+        type : wmts
+        layers : &enjeux_sociaux_w_wmts ['wmts_scan25_grey']
 
     themes:
-      - name: 1_SEQUOIA+WMS
-        show: [*enjeux_sociaux_w_seq, *enjeux_sociaux_w_wms]
+      - name: 1_SEQUOIA+WMTS
+        show: [*enjeux_sociaux_w_seq, *enjeux_sociaux_w_wmts]
 
   layout:
-    theme: '1_SEQUOIA+WMS'
+    theme: '1_SEQUOIA+WMTS'
     legends:
       - name: legend1
         layers: ['parca_polygon_lgd_enjeux']
@@ -189,15 +189,15 @@ enjeux_patrimoniaux:
       - name : SEQUOIA
         type : vector
         layers : &enjeux_pat_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'mh', 'ppmh', 'site']
-      - name : WMS
-        type : wms
-        layers : &enjeux_pat_w_wms ['wms_scan25_grey']
+      - name : WMTS
+        type : wmts
+        layers : &enjeux_pat_w_wmts ['wmts_scan25_grey']
     themes:
-      - name: 1_SEQUOIA+WMS
-        show: [*enjeux_pat_w_seq, *enjeux_pat_w_wms]
+      - name: 1_SEQUOIA+WMTS
+        show: [*enjeux_pat_w_seq, *enjeux_pat_w_wmts]
 
   layout:
-    theme: '1_SEQUOIA+WMS'
+    theme: '1_SEQUOIA+WMTS'
     legends:
       - name: legend1
         layers: ['parca_polygon_lgd_enjeux']
@@ -217,15 +217,15 @@ geologie:
       - name : SEQUOIA
         type : vector
         layers : &geol_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'geol']
-      - name : WMS
-        type : wms
-        layers : &geol_w_wms ['wms_scan25_grey']
+      - name : WMTS
+        type : wmts
+        layers : &geol_w_wmts ['wmts_scan25_grey']
     themes:
-      - name: 1_SEQUOIA+WMS
-        show: [*geol_w_seq, *geol_w_wms]
+      - name: 1_SEQUOIA+WMTS
+        show: [*geol_w_seq, *geol_w_wmts]
 
   layout:
-    theme: '1_SEQUOIA+WMS'
+    theme: '1_SEQUOIA+WMTS'
     legends:
       - name: legend1
         layers: ['parca_polygon_lgd_enjeux']

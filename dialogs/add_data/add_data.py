@@ -32,26 +32,29 @@ class AddDataDialog(QDialog):
             self.ui.cb_raster_scan25: "scan25",
         }
 
-        self.WMS_CHECKBOX_KEY_MAP = {
+        self.WMTS_CHECKBOX_KEY_MAP = {
             # SCAN
-            self.ui.cb_wms_scan100: "wms_scan1000",
-            self.ui.cb_wms_scan1000: "wms_scan100",
-            self.ui.cb_wms_scan25: "wms_scan25",
-            self.ui.cb_wms_scan25_grey: "wms_scan25_grey",
+            self.ui.cb_wmts_scan100: "wmts_scan1000",
+            self.ui.cb_wmts_scan1000: "wmts_scan100",
+            self.ui.cb_wmts_scan25: "wmts_scan25",
+            self.ui.cb_wmts_scan25_grey: "wmts_scan25_grey",
             # ORTHO
-            self.ui.cb_wms_irc: "wms_irc",
-            self.ui.cb_wms_rgb: "wms_rgb",
-            self.ui.cb_wms_spot_2023: "wms_spot_2023",
+            self.ui.cb_wmts_irc: "wmts_irc",
+            self.ui.cb_wmts_rgb: "wmts_rgb",
+            self.ui.cb_wmts_spot_2023: "wmts_spot_2023",
+            # LIDAR
+            self.ui.cb_wmts_lidar_mnt: "wmts_lidar_mnt",
+            self.ui.cb_wmts_lidar_mnh: "wmts_lidar_mnh",
             # ORTHOHISTO
-            self.ui.cb_wms_histo_1950: "wms_histo_1950",
-            self.ui.cb_wms_histo_1965: "wms_histo_1965",
-            self.ui.cb_wms_histo_1980: "wms_histo_1980",
-            self.ui.cb_wms_histo_2000: "wms_histo_2000", 
-            self.ui.cb_wms_histo_2006: "wms_histo_2006",
-            self.ui.cb_wms_histo_2011: "wms_histo_2011",
+            self.ui.cb_wmts_histo_1950: "wmts_histo_1950",
+            self.ui.cb_wmts_histo_1965: "wmts_histo_1965",
+            self.ui.cb_wmts_histo_1980: "wmts_histo_1980",
+            self.ui.cb_wmts_histo_2000: "wmts_histo_2000", 
+            self.ui.cb_wmts_histo_2006: "wmts_histo_2006",
+            self.ui.cb_wmts_histo_2011: "wmts_histo_2011",
             # AUTRES
-            self.ui.cb_wms_geol: "wms_geol",
-            self.ui.cb_wms_pci: "wms_pci",
+            self.ui.cb_wmts_geol: "wmts_geol",
+            self.ui.cb_wmts_pci: "wmts_pci",
         }
         
         self.TERRAIN_CHECKBOX_KEY_MAP = {
@@ -62,7 +65,7 @@ class AddDataDialog(QDialog):
         self._all_checkbox_maps = (
             self.VECTOR_CHECKBOX_KEY_MAP,
             self.RASTER_CHECKBOX_KEY_MAP,
-            self.WMS_CHECKBOX_KEY_MAP,
+            self.WMTS_CHECKBOX_KEY_MAP,
             self.TERRAIN_CHECKBOX_KEY_MAP,
         )
     
@@ -99,9 +102,9 @@ class AddDataDialog(QDialog):
 
     def _add_wms(self):
         # flatten list of list
-        wms_keys = [key for cb, key in self.WMS_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
-        if wms_keys:
-            load_wms(*wms_keys, group_name="WMS")
+        wmts_keys = [key for cb, key in self.WMTS_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
+        if wmts_keys:
+            load_wmts(*wmts_keys, group_name="WMTS")
 
     def _add_terrain(self):
         # flatten list of list
