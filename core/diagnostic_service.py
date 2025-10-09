@@ -48,7 +48,8 @@ class DiagnosticService:
 
         self._create_and_load_gpkg()
         self._load_and_style_vectors()
-        self._load_and_style_rasters()
+        load_vectors("parca_polygon_occup", group_name= "VECTOR")
+        self._load_and_style_rasters()        
         self._create_themes()
         self._create_relations()
         self._apply_styles()

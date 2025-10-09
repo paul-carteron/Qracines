@@ -35,15 +35,15 @@
      <x>10</x>
      <y>10</y>
      <width>371</width>
-     <height>301</height>
+     <height>311</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>3</number>
    </property>
-   <widget class="QWidget" name="Vector">
+   <widget class="QWidget" name="VECTEUR">
     <attribute name="title">
-     <string>Vector</string>
+     <string>VECTEUR</string>
     </attribute>
     <widget class="QWidget" name="verticalLayoutWidget_2">
      <property name="geometry">
@@ -51,14 +51,14 @@
        <x>10</x>
        <y>10</y>
        <width>341</width>
-       <height>181</height>
+       <height>161</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QLabel" name="label_layers">
+       <widget class="QCheckBox" name="cb_vector_parca">
         <property name="text">
-         <string>VECTEUR SEQUOIA :</string>
+         <string>Cadastre (PARCA - poly)</string>
         </property>
        </widget>
       </item>
@@ -107,9 +107,9 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="Raster">
+   <widget class="QWidget" name="RASTER">
     <attribute name="title">
-     <string>Raster</string>
+     <string>RASTER</string>
     </attribute>
     <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
@@ -117,17 +117,10 @@
        <x>10</x>
        <y>10</y>
        <width>341</width>
-       <height>201</height>
+       <height>161</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QLabel" name="label_layers_2">
-        <property name="text">
-         <string>RASTER SEQUOIA :</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QCheckBox" name="cb_raster_plt">
         <property name="text">
@@ -180,9 +173,9 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="Wms">
+   <widget class="QWidget" name="WMS">
     <attribute name="title">
-     <string>Wms</string>
+     <string>WMS</string>
     </attribute>
     <widget class="QWidget" name="gridLayoutWidget_3">
      <property name="geometry">
@@ -190,7 +183,7 @@
        <x>10</x>
        <y>10</y>
        <width>341</width>
-       <height>251</height>
+       <height>271</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
@@ -346,9 +339,9 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="Terrain">
+   <widget class="QWidget" name="TERRAIN">
     <attribute name="title">
-     <string>Terrain</string>
+     <string>TERRAIN</string>
     </attribute>
     <widget class="QWidget" name="gridLayoutWidget">
      <property name="geometry">
@@ -360,24 +353,24 @@
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="0">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_layers_13">
+        <property name="text">
+         <string>GEOPACKAGES :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QCheckBox" name="cb_terrain_inventaire">
         <property name="text">
          <string>Expertise</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="1" column="0">
        <widget class="QCheckBox" name="cb_terrain_expertise">
         <property name="text">
          <string>Inventaire</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_layers_13">
-        <property name="text">
-         <string>GEOPACKAGES :</string>
         </property>
        </widget>
       </item>

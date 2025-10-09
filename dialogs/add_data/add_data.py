@@ -14,10 +14,11 @@ class AddDataDialog(QDialog):
         self.ui.setupUi(self)
         
         self.VECTOR_CHECKBOX_KEY_MAP = {
-            self.ui.cb_vector_route: ['route_polygon', 'route_line'],
-            self.ui.cb_vector_pf: ['pf_polygon', 'pf_line'],
-            self.ui.cb_vector_sspf: ['sspf_polygon'],
+            self.ui.cb_vector_parca: ['parca_polygon'],
             self.ui.cb_vector_ua: ['ua_polygon', 'ua_polygon_plt', 'ua_polygon_occup', 'ua_polygon_ame'],
+            self.ui.cb_vector_sspf: ['sspf_polygon'],
+            self.ui.cb_vector_pf: ['pf_polygon', 'pf_line'],
+            self.ui.cb_vector_route: ['route_polygon', 'route_line'],
             self.ui.cb_vector_topo: ['topo_line'],
         }
 
@@ -88,7 +89,7 @@ class AddDataDialog(QDialog):
             for key in key_list
         ]
         if vector_keys:
-            load_vectors(*vector_keys, group_name="VECTOR")
+            load_vectors(*vector_keys, group_name="SEQUOIA")
 
     def _add_raster(self):
         # flatten list of list
