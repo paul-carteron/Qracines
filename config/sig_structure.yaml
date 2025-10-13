@@ -92,8 +92,8 @@ structure:
       ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Peuplements (UA)" }
       va_ess: {filename: Va_ess.shp, style: Va_ess.qml}
       zico: { filename: ZICO_polygon.shp, style: ZICO_polygon.qml}
-      znieff1: { filename: ZNIEFF1_polygon.shp, style: ZNIEFF1_polygon.qml}
-      znieff2: { filename: ZNIEFF2_polygon.shp, style: ZNIEFF2_polygon.qml }
+      znieff1: { filename: ZNIEFF1_polygon.shp, style: ZNIEFF1_polygon.qml, display_name: "Znieff 1"}
+      znieff2: { filename: ZNIEFF2_polygon.shp, style: ZNIEFF2_polygon.qml, display_name: "Znieff 2"}
       zps: { filename: ZPS_polygon.shp, style: ZPS_polygon.qml, display_name: "Natura 2000: Zone de protection spéciale"}
 
   other_folder:

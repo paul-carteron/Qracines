@@ -131,7 +131,7 @@ enjeux_environnementaux:
         layers : [parca_polygon_lgd_enjeux]
       - name : SEQUOIA
         type : vector
-        layers : &enjeux_env_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'znieff1', 'znieff2', 'pn_polygon', 'zico']
+        layers : &enjeux_env_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'pnr', 'znieff1', 'znieff2', 'zico', 'pn', 'sic', 'zps', 'ramsar', 'bios']
       - name : WMTS
         type : wmts
         layers : &enjeux_env_w_wmts ['wmts_scan25_grey']
