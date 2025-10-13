@@ -48,7 +48,7 @@ class DiagnosticService:
 
         self._create_and_load_gpkg()
         self._load_and_style_vectors()
-        load_vectors("parca_polygon_occup", group_name= "VECTOR")
+        load_vectors("parca_polygon_occup", group_name= "VECTEUR")
         self._load_and_style_rasters()        
         self._create_themes()
         self._create_relations()
@@ -89,7 +89,7 @@ class DiagnosticService:
         load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
     def _load_and_style_vectors(self):
-        load_vectors("prop_line", "prop_diag_line", "pf_line", "pf_diag_line", "ua_polygon", group_name= "VECTOR")
+        load_vectors("prop_line", "prop_diag_line", "pf_line", "pf_diag_line", "ua_polygon", group_name= "VECTEUR")
         zoom_on("ua_polygon")
 
     def _load_and_style_rasters(self):

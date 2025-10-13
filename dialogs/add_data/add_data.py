@@ -12,12 +12,15 @@ class AddDataDialog(QDialog):
         self.iface = iface
         self.ui = Ui_AddDataDialog()
         self.ui.setupUi(self)
-        
-        self.VECTOR_CHECKBOX_KEY_MAP = {
+
+        self.SEQUOIA_CHECKBOX_KEY_MAP = {
             self.ui.cb_vector_parca: ['parca_polygon'],
             self.ui.cb_vector_ua: ['ua_polygon', 'ua_polygon_plt', 'ua_polygon_occup', 'ua_polygon_ame'],
             self.ui.cb_vector_sspf: ['sspf_polygon'],
-            self.ui.cb_vector_pf: ['pf_polygon', 'pf_line'],
+            self.ui.cb_vector_pf: ['pf_polygon', 'pf_line']
+        }
+
+        self.VECTOR_CHECKBOX_KEY_MAP = {
             self.ui.cb_vector_route: ['route_polygon', 'route_line'],
             self.ui.cb_vector_topo: ['topo_line'],
         }
@@ -63,6 +66,7 @@ class AddDataDialog(QDialog):
         }
 
         self._all_checkbox_maps = (
+            self.SEQUOIA_CHECKBOX_KEY_MAP,
             self.VECTOR_CHECKBOX_KEY_MAP,
             self.RASTER_CHECKBOX_KEY_MAP,
             self.WMTS_CHECKBOX_KEY_MAP,
@@ -84,6 +88,17 @@ class AddDataDialog(QDialog):
             return False
         return True
     
+    def _add_sequoia(self):
+        # flatten list of list
+        sequoia_keys = [
+            key
+            for cb, key_list in self.SEQUOIA_CHECKBOX_KEY_MAP.items() if cb.isChecked()
+            for key in key_list
+        ]
+        if sequoia_keys:
+            load_vectors(*sequoia_keys, group_name="SEQUOIA")
+
+
     def _add_vector(self):
         # flatten list of list
         vector_keys = [
@@ -92,7 +107,7 @@ class AddDataDialog(QDialog):
             for key in key_list
         ]
         if vector_keys:
-            load_vectors(*vector_keys, group_name="SEQUOIA")
+            load_vectors(*vector_keys, group_name="VECTEUR")
 
     def _add_raster(self):
         # flatten list of list
@@ -115,6 +130,7 @@ class AddDataDialog(QDialog):
     def accept(self):
         self._check_variables()
 
+        self._add_sequoia()
         self._add_vector()
         self._add_raster()
         self._add_wms()

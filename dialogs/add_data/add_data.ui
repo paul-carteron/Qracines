@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>424</width>
-    <height>293</height>
+    <width>436</width>
+    <height>297</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,22 +39,22 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
-   <widget class="QWidget" name="VECTEUR">
+   <widget class="QWidget" name="SEQUOIA">
     <attribute name="title">
-     <string>VECTEUR</string>
+     <string>SEQUOIA</string>
     </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget_2">
+    <widget class="QWidget" name="verticalLayoutWidget_5">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
-       <width>341</width>
-       <height>161</height>
+       <y>5</y>
+       <width>391</width>
+       <height>131</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
        <widget class="QCheckBox" name="cb_vector_parca">
         <property name="text">
@@ -63,9 +63,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="cb_vector_route">
+       <widget class="QCheckBox" name="cb_vector_ua">
         <property name="text">
-         <string>Routes (ROUTE - ligne/poly)</string>
+         <string>Unité d'analyse (UA - poly)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cb_vector_ame">
+        <property name="text">
+         <string>Aménagement (AME - poly)</string>
         </property>
        </widget>
       </item>
@@ -83,17 +90,27 @@
         </property>
        </widget>
       </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="VECTEUR">
+    <attribute name="title">
+     <string>VECTEUR</string>
+    </attribute>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>341</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QCheckBox" name="cb_vector_ua">
+       <widget class="QCheckBox" name="cb_vector_route">
         <property name="text">
-         <string>Unité d'analyse (UA - poly)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cb_vector_ame">
-        <property name="text">
-         <string>Aménagement (AME - poly)</string>
+         <string>Routes (ROUTE - ligne/poly)</string>
         </property>
        </widget>
       </item>
@@ -460,7 +477,7 @@
        <x>10</x>
        <y>160</y>
        <width>381</width>
-       <height>41</height>
+       <height>44</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">

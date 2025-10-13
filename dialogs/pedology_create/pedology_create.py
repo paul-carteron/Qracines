@@ -85,7 +85,7 @@ class PedologyCreateDialog(QDialog):
 
         try:
             self.create_pedology()
-            load_vectors("ua_polygon", group_name= "VECTOR")
+            load_vectors("ua_polygon", group_name= "VECTEUR")
             self.raster_controller.load_selected_rasters()
 
             msg = "Projet pedologique terminé !"

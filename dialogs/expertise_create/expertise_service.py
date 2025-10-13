@@ -52,7 +52,7 @@ class ExpertiseService:
         Raises on any error.
         """
 
-        load_vectors("parca_polygon_occup", group_name= "VECTOR")
+        load_vectors("parca_polygon_occup", group_name= "VECTEUR")
 
         print("_create_and_load_gpkg")
         self._create_and_load_gpkg()
@@ -144,7 +144,7 @@ class ExpertiseService:
         load_gpkg(self.gpkg_path, "placette", "transect", "limite", "gha", "tse", "reg", "va", "essences", group_name="EXPERTISE")
 
         if self.grid_controller.is_valid():
-            load_gpkg(self.gpkg_path, "grid", group_name="VECTOR")
+            load_gpkg(self.gpkg_path, "grid", group_name="VECTEUR")
 
         # 5) load it back into the project
 
