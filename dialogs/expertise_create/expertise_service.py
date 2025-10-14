@@ -169,9 +169,9 @@ class ExpertiseService:
         placette_fb = placette_manager.forms
 
         placette_fb.init_drag_and_drop_form()
-        placette_fb.add_fields_to_tab("COMPTEUR")
-        placette_fb.add_fields_to_tab("PLTM_PARCELLE", "PLTM_STRATE", tab_name="Localisation", columns=2)
-        placette_fb.add_fields_to_tab("PLTM_TYPE", "PLA_RMQ")
+        placette_fb.add_fields("COMPTEUR")
+        placette_fb.add_fields("PLTM_PARCELLE", "PLTM_STRATE", name="Localisation", columns=2)
+        placette_fb.add_fields("PLTM_TYPE", "PLA_RMQ")
 
         # ve: stand for visibility_expression
         gha_ve = """left("PLTM_TYPE",2) IN ('FR','FI','MF','PE')"""
@@ -179,11 +179,11 @@ class ExpertiseService:
         reg_ve = tse_ve
         va_ve = """left("PLTM_TYPE",2) IN ('FR','FI','PE','REG')"""
 
-        placette_fb.add_relation_to_tab("gha", tab_name="Surface terrière", visibility_expression = gha_ve)
-        placette_fb.add_fields_to_tab("TSE_STERE_HA", tab_name="Taillis")
-        placette_fb.add_relation_to_tab("tse", tab_name="Taillis", visibility_expression = tse_ve)
-        placette_fb.add_relation_to_tab("va", tab_name="Valeur d'avenir", visibility_expression = va_ve)
-        placette_fb.add_relation_to_tab("reg", tab_name="Régénération", visibility_expression = reg_ve)
+        placette_fb.add_relation("gha", name="Surface terrière", visibility_expression = gha_ve)
+        placette_fb.add_fields("TSE_STERE_HA", name="Taillis")
+        placette_fb.add_relation("tse", name="Taillis", visibility_expression = tse_ve)
+        placette_fb.add_relation("va", name="Valeur d'avenir", visibility_expression = va_ve)
+        placette_fb.add_relation("reg", name="Régénération", visibility_expression = reg_ve)
 
     @staticmethod
     def _configure_placette(placette_manager):
@@ -247,7 +247,7 @@ class ExpertiseService:
     def _init_transect_form(transect_manager):
         transect_manager.forms.init_drag_and_drop_form()
         fields = ["TR_PARCELLE", "TR_STRATE", "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", "TR_DIAMETRE", "TR_EFFECTIF", "TR_HAUTEUR"]
-        transect_manager.forms.add_fields_to_tab(*fields)
+        transect_manager.forms.add_fields(*fields)
     
     @staticmethod
     def _configure_transect(transect_manager, dmin, dmax, hmin, hmax):
@@ -306,7 +306,7 @@ class ExpertiseService:
     @staticmethod
     def _init_limite_form(limite_manager):
         limite_manager.forms.init_drag_and_drop_form()
-        limite_manager.forms.add_fields_to_tab("LIMITE_TYPE", "LIMITE_RMQ")
+        limite_manager.forms.add_fields("LIMITE_TYPE", "LIMITE_RMQ")
 
     @staticmethod
     def _configure_limite(limite_manager):
@@ -360,7 +360,7 @@ class ExpertiseService:
     @staticmethod
     def _init_gha_form(gha_manager):
         gha_manager.forms.init_drag_and_drop_form()
-        gha_manager.forms.add_fields_to_tab("GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G")
+        gha_manager.forms.add_fields("GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G")
     
     @staticmethod
     def _configure_gha(gha_manager):
@@ -400,7 +400,7 @@ class ExpertiseService:
     @staticmethod
     def _init_tse_form(tse_manager):
         tse_manager.forms.init_drag_and_drop_form()
-        tse_manager.forms.add_fields_to_tab("TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID")
+        tse_manager.forms.add_fields("TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID")
     
     @staticmethod
     def _configure_tse(tse_manager):
@@ -430,7 +430,7 @@ class ExpertiseService:
     @staticmethod
     def _init_va_form(va_manager):
         va_manager.forms.init_drag_and_drop_form()
-        va_manager.forms.add_fields_to_tab("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_TX_TROUEE", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
+        va_manager.forms.add_fields("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_TX_TROUEE", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
     
     @staticmethod
     def _configure_va(va_manager):
@@ -493,7 +493,7 @@ class ExpertiseService:
     @staticmethod
     def _init_reg_form(reg_manager):
         reg_manager.forms.init_drag_and_drop_form()
-        reg_manager.forms.add_fields_to_tab("REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", "REG_STADE", "REG_ETAT")
+        reg_manager.forms.add_fields("REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", "REG_STADE", "REG_ETAT")
     
     @staticmethod
     def _configure_reg(reg_manager):

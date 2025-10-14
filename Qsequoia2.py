@@ -18,7 +18,7 @@ from .dialogs.project_settings.project_settings import ProjectSettingsDialog
 from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
-from .dialogs.diagnostic import DiagnosticDialog
+from .dialogs.diagnostic_create.diagnostic_create import DiagnosticDialog
 
 # import utils
 from .utils.variable import get_project_variable

@@ -15,98 +15,88 @@ class LayerFactory:
         "DIAGNOSTIC": {
             "Placette": {
                 "fields": [
-                    # Peuplement
-                    ("PLACETTE", QVariant.String),
-                    ("PLTM_PARC", QVariant.String),
-                    ("PLTM_STRATE", QVariant.String),
-                    ("PLTM_TYPE", QVariant.String),
-                    ("PLTM_RICH", QVariant.String),
-                    ("PLTM_STADE", QVariant.String),
-                    ("PLTM_PB", QVariant.String), 
-                    ("PLTM_SANT", QVariant.String), 
-                    ("PLTM_MEC", QVariant.String),
-                    ("PLTM_HISTO", QVariant.String), 
-                    ("PLTM_AME", QVariant.String), 
-                    ("PLTM_RMQ", QVariant.String), 
-                    ("PICTURES", QVariant.String),
+                    # placette
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("COMPTEUR", QVariant.LongLong),
+                    ("PLT_PARCELLE", QVariant.String),
+                    ("PLT_TYPE", QVariant.String),
+                    ("PLT_RICH", QVariant.String),
+                    ("PLT_STADE", QVariant.String),
+                    ("PLT_DMOY", QVariant.Int),
+                    ("PLT_ELAG", QVariant.String), 
+                    ("PLT_SANIT", QVariant.String), 
+                    ("PLT_CLOISO", QVariant.String), 
+                    ("PLT_MECA", QVariant.String),
+                    ("PLT_AME", QVariant.String), 
+                    ("PLT_RMQ", QVariant.String), 
+                    ("PLT_PHOTO", QVariant.String),
                     # Taillis
                     ("TSE_DENS", QVariant.String),
                     ("TSE_VOL", QVariant.Double),
                     ("TSE_NATURE", QVariant.String),
-                    ("TSE_POTEN", QVariant.String),
-                    ("TSE_CLOISO", QVariant.String),
-                    ("TSE_RMQ", QVariant.String),
                     # Valeur avenir
-                    ("VA_REG", QVariant.String),
-                    ("VA_TX_TROUEE", QVariant.Double),
-                    ("VA_NHA", QVariant.Double),
-                    ("VA_VEG_CO", QVariant.String),
+                    ("VA_TX_TROUEE", QVariant.String),
+                    ("VA_VEG_CON", QVariant.String),
                     ("VA_TX_DEG", QVariant.Double),
-                    ("VA_DEG", QVariant.String),
-                    ("VA_RMQ", QVariant.String),
+                    ("VA_PROTECT", QVariant.String),
             ],
                 "geometry": "Point"
             },
             "Transect": {
                 "fields": [
-                ("UUID", QVariant.String),
-                ("PLTM_PARC", QVariant.String),
-                ("PLTM_GROUPE", QVariant.String),
-                ("TR_TYPE_ESS", QVariant.String),
-                ("TR_ESS",  QVariant.LongLong),
-                ("TR_DIAM", QVariant.Int),
-                ("TR_EFFECTIF", QVariant.Int),
-                ("TR_HAUTEUR", QVariant.Int)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("PLTM_PARC", QVariant.String),
+                    ("TR_TYPE_ESS", QVariant.String),
+                    ("TR_ESS",  QVariant.LongLong),
+                    ("TR_DIAM", QVariant.Int),
+                    ("TR_EFFECTIF", QVariant.Int),
+                    ("TR_HAUTEUR", QVariant.Int)
                 ],
                 "geometry": "Point"
             },
             "Limite": {
                 "fields": [
-                    ("TYPE", QVariant.String), 
-                    ("RMQ", QVariant.String)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("LINE_TYPE", QVariant.String), 
+                    ("LINE_RMQ", QVariant.String)
                 ],
                 "geometry": "LineString"
             },
             "Picto": {
                 "fields": [
-                ("TYPE", QVariant.String),
-                ("NATURE", QVariant.String),
-                ("PICTURES", QVariant.String)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("POINT_TYPE", QVariant.String),
+                    ("POINT_NATURE", QVariant.String),
+                    ("POINT_PHOTO", QVariant.String)
                 ],
                 "geometry": "Point"
             },
             "Gha": {
                 "fields": [
-                ("RES_ESS", QVariant.String),
-                ("RES_G", QVariant.Int),
-                ("PLACETTE", QVariant.String)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("GHA_ESS", QVariant.String),
+                    ("GHA_G", QVariant.Int),
                 ],
             },
             "Tse": {
                 "fields": [
-                ("TSE_ESS", QVariant.String),
-                ("TSE_DM", QVariant.String),
-                ("PLACETTE", QVariant.String)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("TSE_ESS", QVariant.String),
+                    ("TSE_DIM", QVariant.String),
                 ],
             },
-            "Reg": {
+            "Va": {
                 "fields": [
-                ("REG_ESS", QVariant.String),
-                ("REG_STADE", QVariant.String),
-                ("REG_ETAT", QVariant.String),
-                ("PLACETTE", QVariant.String)
-                ],
-            },
-            "Va_ess": {
-                "fields": [
-                ("PLACETTE", QVariant.String),
-                ("VA_ESS", QVariant.String),
-                ("VA_STADE", QVariant.String),
-                ("VA_AGE_APP", QVariant.Int),
-                ("VA_HT", QVariant.Double),
-                ("VA_ELAG", QVariant.String),
-                ("VA_TX_HA", QVariant.Double),
-                ("CUMUL_TX_VA", QVariant.Double)
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("VA_ESS", QVariant.String),
+                    ("VA_HT", QVariant.Double)
                 ],
             },
         },

@@ -1,17 +1,21 @@
 from pathlib import Path
 from PyQt5.QtWidgets import QDialog, QMessageBox
 
-from .diagnostic_dialog import Ui_DiagnosticDialog
-from ..core.diagnostic_service import DiagnosticService
-from ..utils.config import get_project_variable, get_racines_path
-from ..utils.utils import clear_project
-from ..utils.ui import  QfieldPackager
+from ...core.db.manager import DatabaseManager
+
+from .diagnostic_create_dialog import Ui_DiagnosticDialog
+from .diagnostic_create_service import DiagnosticService
+from ...utils.config import get_project_variable, get_racines_path
+from ...utils.utils import clear_project
+from ...utils.ui import  QfieldPackager
+
 
 class DiagnosticDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_DiagnosticDialog()
         self.ui.setupUi(self)
+        self.essences_layer = DatabaseManager().load_essences("Essences")
 
         # --- initialize raster checkboxes ---
         self.raster_checkboxes = {
@@ -60,28 +64,21 @@ class DiagnosticDialog(QDialog):
             QMessageBox.warning(self, "Invalid folder", "Please choose a valid directory.")
             return
 
-        dmin, dmax = self.ui.sp_dmin.value(), self.ui.sp_dmax.value()
-        hmin, hmax  = self.ui.sp_hmin.value(), self.ui.sp_hmax.value()
-        
         clear_project()
 
         # 2) call service
-        svc = DiagnosticService(
-            outdir=outdir, title=self.ui.le_package_title.text(),
-            dmin=dmin, dmax=dmax, hmin=hmin, hmax=hmax,
-            raster_choices = self.raster_checkboxes
-        ) 
+        svc = DiagnosticService(essences_layer=self.essences_layer)
 
         try:
-            svc.run_full_diagnostic()
+            svc.run()
 
-            msg = "Diagnostique PSG Terminé !"
-            if self.packager.is_valid():
-                packaged_dir = self.packager.package(prefix="DIAG")
-                msg += f"\nProjet packagé dans :\n{packaged_dir}"
-            QMessageBox.information(self, "Succès", msg)
+            # msg = "Diagnostique PSG Terminé !"
+            # if self.packager.is_valid():
+            #     packaged_dir = self.packager.package(prefix="DIAG")
+            #     msg += f"\nProjet packagé dans :\n{packaged_dir}"
+            # QMessageBox.information(self, "Succès", msg)
 
-            super().accept()
+            # super().accept()
 
         except Exception as e:
             # everything else bubbles up here
