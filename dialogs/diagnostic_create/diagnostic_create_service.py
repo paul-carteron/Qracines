@@ -29,6 +29,7 @@ class DiagnosticService:
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.essences_layer = essences_layer
+        print(f"This is essce layer: {self.essences_layer}")
 
     def run(self):
         """
@@ -49,6 +50,20 @@ class DiagnosticService:
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
         placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 4)
+        
+        # TRANSECT
+        print("configure TRANSECT layer")
+        transect_manager = LayerManager("Transect")
+        self._init_transect_form(transect_manager)
+        self._configure_transect(transect_manager)
+        transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        # GHA
+        print("configure GHA layer")
+        gha_manager = LayerManager("Gha")
+        self._init_gha_form(gha_manager)  
+        self._configure_gha(gha_manager)  
+        gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         return self.gpkg_path
 
@@ -225,3 +240,125 @@ class DiagnosticService:
         placette_f.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
 
         return None
+
+    @staticmethod
+    def _init_transect_form(transect_manager):
+
+        transect_fb = transect_manager.forms
+        transect_fb.init_drag_and_drop_form()
+
+        transect_fb.add_fields("TR_PARCELLE")
+        transect_fb.add_fields("TR_TYPE_ESS", "TR_ESS", name = "Essence", columns=2)
+        transect_fb.add_fields("TR_DIAM", "TR_HAUTEUR", name = "Dendrométrie", columns=2)
+        transect_fb.add_fields("TR_EFFECTIF")
+    
+    def _configure_transect(self, transect_manager):
+        transect_f = transect_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("TR_PARCELLE", "PRF/SPRF"),
+            ("TR_TYPE_ESS", "Type Essence"),
+            ("TR_ESS", "Essence"),
+            ("TR_DIAM", "Diamètre (cm)"),
+            ("TR_HAUTEUR", "Hauteur (m)"),
+            ("TR_EFFECTIF", "Effectif"),]
+        
+        for field, alias in aliases:
+            transect_f.set_alias(field, alias)
+
+        # UUID
+        # If apply_on_update=True, uuid() resets on each children edit: 
+        # - Create parent → UUID=A 
+        # - Add first child → FK=A 
+        # - Edit another child → UUID becomes B (child’s FK=A breaks under Composition) 
+        # - Add second child → FK=B 
+        # Only the last child stays linked. Using apply_on_update=False keeps the UUID stable so all children link correctly.
+        field_name = "UUID"
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
+        transect_f.set_default_value(field_name, "uuid()", apply_on_update=False)
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+
+        # TR_TYPE_ESS
+        field_name = "TR_TYPE_ESS"
+        types = {f["type"]: f["type"] for f in self.essences_layer.getFeatures()}
+        transect_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in types.items()]})
+
+        # TR_ESS
+        field_name = "TR_ESS"
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        config = {
+            'FilterExpression': f"\"type\" = current_value('TR_TYPE_ESS')",
+            'Key': 'fid',
+            'LayerName': self.essences_layer.name(),
+            'Value': 'essence_variation'
+        }
+        transect_f.add_value_relation(field_name, config)
+        transect_f.set_default_value(field_name, "current_value('TR_TYPE_ESS')")
+
+        # TR_DIAM
+        field_name = "TR_DIAM"
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        transect_f.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(15, 110 + 1, 5)]})
+        expression = '"TR_DIAM" != \'\''
+        description = "Le champ TR_DIAM ne peut pas être vide."
+        transect_f.set_constraint_expression(field_name, expression, description, QgsFieldConstraints.ConstraintStrengthHard)
+
+        # TR_HAUTEUR
+        field_name = "TR_HAUTEUR"
+        transect_f.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(3, 30 + 1)]})
+
+        # TR_EFFECTIF
+        field_name = "TR_EFFECTIF"
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        transect_f.add_range(field_name, {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
+        transect_f.set_default_value(field_name, '1', False)
+
+    @staticmethod
+    def _init_gha_form(gha_manager):
+        gha_manager.forms.init_drag_and_drop_form()
+        gha_manager.forms.add_fields("GHA_ESS", "GHA_G")
+
+    def _configure_gha(self, gha_manager):
+        gha_f = gha_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("GHA_ESS", "Essence"),
+            ("GHA_G", "Surface terrière")
+        ]
+        
+        for field, alias in aliases:
+            gha_f.set_alias(field, alias)
+        
+        # DISPLAY EXPRESSION
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "GHA_ESS"),
+                concat(
+                    attribute(@ess, 'essence_variation'),
+                    ' : ',
+                    "GHA_G",
+                    ' m²/ha '
+                )
+            )
+            """
+        gha_manager.set_display_expression(display_expression)
+
+        # GHA_ESS
+        field_name = "GHA_ESS"
+        gha_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        config = {
+            'FilterExpression': '"variation" IS NULL',
+            'Key': 'fid',
+            'LayerName': self.essences_layer.name(),
+            'Value': 'essence_variation'
+        }
+        gha_f.add_value_relation(field_name, config)
+
+        # GHA_G
+        field_name = "GHA_G"
+        gha_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        gha_f.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
+        gha_f.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})

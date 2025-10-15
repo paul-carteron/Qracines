@@ -47,7 +47,7 @@ class LayerFactory:
                 "fields": [
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
-                    ("PLTM_PARC", QVariant.String),
+                    ("TR_PARCELLE", QVariant.String),
                     ("TR_TYPE_ESS", QVariant.String),
                     ("TR_ESS",  QVariant.LongLong),
                     ("TR_DIAM", QVariant.Int),
