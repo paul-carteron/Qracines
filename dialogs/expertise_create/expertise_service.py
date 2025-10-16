@@ -52,8 +52,6 @@ class ExpertiseService:
         Raises on any error.
         """
 
-        load_vectors("parca_polygon_occup", group_name= "VECTEUR")
-
         print("_create_and_load_gpkg")
         self._create_and_load_gpkg()
         print("_create_relations")
@@ -64,7 +62,7 @@ class ExpertiseService:
         print("configure PLACETTE layer")
         placette_manager = LayerManager("placette")
         self._init_placette_form(placette_manager)
-        self._configure_placette(placette_manager)
+        self._configure_placette(placette_manager, essences_manager)
         placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 13)
 
         # TRANSECT
@@ -129,24 +127,19 @@ class ExpertiseService:
             self.essences_layer,
         ]
 
-        if self.grid_controller.is_valid():
-            grid = self.grid_controller.create_grid(parca_key="parca_polygon_occup")
-            layers = layers + [grid]
-
         result = processing.run("native:package", {
             'LAYERS':      layers,
             'OUTPUT':      QgsProcessing.TEMPORARY_OUTPUT,
             'OVERWRITE':   True,
-            'SAVE_STYLES': True
+            'SAVE_STYLES': False
         })
 
         self.gpkg_path = result['OUTPUT']
-        load_gpkg(self.gpkg_path, "placette", "transect", "limite", "gha", "tse", "reg", "va", "essences", group_name="EXPERTISE")
+        load_gpkg(self.gpkg_path, group_name="EXPERTISE")
 
         if self.grid_controller.is_valid():
-            load_gpkg(self.gpkg_path, "grid", group_name="VECTEUR")
+            self.grid_controller.add_grid("VECTEUR")
 
-        # 5) load it back into the project
 
     def _create_relations(self):
         pairs = [
@@ -186,7 +179,7 @@ class ExpertiseService:
         placette_fb.add_relation("reg", name="Régénération", visibility_expression = reg_ve)
 
     @staticmethod
-    def _configure_placette(placette_manager):
+    def _configure_placette(placette_manager, essences_manager):
         placette_f = placette_manager.fields
 
         # ALIASES
@@ -580,12 +573,13 @@ class ExpertiseService:
         expression = f'"{selected_field}" = True' if with_variation else f'"{selected_field}" = True AND "variation" IS NULL'
 
         config = {
+            'AllowNull': True,
             'FilterExpression': expression,
             'Key': 'fid',
             'Layer': essences_manager.layer.id(),
-            'Value': 'essence_variation',
-            'AllowNull': True
+            'Value': 'essence_variation'
         }
+
         layer_manager.fields.add_value_relation(essence_secondaire_field, config)
 
         # 5. Constrain ESSENCE_ID & ESSENCE_SECONDAIRE_ID

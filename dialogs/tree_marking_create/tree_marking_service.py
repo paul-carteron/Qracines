@@ -100,7 +100,7 @@ class TreeMarkingService:
         arbre_f.add_fields("ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE")
     
     @staticmethod
-    def _configure_essence_field( arbres_manager, essences_manager, codes):
+    def _configure_essence_field(arbres_manager, essences_manager, codes):
         # 1. Build value map for main ESSENCE_ID field
         query_string = " OR ".join([f"code = '{code}'" for code in codes])
         request = QgsFeatureRequest(QgsExpression(query_string))

@@ -41,12 +41,12 @@ class FormBuilder:
             print(f"Relation '{relation_name}' not found.")
             return
 
-        tab = self._get_or_create_container(name, type=type)
+        container = self._get_or_create_container(name, type=type)
         if visibility_expression:
-            tab.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
+            container.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
         
-        relation_editor = QgsAttributeEditorRelation(relation, tab)
-        tab.addChildElement(relation_editor)
+        relation_editor = QgsAttributeEditorRelation(relation, container)
+        container.addChildElement(relation_editor)
         self.layer.setEditFormConfig(self.config)
 
     def _get_or_create_container(self, name, clear_tab=False, type="group"):
@@ -63,16 +63,15 @@ class FormBuilder:
             None,
         )
 
+        if existing and clear_tab:
+            existing.clear()
+            return existing
+
         if existing:
             return existing
-        
-        if clear_tab:
-            existing.clear()
             
-        print(type)
         new_container = QgsAttributeEditorContainer(name, self.root)
         
-        print(new_container)
         if type.lower() == "tab":
             new_container.setType(Qgis.AttributeEditorContainerType.Tab)
         elif type.lower() == "group":

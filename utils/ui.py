@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog, QDoubleSpinBox
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 
-from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsMarkerSymbol
+from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsMarkerSymbol, QgsVectorLayer
 from qgis.gui import QgsFileWidget
 from qgis.utils import iface
 
@@ -10,7 +10,7 @@ from .layers import load_rasters
 from .qfield import package_for_qfield
 from .utils import zoom_on, replier
 from .processing import create_grid
-from .config import get_display_name
+from .config import get_path, get_display_name
 
 import unicodedata
 from pathlib import Path
@@ -322,15 +322,11 @@ class GridController(UIBinderMixin):
         return True
 
     def create_grid(self, parca_key="parca_polygon_occup"):
-        project = QgsProject.instance()
-
-        parca_layer_name = get_display_name(parca_key)
-        matches = project.mapLayersByName(parca_layer_name)
-        if not matches:
-            raise ValueError(f"Layer {parca_layer_name} not found.")
-        parca_layer = matches[0]
+        path = get_path(parca_key)
+        parca_layer = QgsVectorLayer(str(path), get_display_name(parca_key), "ogr")
 
         grid = create_grid(parca_layer, points_per_ha=float(self.points_per_ha.value()))
+        
         sym = QgsMarkerSymbol.createSimple({
             'name': 'cross',
             'size': '3',
@@ -341,3 +337,16 @@ class GridController(UIBinderMixin):
         grid.triggerRepaint()
         
         return grid
+    
+    def add_grid(self, group_name="VECTEUR"):
+        project = QgsProject.instance()
+        root = project.layerTreeRoot()
+
+        group = root.findGroup(group_name) or root.addGroup(group_name)
+
+        grid = self.create_grid()
+        project.addMapLayer(grid, addToLegend=False)
+        group.addLayer(grid)
+
+
+        return None

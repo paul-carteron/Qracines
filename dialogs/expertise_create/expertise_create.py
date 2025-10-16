@@ -5,7 +5,7 @@ from .expertise_service import ExpertiseService
 from ...core.db.manager import DatabaseManager
 
 from ...utils.config import get_racines_path
-from ...utils.variable import get_project_variable
+from ...utils.layers import load_vectors
 from ...utils.utils import clear_project
 from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController
 
@@ -68,6 +68,7 @@ class ExpertiseCreateDialog(QDialog):
         codes_gha_tra = self.gha_tra_selector.selected_codes()
         codes_taillis = self.tse_selector.selected_codes()
 
+
         # 2) call service
         svc = ExpertiseService(
             codes=codes_gha_tra,
@@ -77,11 +78,12 @@ class ExpertiseCreateDialog(QDialog):
             hmin=self.ui.sp_hmin.value(),
             hmax=self.ui.sp_hmax.value(),
             essences_layer = self.essences_layer,
-            grid_controller = self.grid_controller
+            grid_controller = self.grid_controller,
         )
 
         try:
             svc.run()
+            load_vectors("parca_polygon_occup", group_name= "VECTEUR")
             self.raster_controller.load_selected_rasters()
 
             msg = "Expertise complète !"
