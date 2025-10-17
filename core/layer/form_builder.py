@@ -22,16 +22,16 @@ class FormBuilder:
         self.root = self.config.invisibleRootContainer() 
 
     def add_fields(self, *field_names, name=None, clear_tab=False, columns=1, visibility_expression=None, type="group"):
-        tab = self._get_or_create_container(name, clear_tab, type=type)
-        tab.setColumnCount(int(columns))
+        container = self._get_or_create_container(name, clear_tab, type=type)
+        container.setColumnCount(int(columns))
         if visibility_expression:
-            tab.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
+            container.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
 
         for name in field_names:
             index = self.layer.fields().indexFromName(name)
             if index != -1:
-                field = QgsAttributeEditorField(name, index, tab)
-                tab.addChildElement(field)
+                field = QgsAttributeEditorField(name, index, container)
+                container.addChildElement(field)
 
         self.layer.setEditFormConfig(self.config)
 
@@ -84,3 +84,62 @@ class FormBuilder:
         print(new_container.type())
         self.root.addChildElement(new_container)
         return new_container
+
+    def get_tab(self, name: str):
+        """Return an existing tab container by name, or None."""
+        for child in self.root.children():
+            if (
+                isinstance(child, QgsAttributeEditorContainer)
+                and child.type() == Qgis.AttributeEditorContainerType.Tab
+                and child.name() == name
+            ):
+                return child
+        return None
+
+    def create_tab(self, name: str, clear=False):
+        """Create or get a tab container."""
+        tab = self.get_tab(name)
+        if tab and clear:
+            tab.clear()
+            return tab
+        if tab:
+            return tab
+        tab = QgsAttributeEditorContainer(name, self.root)
+        tab.setType(Qgis.AttributeEditorContainerType.Tab)
+        self.root.addChildElement(tab)
+        return tab
+
+    def create_group(self, parent, name: str, columns=1):
+        """Create a simple group box inside a container."""
+        group = QgsAttributeEditorContainer(name, parent)
+        group.setType(Qgis.AttributeEditorContainerType.GroupBox)
+        group.setColumnCount(columns)
+        parent.addChildElement(group)
+        return group
+
+    def new_add_fields(self, parent, field_names):
+        """Add fields to a container (tab or group)."""
+        for fname in field_names:
+            idx = self.layer.fields().indexFromName(fname)
+            if idx == -1:
+                print(f"⚠️ Field '{fname}' not found in layer '{self.layer.name()}'")
+                continue
+            field = QgsAttributeEditorField(fname, idx, parent)
+            parent.addChildElement(field)
+
+    def new_add_relation(self, relation_name, parent, visibility_expression=None):
+        """Add a relation widget to a container (usually a tab)."""
+        relation = LayerFetcher.get_relation_by_name(relation_name)
+        if not relation:
+            print(f"⚠️ Relation '{relation_name}' not found.")
+            return
+
+        if visibility_expression:
+            parent.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
+
+        relation_editor = QgsAttributeEditorRelation(relation, parent)
+        parent.addChildElement(relation_editor)
+
+    def apply(self):
+        """Apply changes to the layer form."""
+        self.layer.setEditFormConfig(self.config)

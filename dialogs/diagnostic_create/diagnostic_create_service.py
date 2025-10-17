@@ -5,11 +5,7 @@ from qgis.core import (
     QgsProject,
     QgsProcessing,
     QgsFieldConstraints,
-    QgsFeatureRequest,
-    QgsExpression,
-    QgsRendererCategory,
-    QgsCategorizedSymbolRenderer,
-    QgsSymbol
+    QgsMapLayer
 )
 
 from qgis.utils import iface
@@ -48,7 +44,7 @@ class DiagnosticService:
         placette_manager = LayerManager("Placette")
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
-        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 10)
+        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 15)
         
         # TRANSECT
         print("configure TRANSECT layer")
@@ -63,6 +59,14 @@ class DiagnosticService:
         self._init_gha_form(gha_manager)  
         self._configure_gha(gha_manager)  
         gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        # TSE
+        print("configure TSE layer")
+        tse_manager = LayerManager("Tse")
+        self._init_tse_form(tse_manager)  
+        self._configure_tse(tse_manager)  
+        gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
 
         # VA
         va_manager = LayerManager("Va")
@@ -94,6 +98,12 @@ class DiagnosticService:
         self.gpkg_path = result['OUTPUT']
         load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
+        private_layers = ["Gha", "Tse", "Essences", "Va"]
+        for layer_name in private_layers:
+            layer = LayerManager(layer_name).layer
+            layer.setFlags(QgsMapLayer.Private)
+
+
     def _create_relations(self):
         pairs = [
             ('Placette', 'Gha'),
@@ -121,20 +131,31 @@ class DiagnosticService:
         forest_ve = f"\"PLT_TYPE\" IN {forest_plt}"
         va_ve = f"\"PLT_TYPE\" IN {va_plt}"
 
-        placette_fb.add_fields(
-            "COMPTEUR", "PLT_PARCELLE", "PLT_TYPE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO",
-            name="Général", type = "tab")
+        # GENERAL
 
-        placette_fb.add_fields(
-            "PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_ELAG", "PLT_SANIT", "PLT_CLOISO", "PLT_MECA",
-            name = "Peuplement", visibility_expression = forest_ve, type = "tab"
-        )
+        general_tab = placette_fb.create_tab("Général", clear=True)
+        group = placette_fb.create_group(general_tab, "Identification", columns=2)
+        placette_fb.new_add_fields(group, ["COMPTEUR", "PLT_PARCELLE"])
+        placette_fb.new_add_fields(general_tab, ["PLT_TYPE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"])
+        placette_fb.apply()
 
+        # PEUPLEMENT
+        tab_peupl = placette_fb.create_tab("Peuplement", clear=True)
+        placette_fb.new_add_relation("Gha", tab_peupl, visibility_expression=forest_ve)
+        placette_fb.new_add_fields(tab_peupl, ["PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_ELAG", "PLT_SANIT", "PLT_CLOISO", "PLT_MECA"])
 
-        placette_fb.add_relation("Gha", name="Gha", visibility_expression = forest_ve, type="tab")
-        placette_fb.add_relation("Tse", name="Taillis", visibility_expression = forest_ve, type="tab")
-        placette_fb.add_relation("Va", name="Plant/Régé", visibility_expression = va_ve, type="tab")
-        placette_fb.add_fields("VA_HT", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT", name="Plant/Régé", visibility_expression = va_ve, type="tab")
+        # TAILLIS
+        tab_taillis = placette_fb.create_tab("Taillis", clear=True)
+        placette_fb.new_add_relation("Tse", tab_taillis, visibility_expression=forest_ve)
+        placette_fb.new_add_fields(tab_taillis, ["TSE_DENS", "TSE_VOL", "TSE_NATURE"])
+
+        # PLANT/RÉGÉ
+        tab_va = placette_fb.create_tab("Plant/Régé", clear=True)
+        placette_fb.new_add_relation("Va", tab_va, visibility_expression=va_ve)
+        placette_fb.new_add_fields(tab_va, ["VA_HT", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"])
+
+        # Apply to layer
+        placette_fb.apply()
 
     @staticmethod
     def _configure_placette(placette_manager):
@@ -145,6 +166,10 @@ class DiagnosticService:
             ("COMPTEUR", "Placette n°"),
             ("PLT_PARCELLE", "PRF/SPRF"),
             ("PLT_TYPE", "Type de peuplement"),
+            ("PLT_AME", "Aménagement"), 
+            ("PLT_RMQ", "Remarque"), 
+            ("PLT_PHOTO", "Photo"),
+            # PEUPLEMENT
             ("PLT_RICH", "Richesse"),
             ("PLT_STADE", "Stade"),
             ("PLT_DMOY", "Diamètre Moyen (cm)"),
@@ -152,13 +177,22 @@ class DiagnosticService:
             ("PLT_SANIT", "Sanitaire"), 
             ("PLT_CLOISO", "Cloisonnement"), 
             ("PLT_MECA", "Mécanisation"),
-            ("PLT_AME", "Aménagement"), 
-            ("PLT_RMQ", "Remarque"), 
-            ("PLT_PHOTO", "Photo"),]
+            # PLANT/REGE
+            ("VA_HT", "Hauteur plantation (m)"),
+            ("VA_TX_TROUEE", "Taux trouée (%)"),
+            ("VA_VEG_CON", "Végétation concurrente"),
+            ("VA_TX_DEG", "Dégâts gibier (%)"),
+            ("VA_PROTECT", "Protection"),
+            # TAILLIS
+            ("TSE_DENS", "Densité"),
+            ("TSE_VOL", "Volume (st/ha)"),
+            ("TSE_NATURE", "Exploitabilité"),
+            ]
         
         for field, alias in aliases:
             placette_f.set_alias(field, alias)
 
+        # region GLOBAL
         # UUID
         # If apply_on_update=True, uuid() resets on each children edit: 
         # - Create parent → UUID=A 
@@ -182,6 +216,12 @@ class DiagnosticService:
         placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in peuplements.items()]})
         placette_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
+        # PLT_PHOTO
+        placette_f.add_external_resource("PLT_PHOTO")
+
+        # endregion
+
+        # region PEUPLEMENT
         # PLT_RICH
         richesse = {
             'TRI': 'Très riche',
@@ -206,7 +246,7 @@ class DiagnosticService:
         placette_f.add_value_map('PLT_STADE', {'map': [{str(name): str(code)} for code, name in stade.items()]})
 
         # PLT_DMOY
-        placette_f.add_range('PLT_DMOY', {'AllowNull': True, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
+        placette_f.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(5, 150 + 1)]})
 
         # PLT_ELAG
         elagage = {'2m':'2m', '4m': '4m', '6m': '6m'}
@@ -244,9 +284,11 @@ class DiagnosticService:
             'NM_HUMIDE': 'Non mécanisable - Humide'
         }
         placette_f.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
+        # endregion
 
+        # region PLANT/REGE
         # VA_HT
-        placette_f.add_range("VA_HT", {'AllowNull': False, 'Max': 50, 'Min': 0, 'Precision': 0, 'Step': 1})
+        placette_f.add_value_map('VA_HT', {'map': [{str(h): str(h)} for h in [0.5, 1, 1.5, 2, 2.5] + list(range(3, 10 + 1))]})
 
         # VA_TX_TROUEE
         tx_trouee = {         
@@ -289,7 +331,42 @@ class DiagnosticService:
             'INDIV_CHIMIQUE': 'Individuelle chimique',
         }
         placette_f.add_value_map('VA_PROTECT', {'map': [{str(name): str(code)} for code, name in protect.items()]})
+        # endregion
 
+        # region TAILLIS
+        # TSE_DENS
+        densite = {
+            'tres_dense': 'Très dense',
+            'dense': 'Dense',
+            'moyennement_dense': 'Moyennement dense',
+            'peu_dense': 'Peu dense',
+            'absent': 'Absent',
+        }
+        placette_f.add_value_map('TSE_DENS', {'map': [{str(name): str(code)} for code, name in densite.items()]})
+
+        # TSE_VOL
+        tse_vol = {
+            "25": "25",
+            "50": "50",
+            "75": "75",
+            "100": "100",
+            "125": "125",
+            "150": "150",
+            "200": "200",
+            "250": "250",
+            "300": "300",
+            "350": "350",
+            "400": "400",
+        }
+        placette_f.add_value_map('TSE_VOL', {'map': [{str(name): str(code)} for code, name in tse_vol.items()]})
+
+        # TSE_NATURE
+        nature = {
+            "BI_BC" : "BI/BC", 
+            "BE" : "BE"
+        }
+        placette_f.add_value_map('TSE_NATURE', {'map': [{str(name): str(code)} for code, name in nature.items()]})
+        # endregion
         return None
 
     @staticmethod
@@ -310,7 +387,7 @@ class DiagnosticService:
         aliases = [
             ("TR_PARCELLE", "PRF/SPRF"),
             ("TR_TYPE_ESS", "Type Essence"),
-            ("TR_ESS", "Essence"),
+            ("TR_ESS", "Essence Transect"),
             ("TR_DIAM", "Diamètre (cm)"),
             ("TR_HAUTEUR", "Hauteur (m)"),
             ("TR_EFFECTIF", "Effectif"),]
@@ -375,7 +452,7 @@ class DiagnosticService:
 
         # ALIASES
         aliases = [
-            ("GHA_ESS", "Essence"),
+            ("GHA_ESS", "Essence Gha"),
             ("GHA_G", "Surface terrière")
         ]
         
@@ -412,6 +489,7 @@ class DiagnosticService:
         field_name = "GHA_G"
         gha_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
         gha_f.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
+        gha_f.set_default_value(field_name, '1', False)
         gha_f.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
 
     @staticmethod
@@ -424,7 +502,7 @@ class DiagnosticService:
 
         # ALIASES
         aliases = [
-            ("VA_ESS", "Essence"),
+            ("VA_ESS", "Essence Plant/Régé"),
             ("VA_TX_HA", "Taux de recouvrement"),
             ("VA_CUMUL_TX_VA", "Cumul des recouvrements"),
         ]
@@ -471,3 +549,52 @@ class DiagnosticService:
         default_value = """aggregate(layer:='Va', aggregate:='sum', expression:="VA_TX_HA", filter:="UUID" = attribute(@parent, 'UUID'))"""
         va_f.set_default_value(field_name, default_value)
         va_f.set_read_only(field_name)
+
+    @staticmethod
+    def _init_tse_form(tse_manager):
+        tse_manager.forms.init_drag_and_drop_form()
+        tse_manager.forms.add_fields("TSE_ESS", "TSE_DIM")
+
+    def _configure_tse(self, tse_manager):
+        tse_f = tse_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("TSE_ESS", "Essence Taillis"),
+            ("TSE_DIM", "Dimension"),
+        ]
+        
+        for field, alias in aliases:
+            tse_f.set_alias(field, alias)
+
+        # DISPLAY EXPRESSION
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "TSE_ESS"),
+                concat(attribute(@ess, 'essence_variation'), ' : ', "TSE_DIM")
+            )
+            """
+        tse_manager.set_display_expression(display_expression)
+
+        # TSE_ESS
+        field_name = "TSE_ESS"
+        tse_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        config = {
+            'FilterExpression': '"variation" IS NULL',
+            'Key': 'fid',
+            'LayerName': self.essences_layer.name(),
+            'Value': 'essence_variation'
+        }
+        tse_f.add_value_relation(field_name, config)
+
+        # TSE_DIM
+        tse_dim = {
+                '<5': '<5 cm',
+                '5-15': '5-15 cm',
+                '10-30': '10-30 cm',
+                '25-45': '25-45 cm',
+                '>40': '>40 cm'
+            }
+        tse_f.add_value_map('TSE_DIM', {'map': [{str(name): str(code)} for code, name in tse_dim.items()]})
+

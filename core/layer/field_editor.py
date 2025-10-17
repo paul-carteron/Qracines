@@ -5,7 +5,8 @@ from qgis.core import (
     QgsDefaultValue,
     QgsEditorWidgetSetup,
     QgsFeatureRequest,
-    QgsAttributeEditorRelation
+    QgsAttributeEditorRelation,
+    QgsEditorWidgetSetup
 )
 from .fetcher import LayerFetcher
 
@@ -77,6 +78,27 @@ class FieldEditor:
         index = self._get_field_index(field_name)
         widget_setup = QgsEditorWidgetSetup('Range', config)
         self.layer.setEditorWidgetSetup(index, widget_setup)
+
+    def add_external_resource(self, field_name, config=None):
+        """
+        Set the 'ExternalResource' widget for a given field.
+        
+        Example config:
+            {
+                "StorageMode": 0,           # 0=File path, 1=Relative path, 2=ContentBase64
+                "DocumentViewer": False,    # Show embedded viewer
+                "FileWidget": True,         # Show file selector
+                "UseLink": False,           # Allow URL links
+                "DefaultRoot": "C:/data",   # Default folder
+                "RelativeStorage": True,    # Store relative path to project
+                "FileFilter": "Images (*.jpg *.png);;PDF (*.pdf)"
+            }
+        """
+        index = self._get_field_index(field_name)
+        config = config or {}
+        widget_setup = QgsEditorWidgetSetup("ExternalResource", config)
+        self.layer.setEditorWidgetSetup(index, widget_setup)
+        print(f"ExternalResource widget set for '{field_name}' in '{self.layer.name()}' with config: {config}")
 
     def set_relation_label(self, relation_name, label):
         relation = LayerFetcher.get_relation_by_name(relation_name)

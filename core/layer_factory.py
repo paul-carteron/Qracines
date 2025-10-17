@@ -23,7 +23,7 @@ class LayerFactory:
                     ("PLT_TYPE", QVariant.String),
                     ("PLT_RICH", QVariant.String),
                     ("PLT_STADE", QVariant.String),
-                    ("PLT_DMOY", QVariant.Int),
+                    ("PLT_DMOY", QVariant.String),
                     ("PLT_ELAG", QVariant.String), 
                     ("PLT_SANIT", QVariant.String), 
                     ("PLT_CLOISO", QVariant.String), 
@@ -33,10 +33,10 @@ class LayerFactory:
                     ("PLT_PHOTO", QVariant.String),
                     # Taillis
                     ("TSE_DENS", QVariant.String),
-                    ("TSE_VOL", QVariant.Double),
+                    ("TSE_VOL", QVariant.String),
                     ("TSE_NATURE", QVariant.String),
                     # Valeur avenir
-                    ("VA_HT", QVariant.Int),
+                    ("VA_HT", QVariant.String),
                     ("VA_TX_TROUEE", QVariant.String),
                     ("VA_VEG_CON", QVariant.String),
                     ("VA_TX_DEG", QVariant.Double),

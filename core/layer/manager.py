@@ -1,7 +1,7 @@
 from .fetcher import LayerFetcher
 from .field_editor import FieldEditor
 from .form_builder import FormBuilder
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsFeature
 
 
 class LayerManager:
@@ -17,4 +17,3 @@ class LayerManager:
 
     def set_display_expression(self, expression):
         self.layer.setDisplayExpression(expression)
-    
