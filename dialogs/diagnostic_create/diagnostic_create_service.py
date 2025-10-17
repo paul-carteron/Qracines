@@ -29,7 +29,6 @@ class DiagnosticService:
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.essences_layer = essences_layer
-        print(f"This is essce layer: {self.essences_layer}")
 
     def run(self):
         """
@@ -49,7 +48,7 @@ class DiagnosticService:
         placette_manager = LayerManager("Placette")
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
-        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 4)
+        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 10)
         
         # TRANSECT
         print("configure TRANSECT layer")
@@ -64,6 +63,12 @@ class DiagnosticService:
         self._init_gha_form(gha_manager)  
         self._configure_gha(gha_manager)  
         gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        # VA
+        va_manager = LayerManager("Va")
+        self._init_va_form(va_manager)  
+        self._configure_va(va_manager)  
+        va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         return self.gpkg_path
 
@@ -107,7 +112,6 @@ class DiagnosticService:
     def _init_placette_form(placette_manager):
 
         placette_fb = placette_manager.forms
-
         placette_fb.init_drag_and_drop_form()
 
         # ve: stand for visibility_expression
@@ -126,9 +130,11 @@ class DiagnosticService:
             name = "Peuplement", visibility_expression = forest_ve, type = "tab"
         )
 
+
         placette_fb.add_relation("Gha", name="Gha", visibility_expression = forest_ve, type="tab")
         placette_fb.add_relation("Tse", name="Taillis", visibility_expression = forest_ve, type="tab")
         placette_fb.add_relation("Va", name="Plant/Régé", visibility_expression = va_ve, type="tab")
+        placette_fb.add_fields("VA_HT", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT", name="Plant/Régé", visibility_expression = va_ve, type="tab")
 
     @staticmethod
     def _configure_placette(placette_manager):
@@ -238,6 +244,51 @@ class DiagnosticService:
             'NM_HUMIDE': 'Non mécanisable - Humide'
         }
         placette_f.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
+
+        # VA_HT
+        placette_f.add_range("VA_HT", {'AllowNull': False, 'Max': 50, 'Min': 0, 'Precision': 0, 'Step': 1})
+
+        # VA_TX_TROUEE
+        tx_trouee = {         
+            '<10': '<10% (1/10)',
+            '10': '10% (1/10)',
+            '20': '20% (1/5)',
+            '25': '25% (1/4)',
+            '33': '33% (1/3)',
+            '50': '50% (1/2)',
+            '66': '66% (2/3)',
+            '>66': '+ de 66% (2/3)',
+        }
+        placette_f.add_value_map('VA_TX_TROUEE', {'map': [{str(name): str(code)} for code, name in tx_trouee.items()]})
+
+        # VA_VEG_CON
+        veg_con = {
+            '2': 'Dense / Nettoyage urgent',
+            '1': 'Moyenne / Nettoyage à programmer',
+            '0': 'Maitrisée / Pas de nettoyage',
+        }
+        placette_f.add_value_map('VA_VEG_CON', {'map': [{str(name): str(code)} for code, name in veg_con.items()]})
+
+        # VA_TX_DEG
+        tx_deg = {         
+            '<10': '<10% (1/10)',
+            '10': '10% (1/10)',
+            '20': '20% (1/5)',
+            '25': '25% (1/4)',
+            '33': '33% (1/3)',
+            '50': '50% (1/2)',
+            '66': '66% (2/3)',
+            '>66': '+ de 66% (2/3)',
+        }
+        placette_f.add_value_map('VA_TX_DEG', {'map': [{str(name): str(code)} for code, name in tx_deg.items()]})
+
+        # VA_PROTECT
+        protect = {
+            'CLOTURE': 'Clôture',
+            'INDIV_MECA': 'Individuelle méca',
+            'INDIV_CHIMIQUE': 'Individuelle chimique',
+        }
+        placette_f.add_value_map('VA_PROTECT', {'map': [{str(name): str(code)} for code, name in protect.items()]})
 
         return None
 
@@ -362,3 +413,61 @@ class DiagnosticService:
         gha_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
         gha_f.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
         gha_f.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
+
+    @staticmethod
+    def _init_va_form(va_manager):
+        va_manager.forms.init_drag_and_drop_form()
+        va_manager.forms.add_fields("VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA")
+
+    def _configure_va(self, va_manager):
+        va_f = va_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("VA_ESS", "Essence"),
+            ("VA_TX_HA", "Taux de recouvrement"),
+            ("VA_CUMUL_TX_VA", "Cumul des recouvrements"),
+        ]
+        
+        for field, alias in aliases:
+            va_f.set_alias(field, alias)
+        
+        # DISPLAY EXPRESSION
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "VA_ESS"),
+                concat(
+                    attribute(@ess, 'essence_variation'),
+                    ' : ',
+                    "VA_TX_HA",
+                    ' %'
+                )
+            )
+            """
+        va_manager.set_display_expression(display_expression)
+
+        # VA_ESS
+        field_name = "VA_ESS"
+        va_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        config = {
+            'FilterExpression': '"variation" IS NULL',
+            'Key': 'fid',
+            'LayerName': self.essences_layer.name(),
+            'Value': 'essence_variation'
+        }
+        va_f.add_value_relation(field_name, config)
+
+        # VA_TX_HA
+        field_name = "VA_TX_HA"
+        va_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        expression = '"VA_CUMUL_TX_VA" + "VA_TX_HA" = 100'
+        description = 'La somme de VA_TX_HA et de VA_CUMUL_TX_VA doit être égale à 100.'
+        va_f.set_constraint_expression(field_name, expression, description)
+        va_f.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 10})
+
+        # CUMUL_TX_VA
+        field_name = "VA_CUMUL_TX_VA"
+        default_value = """aggregate(layer:='Va', aggregate:='sum', expression:="VA_TX_HA", filter:="UUID" = attribute(@parent, 'UUID'))"""
+        va_f.set_default_value(field_name, default_value)
+        va_f.set_read_only(field_name)

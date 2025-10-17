@@ -36,6 +36,7 @@ class LayerFactory:
                     ("TSE_VOL", QVariant.Double),
                     ("TSE_NATURE", QVariant.String),
                     # Valeur avenir
+                    ("VA_HT", QVariant.Int),
                     ("VA_TX_TROUEE", QVariant.String),
                     ("VA_VEG_CON", QVariant.String),
                     ("VA_TX_DEG", QVariant.Double),
@@ -96,7 +97,8 @@ class LayerFactory:
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("VA_ESS", QVariant.String),
-                    ("VA_HT", QVariant.Double)
+                    ("VA_TX_HA", QVariant.Double),
+                    ("VA_CUMUL_TX_VA", QVariant.Double)
                 ],
             },
         },
