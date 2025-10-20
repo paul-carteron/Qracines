@@ -272,3 +272,25 @@ def get_limites():
     return limites
 
 # endregion
+
+# region PICTOS
+_PICTO_CONFIG: dict | None = None
+
+def _load_PICTO_CONFIG() -> dict:
+    global _PICTO_CONFIG
+    if _PICTO_CONFIG is None:
+        picto_config_path = get_config_path("pictos.yaml")
+        with open(picto_config_path, encoding="utf-8") as f:
+            _PICTO_CONFIG = yaml.safe_load(f)
+    return _PICTO_CONFIG
+
+def get_pictos():
+    """
+    Return the list of guide names defined under 'guides' in stations.yaml.
+    """
+    picto_config = _load_PICTO_CONFIG()
+    pictos = picto_config.get("pictos")
+    if not isinstance(pictos, dict):
+        raise KeyError("Missing or invalid top‐level 'pictos' mapping in stations.yaml")
+    return pictos
+# endregion

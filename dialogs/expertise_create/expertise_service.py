@@ -161,22 +161,23 @@ class ExpertiseService:
 
         placette_fb = placette_manager.forms
 
-        placette_fb.init_drag_and_drop_form()
+        placette_fb.init_form()
         placette_fb.add_fields("COMPTEUR")
         placette_fb.add_fields("PLTM_PARCELLE", "PLTM_STRATE", name="Localisation", columns=2)
         placette_fb.add_fields("PLTM_TYPE", "PLA_RMQ")
 
         # ve: stand for visibility_expression
-        gha_ve = """left("PLTM_TYPE",2) IN ('FR','FI','MF','PE')"""
-        tse_ve = """"PLTM_TYPE"<>''"""
-        reg_ve = tse_ve
-        va_ve = """left("PLTM_TYPE",2) IN ('FR','FI','PE','REG')"""
+        forest_plt = "('FRF', 'FIF', 'REF', 'PLF', 'FRM', 'FIM', 'REM', 'PLM', 'FRR', 'FIR', 'RER', 'PLR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN')"
+        va_plt = "('REF', 'PLF', 'REM', 'PLM', 'RER', 'PLR')"
 
-        placette_fb.add_relation("gha", name="Surface terrière", visibility_expression = gha_ve)
+        forest_ve = f"\"PLT_TYPE\" IN {forest_plt}"
+        va_ve = f"\"PLT_TYPE\" IN {va_plt}"
+
+        placette_fb.add_relation("gha", name="Surface terrière", visibility_expression = forest_ve)
         placette_fb.add_fields("TSE_STERE_HA", name="Taillis")
-        placette_fb.add_relation("tse", name="Taillis", visibility_expression = tse_ve)
+        placette_fb.add_relation("tse", name="Taillis", visibility_expression = forest_ve)
         placette_fb.add_relation("va", name="Valeur d'avenir", visibility_expression = va_ve)
-        placette_fb.add_relation("reg", name="Régénération", visibility_expression = reg_ve)
+        placette_fb.add_relation("reg", name="Régénération", visibility_expression = forest_ve)
 
     @staticmethod
     def _configure_placette(placette_manager, essences_manager):
@@ -238,7 +239,7 @@ class ExpertiseService:
 
     @staticmethod
     def _init_transect_form(transect_manager):
-        transect_manager.forms.init_drag_and_drop_form()
+        transect_manager.forms.init_form()
         fields = ["TR_PARCELLE", "TR_STRATE", "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", "TR_DIAMETRE", "TR_EFFECTIF", "TR_HAUTEUR"]
         transect_manager.forms.add_fields(*fields)
     
@@ -298,7 +299,7 @@ class ExpertiseService:
     
     @staticmethod
     def _init_limite_form(limite_manager):
-        limite_manager.forms.init_drag_and_drop_form()
+        limite_manager.forms.init_form()
         limite_manager.forms.add_fields("LIMITE_TYPE", "LIMITE_RMQ")
 
     @staticmethod
@@ -352,7 +353,7 @@ class ExpertiseService:
 
     @staticmethod
     def _init_gha_form(gha_manager):
-        gha_manager.forms.init_drag_and_drop_form()
+        gha_manager.forms.init_form()
         gha_manager.forms.add_fields("GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G")
     
     @staticmethod
@@ -392,7 +393,7 @@ class ExpertiseService:
 
     @staticmethod
     def _init_tse_form(tse_manager):
-        tse_manager.forms.init_drag_and_drop_form()
+        tse_manager.forms.init_form()
         tse_manager.forms.add_fields("TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID")
     
     @staticmethod
@@ -422,7 +423,7 @@ class ExpertiseService:
 
     @staticmethod
     def _init_va_form(va_manager):
-        va_manager.forms.init_drag_and_drop_form()
+        va_manager.forms.init_form()
         va_manager.forms.add_fields("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_TX_TROUEE", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
     
     @staticmethod
@@ -485,7 +486,7 @@ class ExpertiseService:
 
     @staticmethod
     def _init_reg_form(reg_manager):
-        reg_manager.forms.init_drag_and_drop_form()
+        reg_manager.forms.init_form()
         reg_manager.forms.add_fields("REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", "REG_STADE", "REG_ETAT")
     
     @staticmethod

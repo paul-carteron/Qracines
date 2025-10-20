@@ -62,7 +62,8 @@ class LayerFactory:
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("LINE_TYPE", QVariant.String), 
-                    ("LINE_RMQ", QVariant.String)
+                    ("LINE_RMQ", QVariant.String), 
+                    ("LINE_PHOTO", QVariant.String)
                 ],
                 "geometry": "LineString"
             },
@@ -71,7 +72,7 @@ class LayerFactory:
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("POINT_TYPE", QVariant.String),
-                    ("POINT_NATURE", QVariant.String),
+                    ("POINT_RMQ", QVariant.String), 
                     ("POINT_PHOTO", QVariant.String)
                 ],
                 "geometry": "Point"

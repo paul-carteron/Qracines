@@ -9,14 +9,11 @@ from qgis.core import (
 )
 
 from qgis.utils import iface
-
-from PyQt5.QtCore import QVariant
-from PyQt5.QtGui import QColor
-
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
-from ...utils.config import get_peuplements, get_limites
-from ...utils.layers import load_gpkg, create_relation, load_vectors
+from ...utils.config import get_peuplements, get_limites, get_pictos
+from ...utils.layers import load_gpkg, create_relation, get_style
+from ...utils.utils import fold
 
 class DiagnosticService:
 
@@ -53,6 +50,20 @@ class DiagnosticService:
         self._configure_transect(transect_manager)
         transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
+        # LIMITE
+        print("configure LIMITE layer")
+        limite_manager = LayerManager("Limite")
+        self._init_limite_form(limite_manager)
+        self._configure_limite(limite_manager)
+        self._style_limite(limite_manager)
+
+        # PICTO
+        print("configure PICTO layer")
+        picto_manager = LayerManager("Picto")
+        self._init_picto_form(picto_manager)
+        self._configure_picto(picto_manager)
+        self._style_picto(picto_manager)
+
         # GHA
         print("configure GHA layer")
         gha_manager = LayerManager("Gha")
@@ -67,12 +78,13 @@ class DiagnosticService:
         self._configure_tse(tse_manager)  
         gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
-
         # VA
         va_manager = LayerManager("Va")
         self._init_va_form(va_manager)  
         self._configure_va(va_manager)  
         va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        fold()
 
         return self.gpkg_path
 
@@ -82,6 +94,7 @@ class DiagnosticService:
             LayerFactory.create("Placette", "DIAGNOSTIC"),
             LayerFactory.create("Transect", "DIAGNOSTIC"),
             LayerFactory.create("Limite", "DIAGNOSTIC"),
+            LayerFactory.create("Picto", "DIAGNOSTIC"),
             LayerFactory.create("Gha", "DIAGNOSTIC"),
             LayerFactory.create("Tse", "DIAGNOSTIC"),
             LayerFactory.create("Va", "DIAGNOSTIC"),
@@ -103,7 +116,6 @@ class DiagnosticService:
             layer = LayerManager(layer_name).layer
             layer.setFlags(QgsMapLayer.Private)
 
-
     def _create_relations(self):
         pairs = [
             ('Placette', 'Gha'),
@@ -122,7 +134,7 @@ class DiagnosticService:
     def _init_placette_form(placette_manager):
 
         placette_fb = placette_manager.forms
-        placette_fb.init_drag_and_drop_form()
+        placette_fb.init_form()
 
         # ve: stand for visibility_expression
         forest_plt = "('FRF', 'FIF', 'REF', 'PLF', 'FRM', 'FIM', 'REM', 'PLM', 'FRR', 'FIR', 'RER', 'PLR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN')"
@@ -132,27 +144,25 @@ class DiagnosticService:
         va_ve = f"\"PLT_TYPE\" IN {va_plt}"
 
         # GENERAL
-
-        general_tab = placette_fb.create_tab("Général", clear=True)
-        group = placette_fb.create_group(general_tab, "Identification", columns=2)
-        placette_fb.new_add_fields(group, ["COMPTEUR", "PLT_PARCELLE"])
-        placette_fb.new_add_fields(general_tab, ["PLT_TYPE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"])
-        placette_fb.apply()
+        general_tab = placette_fb.create_tab("Général")
+        group = placette_fb.create_group("", parent = general_tab, columns=2)
+        placette_fb.new_add_fields(["COMPTEUR", "PLT_PARCELLE"], parent = group)
+        placette_fb.new_add_fields(["PLT_TYPE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
 
         # PEUPLEMENT
-        tab_peupl = placette_fb.create_tab("Peuplement", clear=True)
+        tab_peupl = placette_fb.create_tab("Peuplement")
         placette_fb.new_add_relation("Gha", tab_peupl, visibility_expression=forest_ve)
-        placette_fb.new_add_fields(tab_peupl, ["PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_ELAG", "PLT_SANIT", "PLT_CLOISO", "PLT_MECA"])
+        placette_fb.new_add_fields(["PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_ELAG", "PLT_SANIT", "PLT_CLOISO", "PLT_MECA"], parent = tab_peupl)
 
         # TAILLIS
-        tab_taillis = placette_fb.create_tab("Taillis", clear=True)
+        tab_taillis = placette_fb.create_tab("Taillis")
         placette_fb.new_add_relation("Tse", tab_taillis, visibility_expression=forest_ve)
-        placette_fb.new_add_fields(tab_taillis, ["TSE_DENS", "TSE_VOL", "TSE_NATURE"])
+        placette_fb.new_add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
 
         # PLANT/RÉGÉ
-        tab_va = placette_fb.create_tab("Plant/Régé", clear=True)
+        tab_va = placette_fb.create_tab("Plant/Régé")
         placette_fb.new_add_relation("Va", tab_va, visibility_expression=va_ve)
-        placette_fb.new_add_fields(tab_va, ["VA_HT", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"])
+        placette_fb.new_add_fields(["VA_HT", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
 
         # Apply to layer
         placette_fb.apply()
@@ -373,12 +383,18 @@ class DiagnosticService:
     def _init_transect_form(transect_manager):
 
         transect_fb = transect_manager.forms
-        transect_fb.init_drag_and_drop_form()
+        transect_fb.init_form()
 
-        transect_fb.add_fields("TR_PARCELLE")
-        transect_fb.add_fields("TR_TYPE_ESS", "TR_ESS", name = "Essence", columns=2)
-        transect_fb.add_fields("TR_DIAM", "TR_HAUTEUR", name = "Dendrométrie", columns=2)
-        transect_fb.add_fields("TR_EFFECTIF")
+        transect_fb.new_add_fields(["TR_PARCELLE"])
+        grp_essence = transect_fb.create_group(name="Essence", columns=2)
+        transect_fb.new_add_fields(["TR_TYPE_ESS", "TR_ESS"], grp_essence)
+
+        grp_dendro = transect_fb.create_group(name="Dendrométrie", columns=2)
+        transect_fb.new_add_fields(["TR_DIAM", "TR_HAUTEUR"], grp_dendro)
+
+        transect_fb.new_add_fields(["TR_EFFECTIF"])
+        
+        transect_fb.apply()
     
     def _configure_transect(self, transect_manager):
         transect_f = transect_manager.fields
@@ -444,8 +460,8 @@ class DiagnosticService:
 
     @staticmethod
     def _init_gha_form(gha_manager):
-        gha_manager.forms.init_drag_and_drop_form()
-        gha_manager.forms.add_fields("GHA_ESS", "GHA_G")
+        gha_manager.forms.init_form()
+        gha_manager.forms.new_add_fields(["GHA_ESS", "GHA_G"])
 
     def _configure_gha(self, gha_manager):
         gha_f = gha_manager.fields
@@ -494,8 +510,8 @@ class DiagnosticService:
 
     @staticmethod
     def _init_va_form(va_manager):
-        va_manager.forms.init_drag_and_drop_form()
-        va_manager.forms.add_fields("VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA")
+        va_manager.forms.init_form()
+        va_manager.forms.new_add_fields(["VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA"])
 
     def _configure_va(self, va_manager):
         va_f = va_manager.fields
@@ -552,8 +568,8 @@ class DiagnosticService:
 
     @staticmethod
     def _init_tse_form(tse_manager):
-        tse_manager.forms.init_drag_and_drop_form()
-        tse_manager.forms.add_fields("TSE_ESS", "TSE_DIM")
+        tse_manager.forms.init_form()
+        tse_manager.forms.new_add_fields(["TSE_ESS", "TSE_DIM"])
 
     def _configure_tse(self, tse_manager):
         tse_f = tse_manager.fields
@@ -597,4 +613,71 @@ class DiagnosticService:
                 '>40': '>40 cm'
             }
         tse_f.add_value_map('TSE_DIM', {'map': [{str(name): str(code)} for code, name in tse_dim.items()]})
+
+    @staticmethod
+    def _init_limite_form(limite_manager):
+        limite_manager.forms.init_form()
+        limite_manager.forms.new_add_fields(["LINE_TYPE", "LINE_RMQ", "LINE_PHOTO"])
+
+    @staticmethod
+    def _configure_limite(limite_manager):
+        limite_f = limite_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("LINE_TYPE", "Type"),
+            ("LINE_RMQ", "Remarque"),
+            ("LINE_PHOTO", "Photo"),
+        ]
+        
+        for field, alias in aliases:
+            limite_f.set_alias(field, alias)
+
+        # LINE_TYPE
+        limites = get_limites()
+        limite_f.add_value_map('LINE_TYPE', {'map': [{str(name): str(code)} for code, name in limites.items()]})
+
+        # LINE_PHOTO
+        limite_f.add_external_resource("LINE_PHOTO")
+
+
+    @staticmethod
+    def _style_limite(limite_manager):
+        style_path = get_style("limite")
+        layer = limite_manager.layer
+        if layer.loadNamedStyle(str(style_path)):
+                layer.triggerRepaint()
+
+    @staticmethod
+    def _init_picto_form(picto_manager):
+        picto_manager.forms.init_form()
+        picto_manager.forms.new_add_fields(["POINT_TYPE", "POINT_RMQ", "POINT_PHOTO"])
+
+    @staticmethod
+    def _configure_picto(picto_manager):
+        picto_f = picto_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("POINT_TYPE", "Type"),
+            ("POINT_RMQ", "Remarque"),
+            ("POINT_PHOTO", "Photo"),
+        ]
+        
+        for field, alias in aliases:
+            picto_f.set_alias(field, alias)
+
+        # POINT_TYPE
+        pictos = get_pictos()
+        picto_f.add_value_map('POINT_TYPE', {'map': [{str(name): str(code)} for code, name in pictos.items()]})
+
+        # POINT_PHOTO
+        picto_f.add_external_resource("POINT_PHOTO")
+
+    @staticmethod
+    def _style_picto(picto_manager):
+        style_path = get_style("picto")
+        layer = picto_manager.layer
+        if layer.loadNamedStyle(str(style_path)):
+                layer.triggerRepaint()
 

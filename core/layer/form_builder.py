@@ -15,7 +15,7 @@ class FormBuilder:
         self.config = self.layer.editFormConfig()
         self.root = None  # delay initialization until layout is set
 
-    def init_drag_and_drop_form(self):
+    def init_form(self):
         self.config.setLayout(Qgis.AttributeFormLayout.DragAndDrop)
         self.config.clearTabs()
         self.layer.setEditFormConfig(self.config)
@@ -96,7 +96,7 @@ class FormBuilder:
                 return child
         return None
 
-    def create_tab(self, name: str, clear=False):
+    def create_tab(self, name: str, clear=True):
         """Create or get a tab container."""
         tab = self.get_tab(name)
         if tab and clear:
@@ -109,16 +109,18 @@ class FormBuilder:
         self.root.addChildElement(tab)
         return tab
 
-    def create_group(self, parent, name: str, columns=1):
-        """Create a simple group box inside a container."""
+    def create_group(self, name: str = "Group", parent=None, columns=1):
+        """Create a group box inside a container (or at root if no parent)."""
+        parent = parent or self.root  # default fallback
+
         group = QgsAttributeEditorContainer(name, parent)
         group.setType(Qgis.AttributeEditorContainerType.GroupBox)
         group.setColumnCount(columns)
         parent.addChildElement(group)
         return group
 
-    def new_add_fields(self, parent, field_names):
-        """Add fields to a container (tab or group)."""
+    def new_add_fields(self, field_names, parent = None):
+        parent = parent or self.root  # default fallback
         for fname in field_names:
             idx = self.layer.fields().indexFromName(fname)
             if idx == -1:

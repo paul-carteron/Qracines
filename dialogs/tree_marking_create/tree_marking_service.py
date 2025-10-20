@@ -94,7 +94,7 @@ class TreeMarkingService:
     def _init_form(arbres_manager):
         arbre_f = arbres_manager.forms
 
-        arbre_f.init_drag_and_drop_form()
+        arbre_f.init_form()
         arbre_f.add_fields("COMPTEUR")
         arbre_f.add_fields("LOT", "PARCELLE", name="Localisation" ,columns=2)
         arbre_f.add_fields("ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE")

@@ -197,7 +197,7 @@
 
 #         # Va_ess
 #         va_mgr = LayerManager('Va_ess')
-#         va_mgr.forms.init_drag_and_drop_form()
+#         va_mgr.forms.init_form()
 #         va_mgr.forms.add_fields('VA_ESS','VA_STADE','VA_AGE_APP','VA_HT','VA_ELAG','VA_TX_HA','CUMUL_TX_VA')
 #         # set hard/soft constraints and defaults as needed
 #         va_mgr.fields.set_constraint('VA_TX_HA', QgsFieldConstraints.ConstraintNotNull)

@@ -132,6 +132,17 @@ def replier():
             for enfant in node.children():
                 enfant.setExpanded(False)
 
+def fold(node=None):
+    """Replie tous les groupes et couches du panneau des couches."""
+    if node is None:
+        node = QgsProject.instance().layerTreeRoot()
+
+    node.setExpanded(False)
+
+    if hasattr(node, "children"):  # for safety
+        for child in node.children():
+            fold(child)
+
 def deplier(group_name):
     root = QgsProject.instance().layerTreeRoot()
     group = root.findGroup(group_name)
