@@ -2,6 +2,7 @@ from pathlib import Path
 import processing
 
 from qgis.core import (
+    Qgis,
     QgsProject,
     QgsProcessing,
     QgsFieldConstraints,
@@ -9,7 +10,11 @@ from qgis.core import (
     QgsSymbol,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
-    QgsSimpleLineSymbolLayer
+    QgsSimpleLineSymbolLayer,
+    QgsSymbolLayer,
+    QgsProperty,
+    QgsSingleSymbolRenderer,
+    QgsSimpleMarkerSymbolLayer
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import Qt
@@ -684,8 +689,11 @@ class DiagnosticService:
 
     @staticmethod
     def _init_picto_form(picto_manager):
-        picto_manager.forms.init_form()
-        picto_manager.forms.new_add_fields(["POINT_TYPE", "POINT_RMQ", "POINT_PHOTO"])
+        picto_f = picto_manager.forms
+        picto_f.init_form()
+        picto_f.new_add_fields(["PICTO_TYPE", "PICTO_RMQ", "PICTO_PHOTO"])
+        grp_shape = picto_f.create_group(name="Symbologie", columns=2)
+        picto_f.new_add_fields(["PICTO_COLOR", "PICTO_SHAPE"], grp_shape)
 
     @staticmethod
     def _configure_picto(picto_manager):
@@ -693,25 +701,68 @@ class DiagnosticService:
 
         # ALIASES
         aliases = [
-            ("POINT_TYPE", "Type"),
-            ("POINT_RMQ", "Remarque"),
-            ("POINT_PHOTO", "Photo"),
+            ("PICTO_TYPE", "Type"),
+            ("PICTO_RMQ", "Remarque"),
+            ("PICTO_PHOTO", "Photo"),
+            ("PICTO_COLOR", "Couleur"),
+            ("PICTO_SHAPE", "Forme"),
         ]
         
         for field, alias in aliases:
             picto_f.set_alias(field, alias)
 
-        # POINT_TYPE
+        # PICTO_TYPE
         pictos = get_pictos()
-        picto_f.add_value_map('POINT_TYPE', {'map': [{str(name): str(code)} for code, name in pictos.items()]})
+        picto_f.add_value_map('PICTO_TYPE', {'map': [{str(name): str(code)} for code, name in pictos.items()]})
 
-        # POINT_PHOTO
-        picto_f.add_external_resource("POINT_PHOTO")
+        # PICTO_PHOTO
+        # Whould be available next release !
+        # picto_f.add_color_picker("PICTO_COLOR")
+        # picto_f.set_default_value("PICTO_COLOR", "'#191970'")
+        color_map = {
+            "Rouge": "#e41a1c",
+            "Bleu": "#377eb8",
+            "Vert": "#4daf4a",
+            "Violet": "#984ea3",
+            "Orange": "#ff7f00",
+        }
 
-    @staticmethod
-    def _style_picto(picto_manager):
-        style_path = get_style("picto")
+        picto_f.add_value_map(
+            "PICTO_COLOR",
+            {"map": [{label: hexval} for label, hexval in color_map.items()]}
+        )
+        picto_f.set_default_value("PICTO_COLOR", "'#e41a1c'")
+
+        # PICTO_SHAPE
+        shape_map = {
+            "Cercle": "circle",
+            "Carré": "square",
+            "Triangle": "triangle",
+            "Croix": "cross",
+            "X": "cross2",
+            "Losange": "diamond",
+            "Étoile": "star",
+            "Coeur": "heart",
+        }
+
+        # Store enum values as integers (Qgis.MarkerShape is an IntEnum)
+        picto_f.add_value_map("PICTO_SHAPE", {"map": [{label: shape} for label, shape in shape_map.items()]})
+        picto_f.set_default_value("PICTO_SHAPE", "'triangle'")
+
+    def _style_picto(self, picto_manager):
         layer = picto_manager.layer
-        if layer.loadNamedStyle(str(style_path)):
-                layer.triggerRepaint()
+        
+        sym_layer = QgsSimpleMarkerSymbolLayer()
+        sym_layer.setDataDefinedProperty(QgsSymbolLayer.PropertyFillColor, QgsProperty.fromExpression('"PICTO_COLOR"'))
+        sym_layer.setDataDefinedProperty(QgsSymbolLayer.PropertyName, QgsProperty.fromExpression('"PICTO_SHAPE"'))
+
+        # Wrap in a symbol (container)
+        symbol = QgsSymbol.defaultSymbol(layer.geometryType())
+        symbol.deleteSymbolLayer(0)
+        symbol.appendSymbolLayer(sym_layer)
+
+        # Apply to layer
+        layer.setRenderer(QgsSingleSymbolRenderer(symbol))
+        layer.triggerRepaint()
+
 

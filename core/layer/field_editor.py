@@ -100,6 +100,11 @@ class FieldEditor:
         self.layer.setEditorWidgetSetup(index, widget_setup)
         print(f"ExternalResource widget set for '{field_name}' in '{self.layer.name()}' with config: {config}")
 
+    def add_color_picker(self, field_name):
+        index = self._get_field_index(field_name)
+        widget_setup = QgsEditorWidgetSetup('Color', {})
+        self.layer.setEditorWidgetSetup(index, widget_setup)
+
     def set_relation_label(self, relation_name, label):
         relation = LayerFetcher.get_relation_by_name(relation_name)
         if not relation:

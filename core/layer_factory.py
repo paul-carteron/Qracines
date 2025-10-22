@@ -71,9 +71,11 @@ class LayerFactory:
                 "fields": [
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
-                    ("POINT_TYPE", QVariant.String),
-                    ("POINT_RMQ", QVariant.String), 
-                    ("POINT_PHOTO", QVariant.String)
+                    ("PICTO_TYPE", QVariant.String),
+                    ("PICTO_RMQ", QVariant.String), 
+                    ("PICTO_PHOTO", QVariant.String),
+                    ("PICTO_COLOR", QVariant.String),
+                    ("PICTO_SHAPE", QVariant.String),
                 ],
                 "geometry": "Point"
             },
