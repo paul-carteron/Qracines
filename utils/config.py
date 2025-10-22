@@ -261,15 +261,25 @@ def _load_LIMITE_CONFIG() -> dict:
             _LIMITE_CONFIG = yaml.safe_load(f)
     return _LIMITE_CONFIG
 
-def get_limites():
-    """
-    Return the list of guide names defined under 'guides' in stations.yaml.
-    """
+def get_limites_config() -> dict:
     limite_config = _load_LIMITE_CONFIG()
     limites = limite_config.get("limites")
+
     if not isinstance(limites, dict):
-        raise KeyError("Missing or invalid top‐level 'limites' mapping in stations.yaml")
+        raise KeyError("Missing or invalid top-level 'limites' mapping in limites.yaml")
+    
     return limites
+
+def get_limites() -> dict[str, str]:
+    """
+    Return {code: label} mapping from limites.yaml, for use in value map widgets.
+    """
+    limites = get_limites_config()
+    # extract only code → label
+    return {code: props.get("label", code) if isinstance(props, dict) else str(props)
+            for code, props in limites.items()}
+
+
 
 # endregion
 

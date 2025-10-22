@@ -61,9 +61,9 @@ class LayerFactory:
                 "fields": [
                     ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
-                    ("LINE_TYPE", QVariant.String), 
-                    ("LINE_RMQ", QVariant.String), 
-                    ("LINE_PHOTO", QVariant.String)
+                    ("LIMITE_TYPE", QVariant.String), 
+                    ("LIMITE_RMQ", QVariant.String), 
+                    ("LIMITE_PHOTO", QVariant.String)
                 ],
                 "geometry": "LineString"
             },

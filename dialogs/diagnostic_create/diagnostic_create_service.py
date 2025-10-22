@@ -5,13 +5,19 @@ from qgis.core import (
     QgsProject,
     QgsProcessing,
     QgsFieldConstraints,
-    QgsMapLayer
+    QgsMapLayer,
+    QgsSymbol,
+    QgsRendererCategory,
+    QgsCategorizedSymbolRenderer,
+    QgsSimpleLineSymbolLayer
 )
-
+from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
+
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
-from ...utils.config import get_peuplements, get_limites, get_pictos
+from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos
 from ...utils.layers import load_gpkg, create_relation, get_style
 from ...utils.utils import fold
 
@@ -617,7 +623,7 @@ class DiagnosticService:
     @staticmethod
     def _init_limite_form(limite_manager):
         limite_manager.forms.init_form()
-        limite_manager.forms.new_add_fields(["LINE_TYPE", "LINE_RMQ", "LINE_PHOTO"])
+        limite_manager.forms.new_add_fields(["LIMITE_TYPE", "LIMITE_RMQ", "LIMITE_PHOTO"])
 
     @staticmethod
     def _configure_limite(limite_manager):
@@ -625,28 +631,56 @@ class DiagnosticService:
 
         # ALIASES
         aliases = [
-            ("LINE_TYPE", "Type"),
-            ("LINE_RMQ", "Remarque"),
-            ("LINE_PHOTO", "Photo"),
+            ("LIMITE_TYPE", "Type"),
+            ("LIMITE_RMQ", "Remarque"),
+            ("LIMITE_PHOTO", "Photo"),
         ]
         
         for field, alias in aliases:
             limite_f.set_alias(field, alias)
 
-        # LINE_TYPE
+        # LIMITE_TYPE
         limites = get_limites()
-        limite_f.add_value_map('LINE_TYPE', {'map': [{str(name): str(code)} for code, name in limites.items()]})
+        limite_f.add_value_map('LIMITE_TYPE', {'map': [{str(name): str(code)} for code, name in limites.items()]})
 
-        # LINE_PHOTO
-        limite_f.add_external_resource("LINE_PHOTO")
-
+        # LIMITE_PHOTO
+        limite_f.add_external_resource("LIMITE_PHOTO")
 
     @staticmethod
     def _style_limite(limite_manager):
-        style_path = get_style("limite")
+        field = 'LIMITE_TYPE'
         layer = limite_manager.layer
-        if layer.loadNamedStyle(str(style_path)):
-                layer.triggerRepaint()
+        cfg = get_limites_config()  # YAML → dict
+
+        style_map = {
+            "solid": Qt.SolidLine,
+            "dash": Qt.DashLine,
+            "dot": Qt.DotLine,
+            "dashdot": Qt.DashDotLine,
+            "dashdotdot": Qt.DashDotDotLine,
+        }
+
+        categories = []
+        for code, props in cfg.items():
+            color = QColor(props.get("color", "black"))
+            width = float(props.get("width", 0.8))
+            line_type = props.get("style", "solid").lower()
+            label = props.get("label", code)
+
+            line_layer = QgsSimpleLineSymbolLayer()
+            line_layer.setColor(color)
+            line_layer.setWidth(width)
+            line_layer.setPenStyle(style_map.get(line_type, Qt.SolidLine))
+
+            symbol = QgsSymbol.defaultSymbol(layer.geometryType())
+            symbol.deleteSymbolLayer(0)
+            symbol.appendSymbolLayer(line_layer)
+
+            categories.append(QgsRendererCategory(code, symbol, label))
+
+        renderer = QgsCategorizedSymbolRenderer(field, categories)
+        layer.setRenderer(renderer)
+        layer.triggerRepaint()
 
     @staticmethod
     def _init_picto_form(picto_manager):

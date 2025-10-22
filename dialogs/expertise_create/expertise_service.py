@@ -170,8 +170,8 @@ class ExpertiseService:
         forest_plt = "('FRF', 'FIF', 'REF', 'PLF', 'FRM', 'FIM', 'REM', 'PLM', 'FRR', 'FIR', 'RER', 'PLR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN')"
         va_plt = "('REF', 'PLF', 'REM', 'PLM', 'RER', 'PLR')"
 
-        forest_ve = f"\"PLT_TYPE\" IN {forest_plt}"
-        va_ve = f"\"PLT_TYPE\" IN {va_plt}"
+        forest_ve = f"\"PLTM_TYPE\" IN {forest_plt}"
+        va_ve = f"\"PLTM_TYPE\" IN {va_plt}"
 
         placette_fb.add_relation("gha", name="Surface terrière", visibility_expression = forest_ve)
         placette_fb.add_fields("TSE_STERE_HA", name="Taillis")
