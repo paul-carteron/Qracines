@@ -110,8 +110,27 @@ class AddDataDialog(QDialog):
             load_vectors(*vector_keys, group_name="VECTEUR")
 
     def _add_raster(self):
-        # flatten list of list
         raster_keys = [key for cb, key in self.RASTER_CHECKBOX_KEY_MAP.items() if cb.isChecked()]
+
+        # Handle PLT_ANC separately
+        if "plt_anc" in raster_keys:
+            folder = get_path("raster_folder")
+            plt_anc_rasters = [p for p in folder.glob("*.tif") if "PLT_ANC" in p.name.upper()]
+
+            if len(plt_anc_rasters) > 1:
+                root = QgsProject.instance().layerTreeRoot()
+                group = root.findGroup("RASTER") or root.addGroup("RASTER")
+
+                for path in plt_anc_rasters:
+                    layer = QgsRasterLayer(str(path), path.stem)
+                    if layer.isValid():
+                        QgsProject.instance().addMapLayer(layer, False)
+                        group.addLayer(layer)
+
+                # Remove plt_anc from keys so load_rasters doesn't load it again
+                raster_keys.remove("plt_anc")
+
+        # Load other rasters normally
         if raster_keys:
             load_rasters(*raster_keys, group_name="RASTER")
 
