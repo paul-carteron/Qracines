@@ -5,9 +5,9 @@ from ...core.db.manager import DatabaseManager
 
 from .diagnostic_create_dialog import Ui_DiagnosticDialog
 from .diagnostic_create_service import DiagnosticService
-from ...utils.config import get_project_variable, get_racines_path
+from ...utils.config import get_racines_path
 from ...utils.utils import clear_project
-from ...utils.ui import  QfieldPackager
+from ...utils.ui import RasterController, QfieldPackager, GridController
 
 
 class DiagnosticDialog(QDialog):
@@ -17,69 +17,54 @@ class DiagnosticDialog(QDialog):
         self.ui.setupUi(self)
         self.essences_layer = DatabaseManager().load_essences("Essences")
 
-        # --- initialize raster checkboxes ---
-        self.raster_checkboxes = {
-            "plt_anc": self.ui.cb_plt_anc,
-            "plt":     self.ui.cb_plt,
-            "mnh":     self.ui.cb_mnh,
-            "scan25":  self.ui.cb_scan25,
-            "irc":     self.ui.cb_irc,
-            "rgb":     self.ui.cb_rgb,
-        }
-        self.update_raster_checkbox_states()
-
+        raster_checkbox = {
+            #   'key':     'checkbox_name',
+                'plt_anc': 'cb_plt_anc',
+                'plt':     'cb_plt',
+                'mnh':     'cb_mnh',
+                'scan25':  'cb_scan25',
+                'irc':     'cb_irc'
+            }
+        self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
+        
         self.packager = QfieldPackager(
             self.ui,
-            default_dir = Path(get_racines_path("expertise", "Diagnostic")),
+            default_dir = get_racines_path("expertise", "Qfield", "Diagnostic"),
             package_ui = 'cb_package_for_qfield',
-            outdir_ui = 'fw_package_outdir'
+            outdir_ui = 'fw_outdir'
             )
-
-         # --- connect checkbox to toggle ---
-        self.setup_connections()
-
-    def update_raster_checkbox_states(self):
-        forest_selected = bool(get_project_variable("forest_prefix"))
-        # These logical keys get auto-checked when a forest exists
-        auto_check = {"plt_anc", "plt", "mnh", "scan25", "irc", "rgb"} if forest_selected else set()
-
-        for logical_key, cb in self.raster_checkboxes.items():
-            cb.setEnabled(forest_selected)
-            cb.setChecked(logical_key in auto_check)
-
-        self.ui.gb_diag_param.setEnabled(forest_selected)
-        self.ui.gb_global_param.setEnabled(forest_selected)
-
-    def setup_connections(self):
-        self.ui.cb_package_for_qfield.toggled.connect(self.toggle_fw_editability)
-
-    def toggle_fw_editability(self, checked):
-        self.ui.fw_package_outdir.setEnabled(checked)
-        self.ui.le_package_title.setEnabled(checked)
+        
+        self.grid_controller = GridController(
+            self.ui,
+            create_grid_ui = 'cb_create_grid',
+            points_per_ha_ui = 'dsp_points_per_ha'
+        )
 
     def accept(self):
-        # 1) collect inputs
-        outdir = Path(self.ui.fw_package_outdir.filePath())
-        if not outdir.exists():
-            QMessageBox.warning(self, "Invalid folder", "Please choose a valid directory.")
-            return
 
         clear_project()
 
         # 2) call service
-        svc = DiagnosticService(essences_layer=self.essences_layer)
+        svc = DiagnosticService(
+            dmin=self.ui.sp_dmin.value(),
+            dmax=self.ui.sp_dmax.value(),
+            hmin=self.ui.sp_hmin.value(),
+            hmax=self.ui.sp_hmax.value(),
+            essences_layer = self.essences_layer,
+            grid_controller = self.grid_controller
+        )
 
         try:
             svc.run()
+            self.raster_controller.load_selected_rasters()
 
-            # msg = "Diagnostique PSG Terminé !"
-            # if self.packager.is_valid():
-            #     packaged_dir = self.packager.package(prefix="DIAG")
-            #     msg += f"\nProjet packagé dans :\n{packaged_dir}"
-            # QMessageBox.information(self, "Succès", msg)
+            msg = "Expertise complète !"
+            if self.packager.is_valid():
+                packaged_dir = self.packager.package(prefix="DIAG")
+                msg += f"\nProjet packagé dans :\n{packaged_dir}"
+            QMessageBox.information(self, "Succès", msg)
 
-            # super().accept()
-
+            super().accept()
         except Exception as e:
             # everything else bubbles up here
             QMessageBox.critical(self, "Erreur", f"Une erreur est survenue :\n{e}")

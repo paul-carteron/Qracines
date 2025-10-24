@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>531</width>
-    <height>661</height>
+    <height>657</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -248,7 +248,7 @@
    <property name="title">
     <string>Paramétrage Généraux</string>
    </property>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>

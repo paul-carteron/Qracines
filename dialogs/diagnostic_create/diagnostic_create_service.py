@@ -27,12 +27,22 @@ from ...utils.layers import load_gpkg, create_relation, get_style
 from ...utils.utils import fold
 
 class DiagnosticService:
-
-    def __init__(self, essences_layer: dict):
+    def __init__(
+        self,
+        dmin: int,
+        dmax: int,
+        hmin: int,
+        hmax: int,
+        essences_layer: dict,
+        grid_controller
+    ):
         self.iface = iface
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
+        self.dmin, self.dmax = dmin, dmax
+        self.hmin, self.hmax = hmin, hmax
         self.essences_layer = essences_layer
+        self.grid_controller = grid_controller
 
     def run(self):
         """
@@ -52,6 +62,7 @@ class DiagnosticService:
         placette_manager = LayerManager("Placette")
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
+        self._style_placette(placette_manager)
         placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 15)
         
         # TRANSECT
@@ -59,6 +70,7 @@ class DiagnosticService:
         transect_manager = LayerManager("Transect")
         self._init_transect_form(transect_manager)
         self._configure_transect(transect_manager)
+        self._style_transect(transect_manager)
         transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # LIMITE
@@ -126,6 +138,9 @@ class DiagnosticService:
         for layer_name in private_layers:
             layer = LayerManager(layer_name).layer
             layer.setFlags(QgsMapLayer.Private)
+
+        if self.grid_controller.is_valid():
+            self.grid_controller.add_grid("VECTEUR")
 
     def _create_relations(self):
         pairs = [
@@ -391,6 +406,13 @@ class DiagnosticService:
         return None
 
     @staticmethod
+    def _style_placette(placette_manager):
+        layer = placette_manager.layer
+        s = layer.renderer().symbol()
+        s.symbolLayer(0).setSize(3)
+        layer.triggerRepaint()
+
+    @staticmethod
     def _init_transect_form(transect_manager):
 
         transect_fb = transect_manager.forms
@@ -434,6 +456,41 @@ class DiagnosticService:
         transect_f.set_default_value(field_name, "uuid()", apply_on_update=False)
         transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
+        # TR_PARCELLE
+        field_name = "TR_PARCELLE"
+        filtre = f"""
+            $id = maximum($id, group_by:="{field_name}")
+            AND
+            aggregate(
+                'Gha',
+                'count',
+                1,
+                filter := "UUID" = attribute(@parent, 'UUID')
+            ) > 0
+            """
+        config = {
+            'FilterExpression': filtre,
+            'Key': 'PLT_PARCELLE',
+            'LayerName': 'Placette',
+            'Value': 'PLT_PARCELLE'
+        }
+        transect_f.add_value_relation(field_name, config)
+        default_value = f"""
+            array_first(
+                aggregate(
+                    'Placette',
+                    'array_agg',
+                    "{field_name}",
+                    filter := aggregate(
+                        'Gha','count',1,
+                        filter := "UUID" = attribute(@parent, 'UUID')
+                    ) > 0,
+                    order_by := $id
+                )
+            )
+            """
+        transect_f.set_default_value(field_name, default_value)
+
         # TR_TYPE_ESS
         field_name = "TR_TYPE_ESS"
         types = {f["type"]: f["type"] for f in self.essences_layer.getFeatures()}
@@ -454,20 +511,27 @@ class DiagnosticService:
         # TR_DIAM
         field_name = "TR_DIAM"
         transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        transect_f.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(15, 110 + 1, 5)]})
+        transect_f.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(self.dmin, self.dmax + 1, 5)]})
         expression = '"TR_DIAM" != \'\''
         description = "Le champ TR_DIAM ne peut pas être vide."
         transect_f.set_constraint_expression(field_name, expression, description, QgsFieldConstraints.ConstraintStrengthHard)
 
         # TR_HAUTEUR
         field_name = "TR_HAUTEUR"
-        transect_f.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(3, 30 + 1)]})
+        transect_f.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(self.hmin, self.hmax + 1)]})
 
         # TR_EFFECTIF
         field_name = "TR_EFFECTIF"
         transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
         transect_f.add_range(field_name, {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 0, 'Step': 1})
         transect_f.set_default_value(field_name, '1', False)
+
+    @staticmethod
+    def _style_transect(transect_manager):
+        layer = transect_manager.layer
+        s = layer.renderer().symbol()
+        s.symbolLayer(0).setSize(2)
+        layer.triggerRepaint()
 
     @staticmethod
     def _init_gha_form(gha_manager):
@@ -749,7 +813,8 @@ class DiagnosticService:
         picto_f.add_value_map("PICTO_SHAPE", {"map": [{label: shape} for label, shape in shape_map.items()]})
         picto_f.set_default_value("PICTO_SHAPE", "'triangle'")
 
-    def _style_picto(self, picto_manager):
+    @staticmethod
+    def _style_picto(picto_manager):
         layer = picto_manager.layer
         
         sym_layer = QgsSimpleMarkerSymbolLayer()

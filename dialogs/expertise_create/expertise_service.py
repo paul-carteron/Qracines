@@ -1,4 +1,3 @@
-from pathlib import Path
 import processing
 
 from qgis.core import (
@@ -20,7 +19,7 @@ from PyQt5.QtGui import QColor
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
 from ...utils.config import get_peuplements, get_limites
-from ...utils.layers import load_gpkg, create_relation, load_vectors
+from ...utils.layers import load_gpkg, create_relation
 
 class ExpertiseService:
 
@@ -139,7 +138,6 @@ class ExpertiseService:
 
         if self.grid_controller.is_valid():
             self.grid_controller.add_grid("VECTEUR")
-
 
     def _create_relations(self):
         pairs = [
