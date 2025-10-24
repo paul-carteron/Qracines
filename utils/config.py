@@ -60,6 +60,9 @@ def _find_entry(logical_key):
     or KeyError if missing entirely.
     """
     struct = _load_sig_structure()["structure"]
+    if logical_key in struct.keys():
+        path = struct[logical_key].get("path", [])
+        return False, path  
     for folder in struct.values():
         files = folder.get("files", {})
         if logical_key in files:
@@ -68,15 +71,18 @@ def _find_entry(logical_key):
 
 def get_path(logical_key, forest=None, base_dir=None):
     entry, path = _find_entry(logical_key)
-    filename = entry.get("filename")
-    if not filename:
-        raise KeyError(f"Entry for '{logical_key}' missing 'filename'")
-
     forest = forest or get_project_variable("forest_prefix")
     base_dir = base_dir or get_project_variable("forest_directory")
     if not forest or not base_dir:
         QMessageBox.critical(None, "Configuration Error", "Veuillez sélectionner une forêt dans 'project_settings'.")
         return None
+    
+    if not entry:
+        return(Path(base_dir).joinpath(*path))
+
+    filename = entry.get("filename")
+    if not filename:
+        raise KeyError(f"Entry for '{logical_key}' missing 'filename'")
 
     # ensure dir exists
     folder = Path(base_dir).joinpath(*path)
