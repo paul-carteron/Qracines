@@ -475,21 +475,6 @@ class DiagnosticService:
             'Value': 'PLT_PARCELLE'
         }
         transect_f.add_value_relation(field_name, config)
-        default_value = f"""
-            array_first(
-                aggregate(
-                    'Placette',
-                    'array_agg',
-                    "{field_name}",
-                    filter := aggregate(
-                        'Gha','count',1,
-                        filter := "UUID" = attribute(@parent, 'UUID')
-                    ) > 0,
-                    order_by := $id
-                )
-            )
-            """
-        transect_f.set_default_value(field_name, default_value)
 
         # TR_TYPE_ESS
         field_name = "TR_TYPE_ESS"
