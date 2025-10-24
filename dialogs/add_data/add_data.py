@@ -77,16 +77,6 @@ class AddDataDialog(QDialog):
         """Uncheck every checkbox in all our maps."""
         for chk in chain.from_iterable(m.keys() for m in self._all_checkbox_maps):
             chk.setChecked(False)
-
-    def _check_variables(self):
-        styles_directory = get_global_variable("styles_directory")
-        forest_directory = get_project_variable("forest_directory")
-        forest_prefix = get_project_variable("forest_prefix")
-        
-        if not (styles_directory and forest_directory and forest_prefix):
-            self.iface.messageBar().pushMessage("Sequoia2", "Dossier Sequoia non paramêtrée", level=Qgis.Critical, duration=10)
-            return False
-        return True
     
     def _add_sequoia(self):
         # flatten list of list
@@ -97,7 +87,6 @@ class AddDataDialog(QDialog):
         ]
         if sequoia_keys:
             load_vectors(*sequoia_keys, group_name="SEQUOIA")
-
 
     def _add_vector(self):
         # flatten list of list
@@ -147,7 +136,6 @@ class AddDataDialog(QDialog):
             [load_gpkg(get_path(key), group_name="TERRAIN") for key in gpkg_keys]
 
     def accept(self):
-        self._check_variables()
 
         self._add_sequoia()
         self._add_vector()

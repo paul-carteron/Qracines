@@ -21,7 +21,7 @@ from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDi
 from .dialogs.diagnostic_create.diagnostic_create import DiagnosticDialog
 
 # import utils
-from .utils.variable import get_project_variable
+from .utils.variable import get_project_variable, get_global_variable
 
 from pathlib import Path
 
@@ -156,13 +156,20 @@ class Qsequoia2:
         if not self.project_dialog:
             self.project_dialog = ProjectSettingsDialog(self.iface)
         self.project_dialog.exec_()
-        
+    
     def open_add_data(self):
+        if not self._check_style_dir_is_selected():
+            return None
+        if not self._check_forest_is_selected():
+            return None
+        
         if not self.add_data_dialog:
             self.add_data_dialog = AddDataDialog(self.iface)
         self.add_data_dialog.exec_()
-    
-    # DIAGNOSTIC
+
+    # endregion
+
+    # region DIAGNOSTIC
     def open_diagnostic_create(self):
         if not self.diagnostic_create:
             self.diagnostic_create = DiagnosticDialog()
@@ -170,8 +177,10 @@ class Qsequoia2:
 
     def open_diagnostic_import(self):
         return
+    
+    # endregion
         
-    # PEDOLOGY
+    # region PEDOLOGY
     def open_pedology_create(self):
         if not self._check_forest_is_selected():
             return None
@@ -183,7 +192,9 @@ class Qsequoia2:
     def open_pedology_import(self):
         return
     
-    # TREE MARKING
+    # endregion
+    
+    # region TREE MARKING
     def open_tree_marking_create(self):
         if not self.tree_marking_create:
             self.tree_marking_create = TreeMarkingCreateDialog()
@@ -193,8 +204,10 @@ class Qsequoia2:
         if not self.tree_marking_import:
             self.tree_marking_import = TreeMarkingImportDialog()
         self.tree_marking_import.exec_()
- 
-    # EXPERTISE
+
+    # endregion
+
+    # region EXPERTISE
     def open_expertise_create(self):
         if not self._check_forest_is_selected():
             return None
@@ -216,9 +229,45 @@ class Qsequoia2:
     def _check_forest_is_selected(self):
         forest = get_project_variable("forest_prefix")
         if not forest:
-            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer l'expertise.")
+            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt.")
             return False
         return True
+
+    def _check_style_dir_is_selected(self):
+        style_dir = get_global_variable("styles_directory")
+
+        # 1. Global variable not set
+        if not style_dir:
+            QMessageBox.warning(
+                self.iface.mainWindow(), 
+                "Bibliothèque de styles non sélectionnée",
+                "Veuillez sélectionner un dossier 'Bibliothèque de styles' dans les paramètres globaux."
+            )
+            return False
+
+        # Convert to Path
+        style_path = Path(style_dir)
+
+        # 2. Directory does not exist
+        if not style_path.exists() or not style_path.is_dir():
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                "Dossier introuvable",
+                f"Le dossier indiqué n’existe pas :\n{style_dir}"
+            )
+            return False
+
+        # 3. Check that at least one .qml file exists
+        if not any(style_path.glob("*.qml")):
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                "Aucun style trouvé",
+                f"Le dossier sélectionné ne contient aucun fichier .qml :\n{style_dir}"
+            )
+            return False
+
+        return True
+
 
         
     def unload(self):
