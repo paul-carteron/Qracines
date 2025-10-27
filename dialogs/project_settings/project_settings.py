@@ -39,6 +39,23 @@ class ProjectSettingsDialog(QDialog):
             show_message(self.iface, f"Projet {project_key} n'existe pas", "critical", 15)
             return 
 
+        # Resolve path and check existence
+        project_path = get_path(project_key)
+        if project_path.exists():
+            reply = QMessageBox.question(
+                self.iface.mainWindow(),
+                "Projet existant",
+                f"Le projet '{project_key}' existe déjà.\n"
+                "Souhaitez-vous l'ouvrir plutôt que d'en créer un nouveau ?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            if reply == QMessageBox.Yes:
+                # Open existing project and exit early
+                self.iface.addProject(str(project_path))
+                super().accept()
+                return
+        
         try:
             set_project_variable("forest_map_project", project_key) #why do i need that ? I think is because of composer but i'm not sure anymore
             clear_project()
@@ -61,10 +78,8 @@ class ProjectSettingsDialog(QDialog):
                     configure_layout(self.project, self.iface, layout, layout_cfg.theme, canvas_cfg.scale, layout_cfg.legends)
                     self.iface.openLayoutDesigner(layout)
                     
-            # Save project qgz
-            if self.ui.cb_save_project.isChecked():
-                save_path = get_path(project_key)
-                self.project.write(str(save_path))
+            self.project.setFileName(str(project_path))
+            self.project.setTitle(project_path.stem)
 
             super().accept()
 

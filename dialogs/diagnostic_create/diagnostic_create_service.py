@@ -122,6 +122,8 @@ class DiagnosticService:
         self.table_layers = ["Gha", "Tse", "Va"]
 
         layers = [LayerFactory.create(l, "DIAGNOSTIC") for l in self.parent_layers + self.table_layers] + [self.essences_layer]
+        if self.grid_controller.is_valid():
+            layers = layers + [self.grid_controller.create_grid()]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
@@ -133,26 +135,32 @@ class DiagnosticService:
         self.gpkg_path = result['OUTPUT']
         load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
+        if self.grid_controller.is_valid():
+            self.grid_controller.style_grid(LayerManager(self.grid_controller.name).layer)
+
     def _configure_layers(self):
         private_layers = self.table_layers + ['Essences']
         for layer_name in private_layers:
             layer = LayerManager(layer_name).layer
             layer.setFlags(layer.flags() | QgsMapLayer.Private | QgsMapLayer.Removable)
 
-        sequoia_layer = ['prop_diag_line', 'prop_line','pf_diag_line', 'pf_line', 'pf_polygon', 'ua_polygon']
+        vecteur_layer = ['infra_point', 'infra_line', 'infra_polygon', 'route_line', 'route_polygon'] # Infra polygon peu sauter, route polygon aussi
+        load_vectors(*vecteur_layer, group_name="VECTEUR")
+
+        sequoia_layer = [
+            'prop_diag_line', 'prop_line',
+            'pf_diag_line', 'pf_line', 
+            'sspf_diag_polygon', 'sspf_polygon',
+            'pf_polygon', 'ua_polygon'
+        ]
         load_vectors(*sequoia_layer, group_name="SEQUOIA")
         
-        vecteur_layer = ['infra_line', 'infra_point', 'infra_polygon', 'mh', 'ppi', 'ppe', 'ppr', 'route_line']
-        load_vectors(*vecteur_layer, group_name="VECTEUR")
-        
-        if self.grid_controller.is_valid():
-            self.grid_controller.add_grid()
-
         self.raster_controller.load_selected_rasters()
 
         create_theme("SCAN25", [*self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'scan25'])
         create_theme("IRC", [*vecteur_layer, *self.parent_layers, 'prop_diag_line', 'pf_diag_line', 'ua_polygon', 'pf_polygon', 'irc'])
         create_theme("MNH", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'mnh'])
+        create_theme("PLT_ANC", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'plt_anc'])
 
     def _create_relations(self):
         pairs = [
@@ -200,7 +208,7 @@ class DiagnosticService:
         # PLANT/RÉGÉ
         tab_va = placette_fb.create_tab("Plant/Régé")
         placette_fb.new_add_relation("Va", tab_va, visibility_expression=va_ve)
-        placette_fb.new_add_fields(["VA_HT", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
+        placette_fb.new_add_fields(["VA_HT", "PLT_ELAG", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
 
         # Apply to layer
         placette_fb.apply()
@@ -286,6 +294,8 @@ class DiagnosticService:
 
         # PLT_STADE
         stade = {
+            'RSF': 'En régé. Semis / Fourré',
+            'RGP': 'En régé. Gaulis / Perchis',
             'SFO': 'Semis / Fourré',
             'GPE': 'Gaulis / Perchis',
             'JEU': 'Jeune',
@@ -339,7 +349,7 @@ class DiagnosticService:
 
         # region PLANT/REGE
         # VA_HT
-        placette_f.add_value_map('VA_HT', {'map': [{str(h): str(h)} for h in [0.5, 1, 1.5, 2, 2.5] + list(range(3, 10 + 1))]})
+        placette_f.add_value_map('VA_HT', {'map': [{str(h): str(h)} for h in [0.5, 1, 1.5, 2, 2.5] + list(range(3, 15 + 1))]})
 
         # VA_TX_TROUEE
         tx_trouee = {         
@@ -474,7 +484,7 @@ class DiagnosticService:
         # TR_PARCELLE
         field_name = "TR_PARCELLE"
         filtre = f"""
-            $id = maximum($id, group_by:="{field_name}")
+            $id = maximum($id, group_by:="PLT_PARCELLE")
             AND
             aggregate(
                 'Gha',
@@ -490,11 +500,13 @@ class DiagnosticService:
             'Value': 'PLT_PARCELLE'
         }
         transect_f.add_value_relation(field_name, config)
+        transect_f.set_reuse_last_value(field_name)
 
         # TR_TYPE_ESS
         field_name = "TR_TYPE_ESS"
         types = {f["type"]: f["type"] for f in self.essences_layer.getFeatures()}
         transect_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in types.items()]})
+        transect_f.set_reuse_last_value(field_name)
 
         # TR_ESS
         field_name = "TR_ESS"
@@ -506,7 +518,7 @@ class DiagnosticService:
             'Value': 'essence_variation'
         }
         transect_f.add_value_relation(field_name, config)
-        transect_f.set_default_value(field_name, "current_value('TR_TYPE_ESS')")
+        transect_f.set_reuse_last_value(field_name)
 
         # TR_DIAM
         field_name = "TR_DIAM"

@@ -324,9 +324,13 @@ class GridController(UIBinderMixin):
     def create_grid(self, parca_key="parca_polygon_occup"):
         path = get_path(parca_key)
         parca_layer = QgsVectorLayer(str(path), get_display_name(parca_key), "ogr")
-
-        grid = create_grid(parca_layer, points_per_ha=float(self.points_per_ha.value()))
         
+        self.name = f"Grille ({self.points_per_ha.value()} pts/ha)"
+        grid = create_grid(parca_layer, name = self.name, points_per_ha=float(self.points_per_ha.value()))
+        
+        return grid
+    
+    def style_grid(self, grid: QgsVectorLayer) -> None: 
         sym = QgsMarkerSymbol.createSimple({
             'name': 'cross',
             'size': '3',
@@ -337,16 +341,5 @@ class GridController(UIBinderMixin):
         sym.setOpacity(0.9)
         grid.setRenderer(QgsSingleSymbolRenderer(sym))
         grid.triggerRepaint()
-        
-        return grid
-    
-    def add_grid(self, group_name = None):
-        project = QgsProject.instance()
-        root = project.layerTreeRoot()
-        grid = self.create_grid()
-
-        project.addMapLayer(grid, addToLegend=not bool(group_name))
-        if group_name:
-            (root.findGroup(group_name) or root.addGroup(group_name)).addLayer(grid)
 
         return None

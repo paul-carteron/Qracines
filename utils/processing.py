@@ -88,7 +88,7 @@ def multipart_to_singleparts(layer):
         })["OUTPUT"]
     return singleparts
 
-def create_grid(layer, points_per_ha = 1, clip = True):
+def create_grid(layer, name, points_per_ha = 1, clip = True):
     if points_per_ha <= 0:
         raise ValueError("points_per_ha must be > 0.")
 
@@ -112,5 +112,6 @@ def create_grid(layer, points_per_ha = 1, clip = True):
             'OVERLAY': buffered_layer,
             'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
             })['OUTPUT']
-    grid.setName("Grille")
+    grid.setName(name)
+
     return grid
