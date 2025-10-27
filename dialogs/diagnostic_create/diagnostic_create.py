@@ -51,12 +51,12 @@ class DiagnosticDialog(QDialog):
             hmin=self.ui.sp_hmin.value(),
             hmax=self.ui.sp_hmax.value(),
             essences_layer = self.essences_layer,
-            grid_controller = self.grid_controller
+            grid_controller = self.grid_controller,
+            raster_controller = self.raster_controller
         )
 
         try:
             svc.run()
-            self.raster_controller.load_selected_rasters()
 
             msg = "Expertise complète !"
             if self.packager.is_valid():

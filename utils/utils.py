@@ -1,30 +1,12 @@
 from qgis.core import Qgis, QgsProject, QgsMessageLog, QgsLayerTreeGroup, QgsCoordinateReferenceSystem, QgsMapThemeCollection
 from qgis.utils import iface
 
-from .layers import load_vectors, load_wmts, set_layers_readonly
+from .layers import load_vectors, load_wmts, set_layers_readonly, resolve_layer_name
 from .config import get_wmts, get_display_name, get_wmts, get_project_canvas
 
 def create_theme(name: str, visible_keys: list[str]) -> None:
-
-    # 1. Resolve display names once
-    def _resolve_layer_name(key: str) -> str:
-        # try alias lookup
-        try:
-            return get_display_name(key)   # vector/alias
-        except KeyError:
-            pass
-
-        # try WTMS lookup
-        try:
-            layer_name, _ = get_wmts(key)   # WMTS fallback
-            return layer_name
-        except KeyError:
-            pass
-
-        # final fallback: assume it's already a layer name
-        return key
-        
-    resolved_names = {_resolve_layer_name(key) for key in visible_keys}
+     
+    resolved_names = {resolve_layer_name(key) for key in visible_keys}
 
     # 2. Prepare project and theme objects
     proj = QgsProject.instance()

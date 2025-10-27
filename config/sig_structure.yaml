@@ -28,7 +28,7 @@ structure:
     files:
       ame: { filename: AME.shp }
       batica: { filename: BATICA.shp }
-      bios: { filename: BIOS_polygon.shp, style: BIOS_polygon.qml, display_name:"Réserve de biosphère"}
+      bios: { filename: BIOS_polygon.shp, style: BIOS_polygon.qml, display_name: "Réserve de biosphère"}
       com_line: { filename: COM_line.shp, style: COMS_line.qml, display_name: "COM_line" }
       com_point: { filename: COM_point.shp, style: COMS_point.qml, display_name: "COM_point" }
       coms_line: { filename: COMS_line.shp, style: COMS_line.qml, display_name: "COMS_line" }
@@ -55,8 +55,8 @@ structure:
       parca_polygon_lgd_situation: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_situation.qml, display_name: "Légende" }
       parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml, display_name: "Parcelle cadastrale *"}
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
-      pf_diag_line: { filename: PF_line.shp, style: PF-Diag_line.qml, display_name: "Limite de parcelle w" }
-      pf_line: { filename: PF_line.shp, style: PF_line.qml, display_name: "Limite de parcelle forestière"}
+      pf_diag_line: { filename: PF_line.shp, style: PF-Diag_line.qml, display_name: "Limite de parcelle (blanche)" }
+      pf_line: { filename: PF_line.shp, style: PF_line.qml, display_name: "Limite de parcelle (noire)"}
       pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"}
       picto: {filename: Picto.shp, style: Picto.qml}
       placette: {filename: Placette.shp, style: Placette.qml}
@@ -66,8 +66,8 @@ structure:
       ppi: {filename: PPI_polygon.shp, style: PPI_polygon.qml, display_name: "Périmètre de protection immédiat"}
       ppmh: {filename: PPMH_polygon.shp, style: PPMH_polygon.qml, display_name: "Protection aux titres des abords de monuments historiques"}
       ppr: {filename: PPR_polygon.shp, style: PPR_polygon.qml, display_name: "Périmètre de protection rapproché"}
-      prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml, display_name: "Limite de propriété w"}
-      prop_line: { filename: PROP_line.shp, style: PROP_line.qml, display_name: "Limite de propriété" }
+      prop_diag_line: { filename: PROP_line.shp, style: PROP-Diag_line.qml, display_name: "Limite de propriété (blanche)"}
+      prop_line: { filename: PROP_line.shp, style: PROP_line.qml, display_name: "Limite de propriété (noire)" }
       prop_point: { filename: PROP_point.shp, style: PROP_point.qml, display_name: "Centroid de propriété" }
       prop_polygon: { filename: PROP_polygon.shp, style: PROP_polygon.qml, display_name : Propriété }
       ramsar: {filename: RAMSAR_polygon.shp, style: RAMSAR_polygon.qml, display_name: "Zones humides d'importance internationale"}
@@ -79,8 +79,8 @@ structure:
       sic: { filename: SIC_polygon.shp, style: SIC_polygon.qml, display_name: "Natura 2000: Zone spéciale de conservation"}
       site: {filename: SITE_polygon.shp, style: SITE_polygon.qml, display_name: "Sites classés ou inscrits"}
       sondage: {filename: sondage.shp, style: sondage.qml}
-      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, display_name: "Sous-parcelle forestière w"}
-      sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle forestière"}
+      sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, display_name: "Sous-parcelle (blanche)"}
+      sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle (noire)"}
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
       topo: { filename: TOPO_line.shp, style: TOPO_line.qml, display_name: "Courbe de niveau"}

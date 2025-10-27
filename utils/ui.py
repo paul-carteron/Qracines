@@ -330,7 +330,9 @@ class GridController(UIBinderMixin):
         sym = QgsMarkerSymbol.createSimple({
             'name': 'cross',
             'size': '3',
-            'color': '#000000',
+            'color': 'transparent',         # fill color (none)
+            'outline_color': '#ffffff',     # line color of the cross
+            'outline_width': '0.6',         # line thickness
         })
         sym.setOpacity(0.9)
         grid.setRenderer(QgsSingleSymbolRenderer(sym))
@@ -338,15 +340,13 @@ class GridController(UIBinderMixin):
         
         return grid
     
-    def add_grid(self, group_name="VECTEUR"):
+    def add_grid(self, group_name = None):
         project = QgsProject.instance()
         root = project.layerTreeRoot()
-
-        group = root.findGroup(group_name) or root.addGroup(group_name)
-
         grid = self.create_grid()
-        project.addMapLayer(grid, addToLegend=False)
-        group.addLayer(grid)
 
+        project.addMapLayer(grid, addToLegend=not bool(group_name))
+        if group_name:
+            (root.findGroup(group_name) or root.addGroup(group_name)).addLayer(grid)
 
         return None

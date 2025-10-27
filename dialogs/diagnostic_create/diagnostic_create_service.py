@@ -24,7 +24,7 @@ from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
 from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos
 from ...utils.layers import load_gpkg, create_relation, load_vectors
-from ...utils.utils import fold
+from ...utils.utils import fold, create_theme
 
 class DiagnosticService:
     def __init__(
@@ -34,7 +34,8 @@ class DiagnosticService:
         hmin: int,
         hmax: int,
         essences_layer: dict,
-        grid_controller
+        grid_controller,
+        raster_controller
     ):
         self.iface = iface
         self.project = QgsProject.instance()
@@ -43,6 +44,7 @@ class DiagnosticService:
         self.hmin, self.hmax = hmin, hmax
         self.essences_layer = essences_layer
         self.grid_controller = grid_controller
+        self.raster_controller = raster_controller
 
     def run(self):
         """
@@ -53,6 +55,9 @@ class DiagnosticService:
         
         print("_create_and_load_gpkg")
         self._create_and_load_gpkg()
+
+        print("_configure_layers")
+        self._configure_layers()
 
         print("_create_relations")
         self._create_relations()
@@ -113,16 +118,10 @@ class DiagnosticService:
 
     def _create_and_load_gpkg(self):
 
-        layers = [
-            LayerFactory.create("Placette", "DIAGNOSTIC"),
-            LayerFactory.create("Transect", "DIAGNOSTIC"),
-            LayerFactory.create("Limite", "DIAGNOSTIC"),
-            LayerFactory.create("Picto", "DIAGNOSTIC"),
-            LayerFactory.create("Gha", "DIAGNOSTIC"),
-            LayerFactory.create("Tse", "DIAGNOSTIC"),
-            LayerFactory.create("Va", "DIAGNOSTIC"),
-            self.essences_layer,
-        ]
+        self.parent_layers = ["Placette", "Transect", "Limite", "Picto"]
+        self.table_layers = ["Gha", "Tse", "Va"]
+
+        layers = [LayerFactory.create(l, "DIAGNOSTIC") for l in self.parent_layers + self.table_layers] + [self.essences_layer]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
@@ -134,16 +133,26 @@ class DiagnosticService:
         self.gpkg_path = result['OUTPUT']
         load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
-        private_layers = ["Gha", "Tse", "Essences", "Va"]
+    def _configure_layers(self):
+        private_layers = self.table_layers + ['Essences']
         for layer_name in private_layers:
             layer = LayerManager(layer_name).layer
             layer.setFlags(layer.flags() | QgsMapLayer.Private | QgsMapLayer.Removable)
 
-        pplmt_layer = ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
-        load_vectors(*pplmt_layer, group_name="SEQUOIA")
-
+        sequoia_layer = ['prop_diag_line', 'prop_line','pf_diag_line', 'pf_line', 'pf_polygon', 'ua_polygon']
+        load_vectors(*sequoia_layer, group_name="SEQUOIA")
+        
+        vecteur_layer = ['infra_line', 'infra_point', 'infra_polygon', 'mh', 'ppi', 'ppe', 'ppr', 'route_line']
+        load_vectors(*vecteur_layer, group_name="VECTEUR")
+        
         if self.grid_controller.is_valid():
-            self.grid_controller.add_grid("VECTEUR")
+            self.grid_controller.add_grid()
+
+        self.raster_controller.load_selected_rasters()
+
+        create_theme("SCAN25", [*self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'scan25'])
+        create_theme("IRC", [*vecteur_layer, *self.parent_layers, 'prop_diag_line', 'pf_diag_line', 'ua_polygon', 'pf_polygon', 'irc'])
+        create_theme("MNH", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'mnh'])
 
     def _create_relations(self):
         pairs = [

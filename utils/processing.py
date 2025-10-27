@@ -112,5 +112,5 @@ def create_grid(layer, points_per_ha = 1, clip = True):
             'OVERLAY': buffered_layer,
             'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
             })['OUTPUT']
-    grid.setName("grid")
+    grid.setName("Grille")
     return grid
