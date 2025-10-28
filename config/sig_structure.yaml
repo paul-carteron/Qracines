@@ -113,4 +113,6 @@ structure:
       expertise_synthese: { filename: expertise.xlsx }
       inventaire: { filename: inventaire.gpkg }
       inventaire_synthese: { filename: inventaire.xlsx }
+      diag: { filename: diag.gpkg }
+      diag_synthese: { filename: diag.xlsx }
 

@@ -68,7 +68,7 @@ class DiagnosticService:
         self._init_placette_form(placette_manager)
         self._configure_placette(placette_manager)
         self._style_placette(placette_manager)
-        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 15)
+        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 29)
         
         # TRANSECT
         print("configure TRANSECT layer")
@@ -157,12 +157,13 @@ class DiagnosticService:
         
         self.raster_controller.load_selected_rasters()
 
-        create_theme("SCAN25", [*self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'scan25'])
-        create_theme("IRC", [*vecteur_layer, *self.parent_layers, 'prop_diag_line', 'pf_diag_line', 'ua_polygon', 'pf_polygon', 'irc'])
-        create_theme("MNH", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'mnh'])
-        create_theme("PLT_ANC", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'ua_polygon', 'pf_polygon', 'plt_anc'])
+        create_theme("SCAN25", [*self.parent_layers, 'prop_line', 'pf_line', 'sspf_polygon', 'ua_polygon', 'pf_polygon', 'scan25'])
+        create_theme("IRC", [*vecteur_layer, *self.parent_layers, 'prop_diag_line', 'pf_diag_line', 'sspf_diag_polygon', 'ua_polygon', 'pf_polygon', 'irc'])
+        create_theme("MNH", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'sspf_polygon','ua_polygon', 'pf_polygon', 'mnh'])
+        create_theme("PLT_ANC", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line','sspf_polygon', 'ua_polygon', 'pf_polygon', 'plt_anc'])
 
-    def _create_relations(self):
+    @staticmethod
+    def _create_relations():
         pairs = [
             ('Placette', 'Gha'),
             ('Placette', 'Tse'),

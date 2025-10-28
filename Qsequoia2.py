@@ -19,6 +19,7 @@ from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
 from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
 from .dialogs.diagnostic_create.diagnostic_create import DiagnosticDialog
+from .dialogs.diagnostic_import.diagnostic_import import DiagnosticImportDialog
 
 # import utils
 from .utils.variable import get_project_variable, get_global_variable
@@ -176,7 +177,13 @@ class Qsequoia2:
         self.diagnostic_create.exec_()
 
     def open_diagnostic_import(self):
-        return
+        if not self._check_forest_is_selected():
+            return None
+
+        if not self.diagnostic_import:
+            self.diagnostic_import = DiagnosticImportDialog()
+        self.diagnostic_import.exec_()
+        
     
     # endregion
         
