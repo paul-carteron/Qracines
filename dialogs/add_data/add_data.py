@@ -63,6 +63,7 @@ class AddDataDialog(QDialog):
         self.TERRAIN_CHECKBOX_KEY_MAP = {
             self.ui.cb_terrain_expertise: "expertise",
             self.ui.cb_terrain_inventaire: "inventaire",
+            self.ui.cb_terrain_diag: "diag",
         }
 
         self._all_checkbox_maps = (
