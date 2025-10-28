@@ -7,7 +7,10 @@ from .project_settings_service import compute_layout_info, import_layout, config
 from ...utils.config import get_project, get_path, get_project_canvas, get_project_layout
 from ...utils.layers import configure_snapping 
 from ...utils.utils import show_message, clear_project, create_project
-from ...utils.variable import set_project_variable
+from ...utils.variable import set_project_variable, get_project_variable
+from ..forest_settings.forest_settings import ForestSettingsDialog
+
+from pathlib import Path
 
 class ProjectSettingsDialog(QDialog):
     def __init__(self, iface, parent=None):
@@ -52,7 +55,10 @@ class ProjectSettingsDialog(QDialog):
             )
             if reply == QMessageBox.Yes:
                 # Open existing project and exit early
-                self.iface.addProject(str(project_path))
+                print("Opening existing project:", project_path)
+                self.project.read(str(project_path))
+                new_forest_dir = ForestSettingsDialog.get_forest_path_lookup().get(get_project_variable("forest_dirname"))
+                set_project_variable("forest_directory", new_forest_dir)
                 super().accept()
                 return
         
