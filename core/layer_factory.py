@@ -104,6 +104,15 @@ class LayerFactory:
                     ("VA_CUMUL_TX_VA", QVariant.Double)
                 ],
             },
+            "Reg": {
+                "fields": [
+                    ("fid", QVariant.Int),
+                    ("UUID", QVariant.String),
+                    ("REG_ESS", QVariant.String),
+                    ("REG_STADE", QVariant.String),
+                    ("REG_ETAT", QVariant.String),
+                ],
+            },
         },
         "INVENTAIRE": {
             "arbres": {

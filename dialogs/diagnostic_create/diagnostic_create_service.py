@@ -104,7 +104,14 @@ class DiagnosticService:
         tse_manager = LayerManager("Tse")
         self._init_tse_form(tse_manager)  
         self._configure_tse(tse_manager)  
-        gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        tse_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+
+        # REG
+        print("configure REG layer")
+        reg_manager = LayerManager("Reg")
+        self._init_reg_form(reg_manager)  
+        self._configure_reg(reg_manager)  
+        reg_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # VA
         va_manager = LayerManager("Va")
@@ -119,7 +126,7 @@ class DiagnosticService:
     def _create_and_load_gpkg(self):
 
         self.parent_layers = ["Placette", "Transect", "Limite", "Picto"]
-        self.table_layers = ["Gha", "Tse", "Va"]
+        self.table_layers = ["Gha", "Tse", "Va", "Reg"]
 
         layers = [LayerFactory.create(l, "DIAGNOSTIC") for l in self.parent_layers + self.table_layers] + [self.essences_layer]
         if self.grid_controller.is_valid():
@@ -167,7 +174,8 @@ class DiagnosticService:
         pairs = [
             ('Placette', 'Gha'),
             ('Placette', 'Tse'),
-            ('Placette', 'Va')
+            ('Placette', 'Va'),
+            ('Placette', 'Reg')
         ]
         for parent, child in pairs:
             create_relation(
@@ -206,8 +214,12 @@ class DiagnosticService:
         placette_fb.new_add_relation("Tse", tab_taillis, visibility_expression=forest_ve)
         placette_fb.new_add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
 
-        # PLANT/RÉGÉ
-        tab_va = placette_fb.create_tab("Plant/Régé")
+        # REGE
+        rege_taillis = placette_fb.create_tab("Régé")
+        placette_fb.new_add_relation("Reg", rege_taillis, visibility_expression=forest_ve)
+
+        # RENOUVELLEMENT
+        tab_va = placette_fb.create_tab("Renouvellement")
         placette_fb.new_add_relation("Va", tab_va, visibility_expression=va_ve)
         placette_fb.new_add_fields(["VA_HT", "PLT_ELAG", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
 
@@ -701,6 +713,63 @@ class DiagnosticService:
                 '>40': '>40 cm'
             }
         tse_f.add_value_map('TSE_DIM', {'map': [{str(name): str(code)} for code, name in tse_dim.items()]})
+
+    @staticmethod
+    def _init_reg_form(reg_manager):
+        reg_manager.forms.init_form()
+        reg_manager.forms.new_add_fields(["REG_ESS", "REG_STADE", "REG_ETAT"])
+
+    def _configure_reg(self, reg_manager):
+        reg_f = reg_manager.fields
+
+        # ALIASES
+        aliases = [
+            ("REG_ESS", "Essence"),
+            ("REG_STADE", "Stade"),
+            ("REG_ETAT", "Etat"),
+        ]
+        
+        for field, alias in aliases:
+            reg_manager.fields.set_alias(field, alias)
+
+        # DISPLAY EXPRESSION
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "REG_ESS"),
+                concat(attribute(@ess, 'essence_variation'), ' : ', "REG_STADE", ' - ', "REG_ETAT")
+            )
+            """
+        reg_manager.set_display_expression(display_expression)
+
+        # TSE_ESS
+        field_name = "REG_ESS"
+        reg_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        config = {
+            'Key': 'fid',
+            'LayerName': self.essences_layer.name(),
+            'Value': 'essence_variation'
+        }
+        reg_f.add_value_relation(field_name, config)
+
+        # REG_STADE
+        stades = {
+            "semis_inf_05": "Semis <0.5m",
+            "semis_05_1": "Semis 0.5-1m",
+            "fourre_1_3": "Fourré 1-3m",
+            "semis_3_5": "Gaulis 3-5m",
+            "semis_5_15": "Perchis 5m-15cm"
+            }
+        reg_manager.fields.add_value_map('REG_STADE', {'map': [{str(value): str(descr)} for descr, value in stades.items()]})
+
+        # REG_ETAT
+        etats = {
+            "continue_sup_80": "Continue >80%",
+            "conseqente_50_80": "Conséquente 50-80%",
+            "moderee_30_50": "Modérée 30-50%",
+            "eparse_10_30": "Eparse 10-30%",
+            "infime_inf_10": "Infime <10%"}
+        reg_manager.fields.add_value_map('REG_ETAT', {'map': [{str(value): str(descr)} for descr, value in etats.items()]})
 
     @staticmethod
     def _init_limite_form(limite_manager):
