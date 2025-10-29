@@ -83,7 +83,7 @@ structure:
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle (noire)"}
       sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
-      topo: { filename: TOPO_line.shp, style: TOPO_line.qml, display_name: "Courbe de niveau"}
+      topo_line: { filename: TOPO_line.shp, style: TOPO_line.qml, display_name: "Courbe de niveau"}
       transect: {filename: Transect.shp, style: Transect.qml}
       tse: {filename: Tse.shp, style: Tse.qml}
       ua_polygon: { filename: UA_polygon.shp, style: UA_polygon.qml, display_name: "Unité d analyse" }
