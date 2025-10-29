@@ -742,10 +742,11 @@ class DiagnosticService:
             """
         reg_manager.set_display_expression(display_expression)
 
-        # TSE_ESS
+        # REG_ESS
         field_name = "REG_ESS"
         reg_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
         config = {
+            'FilterExpression': '"variation" IS NULL',
             'Key': 'fid',
             'LayerName': self.essences_layer.name(),
             'Value': 'essence_variation'
