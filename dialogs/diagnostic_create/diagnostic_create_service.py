@@ -207,7 +207,7 @@ class DiagnosticService:
         # PEUPLEMENT
         tab_peupl = placette_fb.create_tab("Peuplement")
         placette_fb.new_add_relation("Gha", tab_peupl, visibility_expression=forest_ve)
-        placette_fb.new_add_fields(["PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_ELAG", "PLT_SANIT", "PLT_CLOISO", "PLT_MECA"], parent = tab_peupl)
+        placette_fb.new_add_fields(["PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
 
         # TAILLIS
         tab_taillis = placette_fb.create_tab("Taillis")
