@@ -133,7 +133,6 @@ class ForestSettingsDialog(QDialog):
         prefix = self._get_prefix_from_directory(self.directory)
         parca_path = get_path("parca_polygon", prefix, self.directory)
         ua_path = get_path("ua_polygon", prefix, self.directory)
-        print(prefix, parca_path, ua_path)
 
         # fill in cartouche
         self._set_directory_and_prefix(self.directory, prefix)
@@ -180,7 +179,6 @@ class ForestSettingsDialog(QDialog):
         path = Path(directory)
         self.ui.forest_path.setCurrentText(dirname)
         set_project_variable("forest_dirname", dirname)
-        set_project_variable("forest_directory", path)
 
         self.ui.lineEdit_prefixe.setText(prefix)
         set_project_variable("forest_prefix", prefix)
@@ -206,7 +204,11 @@ class ForestSettingsDialog(QDialog):
         surface_boisee = surface_non_boisee = 0
 
         if not ua_path.exists() and not parca_path.exists():
-            QMessageBox.warning(None, "Couches manquantes",f"Pas de couches UA ou PARCA trouvées dans {self.directory}. Impossible de calculer les surfaces.")
+            QMessageBox.warning(
+                None,
+                "Couches manquantes",
+                f"Pas de couches PARCA ou UA trouvées dans {self.directory}. Impossible de calculer les surfaces."
+            )
             return
         
         surface_field = "SURF_COR" if ua_path.exists() else "SURF_CA"
@@ -246,8 +248,3 @@ class ForestSettingsDialog(QDialog):
             full = base
             
         self.ui.lineEdit_name.setText(full)
-      
-    def save_current_project(self, map_project):
-        if self.ui.checkBox_saved.isChecked():
-            save_path = get_path(map_project.lower(), self.name, self.directory)
-            self.project.write(save_path)

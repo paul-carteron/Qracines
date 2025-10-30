@@ -1,0 +1,11 @@
+<plugins>
+  <pyqgis_plugin name="Qsequoia2" version="0.1" plugin_id="qsequoia2">
+    <description>Outils internes Racines pour QGIS</description>
+    <about>Automatisation des couches et formulaires d’expertise forestière</about>
+    <version>0.1</version>
+    <author_name>Équipe Racines</author_name>
+    <download_url>https://github.com/mucau/Qsequoia2/archive/refs/tags/0.0.1.zip</download_url>
+    <qgis_minimum_version>3.28</qgis_minimum_version>
+    <qgis_maximum_version>3.99</qgis_maximum_version>
+  </pyqgis_plugin>
+</plugins>
