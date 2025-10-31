@@ -50,7 +50,7 @@ def create_project(project_key):
 
     # Gestion des groupes
     replier()
-    deplier("SEQUOIA")
+    unfold("SEQUOIA")
     print("start zoom on")
     zoom_on(canvas_cfg.zoom_on)
     print("end zoom on")
@@ -125,7 +125,7 @@ def fold(node=None):
         for child in node.children():
             fold(child)
 
-def deplier(group_name):
+def unfold(group_name):
     root = QgsProject.instance().layerTreeRoot()
     group = root.findGroup(group_name)
   

@@ -2,22 +2,22 @@ limites:
   LPL:
     label: "Limite de peuplement"
     color: "gold"
-    width: 0.8
-    style: dashdot
+    width: 0.6
+    style: solid
   MEM:
     label: "Même peuplement"
-    color: "steelblue"
-    width: 1
-    style: solid
+    color: "gold"
+    width: 0.6
+    style: dashed
   LPF:
     label: "Limite de parcelle"
     color: "limegreen"
-    width: 0.8
+    width: 0.6
     style: dash
   RFO:
     label: "Route"
     color: "red"
-    width: 0.8
+    width: 0.6
     style: solid
   PNA:
     label: "Piste"
@@ -27,20 +27,20 @@ limites:
   RUI:
     label: "Ruisseau/Fossé"
     color: "cyan"
-    width: 0.8
+    width: 0.6
     style: dashdot
   TAL:
     label: "Talus"
     color: "peru"
-    width: 0.8
+    width: 0.6
     style: solid
   CLO:
     label: "Clôture"
     color: "black"
-    width: 0.8
+    width: 0.6
     style: dash
   OTH:
     label: "Autre"
     color: "gray"
-    width: 0.8
+    width: 0.6
     style: dashdotdot

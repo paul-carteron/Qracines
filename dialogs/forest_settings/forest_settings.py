@@ -179,7 +179,8 @@ class ForestSettingsDialog(QDialog):
         path = Path(directory)
         self.ui.forest_path.setCurrentText(dirname)
         set_project_variable("forest_dirname", dirname)
-
+        set_project_variable("forest_directory", path)
+        
         self.ui.lineEdit_prefixe.setText(prefix)
         set_project_variable("forest_prefix", prefix)
 

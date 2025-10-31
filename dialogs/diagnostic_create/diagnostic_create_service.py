@@ -24,7 +24,7 @@ from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
 from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos
 from ...utils.layers import load_gpkg, create_relation, load_vectors
-from ...utils.utils import fold, create_theme
+from ...utils.utils import fold, unfold, create_theme
 
 class DiagnosticService:
     def __init__(
@@ -120,6 +120,7 @@ class DiagnosticService:
         va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         fold()
+        unfold("DIAGNOSTIC")
 
         return self.gpkg_path
 
@@ -192,7 +193,7 @@ class DiagnosticService:
         placette_fb.init_form()
 
         # ve: stand for visibility_expression
-        forest_plt = "('FRF', 'FIF', 'FRM', 'FIM', 'FRR', 'FIR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN')"
+        forest_plt = "('FRF', 'FIF', 'FRM', 'FIM', 'FRR', 'FIR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN', 'REC')"
         va_plt = "('REF', 'PLF', 'REM', 'PLM', 'RER', 'PLR')"
 
         forest_ve = f"\"PLT_TYPE\" IN {forest_plt}"
@@ -815,7 +816,7 @@ class DiagnosticService:
         categories = []
         for code, props in cfg.items():
             color = QColor(props.get("color", "black"))
-            width = float(props.get("width", 0.8))
+            width = float(props.get("width", 0.6))
             line_type = props.get("style", "solid").lower()
             label = props.get("label", code)
 
@@ -878,7 +879,7 @@ class DiagnosticService:
             "PICTO_COLOR",
             {"map": [{label: hexval} for label, hexval in color_map.items()]}
         )
-        picto_f.set_default_value("PICTO_COLOR", "'#e41a1c'")
+        picto_f.set_reuse_last_value("PICTO_COLOR")
 
         # PICTO_SHAPE
         shape_map = {
@@ -894,7 +895,7 @@ class DiagnosticService:
 
         # Store enum values as integers (Qgis.MarkerShape is an IntEnum)
         picto_f.add_value_map("PICTO_SHAPE", {"map": [{label: shape} for label, shape in shape_map.items()]})
-        picto_f.set_default_value("PICTO_SHAPE", "'triangle'")
+        picto_f.set_reuse_last_value("PICTO_SHAPE")
 
     @staticmethod
     def _style_picto(picto_manager):
