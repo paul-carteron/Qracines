@@ -22,7 +22,7 @@ from qgis.utils import iface
 
 from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
-from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos
+from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos, get_display_name
 from ...utils.layers import load_gpkg, create_relation, load_vectors
 from ...utils.utils import fold, unfold, create_theme
 
@@ -163,6 +163,21 @@ class DiagnosticService:
         ]
         load_vectors(*sequoia_layer, group_name="SEQUOIA")
         
+        for key in vecteur_layer + sequoia_layer:
+            print(f"Configure layer: {key}")
+            layer_name = get_display_name(key)
+            layer = LayerManager(layer_name).layer
+
+            if not layer:
+                continue
+
+            # --- Flags communs à tous types de couches -----------------------------
+            flags = layer.flags()
+            flags &= ~QgsMapLayer.Searchable     # non recherchable
+            flags &= ~QgsMapLayer.Identifiable   # non cliquable avec l'outil Identifier
+            layer.setFlags(flags)
+            layer.setReadOnly(True)
+
         self.raster_controller.load_selected_rasters()
 
         create_theme("SCAN25", [*self.parent_layers, 'prop_line', 'pf_line', 'sspf_polygon', 'ua_polygon', 'pf_polygon', 'scan25'])
@@ -186,30 +201,29 @@ class DiagnosticService:
                 relation_name = child
             )
     
-    @staticmethod
-    def _init_placette_form(placette_manager):
+    def _init_placette_form(self, placette_manager):
 
         placette_fb = placette_manager.forms
         placette_fb.init_form()
 
         # ve: stand for visibility_expression
-        forest_plt = "('FRF', 'FIF', 'FRM', 'FIM', 'FRR', 'FIR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN', 'REC')"
-        va_plt = "('REF', 'PLF', 'REM', 'PLM', 'RER', 'PLR')"
+        self.forest_plt = "('FRF', 'FIF', 'FRM', 'FIM', 'FRR', 'FIR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN', 'REC')"
+        self.va_plt = "('REF', 'PLF', 'REM', 'PLM', 'RER', 'PLR')"
 
-        forest_ve = f"\"PLT_TYPE\" IN {forest_plt}"
-        va_ve = f"\"PLT_TYPE\" IN {va_plt}"
+        forest_ve = f"\"PLT_TYPE\" IN {self.forest_plt}"
+        va_ve = f"\"PLT_TYPE\" IN {self.va_plt}"
         both = f"{va_ve} OR {forest_ve}"
 
         # GENERAL
         general_tab = placette_fb.create_tab("Général")
         group = placette_fb.create_group("", parent = general_tab, columns=2)
         placette_fb.new_add_fields(["COMPTEUR", "PLT_PARCELLE"], parent = group)
-        placette_fb.new_add_fields(["PLT_TYPE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
+        placette_fb.new_add_fields(["PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
 
         # PEUPLEMENT
         tab_peupl = placette_fb.create_tab("Peuplement")
         placette_fb.new_add_relation("Gha", tab_peupl, visibility_expression=forest_ve)
-        placette_fb.new_add_fields(["PLT_RICH", "PLT_STADE", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
+        placette_fb.new_add_fields(["PLT_RICH", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
 
         # TAILLIS
         tab_taillis = placette_fb.create_tab("Taillis")
@@ -228,8 +242,7 @@ class DiagnosticService:
         # Apply to layer
         placette_fb.apply()
 
-    @staticmethod
-    def _configure_placette(placette_manager):
+    def _configure_placette(self, placette_manager):
         placette_f = placette_manager.fields
 
         # ALIASES
@@ -290,25 +303,8 @@ class DiagnosticService:
         placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in peuplements.items()]})
         placette_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
-        # PLT_PHOTO
-        placette_f.add_external_resource("PLT_PHOTO")
-
-        # endregion
-
-        # region PEUPLEMENT
-        # PLT_RICH
-        richesse = {
-            'TRI': 'Très riche',
-            'RRI': 'Riche',
-            'MRI': 'Moy. riche',
-            'PPA': 'Pauvre',
-            'TPA': 'Ruiné',
-            'SIN': 'Sinistré'
-        }
-        placette_f.add_value_map('PLT_RICH', {'map': [{str(name): str(code)} for code, name in richesse.items()]})
-        placette_f.set_constraint("PLT_RICH", QgsFieldConstraints.ConstraintNotNull, QgsFieldConstraints.ConstraintStrengthHard)
-
         # PLT_STADE
+        field_name = 'PLT_STADE'
         stade = {
             'RSF': 'En régé. Semis / Fourré',
             'RGP': 'En régé. Gaulis / Perchis',
@@ -320,8 +316,30 @@ class DiagnosticService:
             'EXP': 'Exploitable',
             'NEX': 'Non exploitable'
         }
-        placette_f.add_value_map('PLT_STADE', {'map': [{str(name): str(code)} for code, name in stade.items()]})
-        placette_f.set_constraint("PLT_STADE", QgsFieldConstraints.ConstraintNotNull, QgsFieldConstraints.ConstraintStrengthHard)
+        placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in stade.items()]})
+        c_exp = f'"PLT_TYPE" IN {self.forest_plt} AND "{field_name}" IS NOT NULL'
+        placette_f.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} ne peut pas être vide.")
+
+
+        # PLT_PHOTO
+        placette_f.add_external_resource("PLT_PHOTO")
+
+        # endregion
+
+        # region PEUPLEMENT
+        # PLT_RICH
+        field_name = 'PLT_RICH'
+        richesse = {
+            'TRI': 'Très riche',
+            'RRI': 'Riche',
+            'MRI': 'Moy. riche',
+            'PPA': 'Pauvre',
+            'TPA': 'Ruiné',
+            'SIN': 'Sinistré'
+        }
+        placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in richesse.items()]})
+        c_exp = f'"PLT_TYPE" IN {self.forest_plt} AND "{field_name}" IS NOT NULL'
+        placette_f.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} ne peut pas être vide.")
 
         # PLT_DMOY
         placette_f.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(5, 150 + 1, 10)]})
@@ -518,6 +536,7 @@ class DiagnosticService:
         }
         transect_f.add_value_relation(field_name, config)
         transect_f.set_reuse_last_value(field_name)
+        transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
         # TR_TYPE_ESS
         field_name = "TR_TYPE_ESS"
