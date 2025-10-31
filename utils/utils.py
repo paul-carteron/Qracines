@@ -27,10 +27,6 @@ def create_theme(name: str, visible_keys: list[str]) -> None:
     # 5. Insert the completed theme
     mtc.insert(name, theme_state)
     
-    root  = proj.layerTreeRoot()
-    model = iface.layerTreeView().layerTreeModel()
-    mtc.applyTheme(name, root, model)
-
 def create_project(project_key):
     loading_function = {
         "vector" : load_vectors,

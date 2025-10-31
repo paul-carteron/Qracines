@@ -198,6 +198,7 @@ class DiagnosticService:
 
         forest_ve = f"\"PLT_TYPE\" IN {forest_plt}"
         va_ve = f"\"PLT_TYPE\" IN {va_plt}"
+        both = f"{va_ve} OR {forest_ve}"
 
         # GENERAL
         general_tab = placette_fb.create_tab("Général")
@@ -212,7 +213,7 @@ class DiagnosticService:
 
         # TAILLIS
         tab_taillis = placette_fb.create_tab("Taillis")
-        placette_fb.new_add_relation("Tse", tab_taillis, visibility_expression=forest_ve)
+        placette_fb.new_add_relation("Tse", tab_taillis, visibility_expression=both)
         placette_fb.new_add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
 
         # REGE
@@ -305,6 +306,7 @@ class DiagnosticService:
             'SIN': 'Sinistré'
         }
         placette_f.add_value_map('PLT_RICH', {'map': [{str(name): str(code)} for code, name in richesse.items()]})
+        placette_f.set_constraint("PLT_RICH", QgsFieldConstraints.ConstraintNotNull, QgsFieldConstraints.ConstraintStrengthHard)
 
         # PLT_STADE
         stade = {
@@ -319,6 +321,7 @@ class DiagnosticService:
             'NEX': 'Non exploitable'
         }
         placette_f.add_value_map('PLT_STADE', {'map': [{str(name): str(code)} for code, name in stade.items()]})
+        placette_f.set_constraint("PLT_STADE", QgsFieldConstraints.ConstraintNotNull, QgsFieldConstraints.ConstraintStrengthHard)
 
         # PLT_DMOY
         placette_f.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(5, 150 + 1, 10)]})
@@ -361,20 +364,20 @@ class DiagnosticService:
         placette_f.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
         # endregion
 
-        # region PLANT/REGE
+        # region RENOUVELLEMENT
         # VA_HT
         placette_f.add_value_map('VA_HT', {'map': [{str(h): str(h)} for h in [0.5, 1, 1.5, 2, 2.5] + list(range(3, 15 + 1))]})
 
         # VA_TX_TROUEE
         tx_trouee = {         
-            '<10': '<10% (1/10)',
+            '0': '<10% (1/10)',
             '10': '10% (1/10)',
             '20': '20% (1/5)',
             '25': '25% (1/4)',
             '33': '33% (1/3)',
             '50': '50% (1/2)',
             '66': '66% (2/3)',
-            '>66': '+ de 66% (2/3)',
+            '100': '+ de 66% (2/3)',
         }
         placette_f.add_value_map('VA_TX_TROUEE', {'map': [{str(name): str(code)} for code, name in tx_trouee.items()]})
 
@@ -388,14 +391,14 @@ class DiagnosticService:
 
         # VA_TX_DEG
         tx_deg = {         
-            '<10': '<10% (1/10)',
+            '0': '<10% (1/10)',
             '10': '10% (1/10)',
             '20': '20% (1/5)',
             '25': '25% (1/4)',
             '33': '33% (1/3)',
             '50': '50% (1/2)',
             '66': '66% (2/3)',
-            '>66': '+ de 66% (2/3)',
+            '100': '+ de 66% (2/3)',
         }
         placette_f.add_value_map('VA_TX_DEG', {'map': [{str(name): str(code)} for code, name in tx_deg.items()]})
 
