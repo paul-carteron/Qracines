@@ -22,6 +22,8 @@ class LayerFactory:
                     ("PLT_PARCELLE", QVariant.String),
                     ("PLT_TYPE", QVariant.String),
                     ("PLT_RICH", QVariant.String),
+                    ("PLT_SINISTRE", QVariant.Bool),
+                    ("PLT_ACCESS", QVariant.Bool),
                     ("PLT_STADE", QVariant.String),
                     ("PLT_DMOY", QVariant.String),
                     ("PLT_ELAG", QVariant.String), 

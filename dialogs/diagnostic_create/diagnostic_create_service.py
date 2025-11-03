@@ -224,6 +224,8 @@ class DiagnosticService:
         tab_peupl = placette_fb.create_tab("Peuplement")
         placette_fb.new_add_relation("Gha", tab_peupl, visibility_expression=forest_ve)
         placette_fb.new_add_fields(["PLT_RICH", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
+        group = placette_fb.create_group("", parent = tab_peupl, columns=2)
+        placette_fb.new_add_fields(["PLT_SINISTRE", "PLT_ACCESS"], parent = group)
 
         # TAILLIS
         tab_taillis = placette_fb.create_tab("Taillis")
@@ -250,18 +252,20 @@ class DiagnosticService:
             ("COMPTEUR", "Placette n°"),
             ("PLT_PARCELLE", "PRF/SPRF"),
             ("PLT_TYPE", "Type de peuplement"),
+            ("PLT_STADE", "Stade"),
             ("PLT_AME", "Aménagement"), 
             ("PLT_RMQ", "Remarque"), 
             ("PLT_PHOTO", "Photo"),
             # PEUPLEMENT
             ("PLT_RICH", "Richesse"),
-            ("PLT_STADE", "Stade"),
             ("PLT_DMOY", "Diamètre Moyen (cm)"),
             ("PLT_ELAG", "Élagage"), 
             ("PLT_SANIT", "Sanitaire"), 
             ("PLT_CLOISO", "Cloisonnement"), 
             ("PLT_MECA", "Mécanisation"),
-            # PLANT/REGE
+            ("PLT_SINISTRE", "Peuplement sinistré ?"),
+            ("PLT_ACCESS", "Peuplement accessible ?"),
+            # RENOUVELLEMENT
             ("VA_HT", "Hauteur plantation (m)"),
             ("VA_TX_TROUEE", "Taux trouée (%)"),
             ("VA_VEG_CON", "Végétation concurrente"),
@@ -392,6 +396,13 @@ class DiagnosticService:
             'NM_HUMIDE': 'Non mécanisable - Humide'
         }
         placette_f.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
+
+        # PLT_SINISTRE 
+        placette_f.set_default_value("PLT_SINISTRE", "FALSE")
+
+        # PLT_ACCESS 
+        placette_f.set_default_value("PLT_ACCESS", "FALSE")
+
         # endregion
 
         # region RENOUVELLEMENT
