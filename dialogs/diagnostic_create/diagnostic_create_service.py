@@ -346,8 +346,7 @@ class DiagnosticService:
             'RRI': 'Riche',
             'MRI': 'Moy. riche',
             'PPA': 'Pauvre',
-            'TPA': 'Ruiné',
-            'SIN': 'Sinistré'
+            'TPA': 'Ruiné'
         }
         placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in richesse.items()]})
         c_exp = f'''
