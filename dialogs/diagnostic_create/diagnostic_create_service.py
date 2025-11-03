@@ -308,18 +308,26 @@ class DiagnosticService:
         stade = {
             'RSF': 'En régé. Semis / Fourré',
             'RGP': 'En régé. Gaulis / Perchis',
-            'SFO': 'Semis / Fourré',
-            'GPE': 'Gaulis / Perchis',
             'JEU': 'Jeune',
             'ADU': 'Adulte',
             'MAT': 'Mature',
+            'SFO': 'Semis / Fourré',
+            'GPE': 'Gaulis / Perchis',
             'EXP': 'Exploitable',
             'NEX': 'Non exploitable'
         }
         placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in stade.items()]})
-        c_exp = f'"PLT_TYPE" IN {self.forest_plt} AND "{field_name}" IS NOT NULL'
-        placette_f.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} ne peut pas être vide.")
-
+        c_exp = f'''
+        ("PLT_TYPE" IN {tuple(get_peuplements("non_forestier"))} AND ("{field_name}" IS NULL OR "{field_name}" = ''))
+        OR
+        ("PLT_TYPE" IN {tuple(get_peuplements("renouvellement"))} AND "{field_name}" IN ('SFO','GPE'))
+        OR
+        ("PLT_TYPE" IN {tuple(get_peuplements("futaie"))} AND "{field_name}" IN ('RSF','RGP','JEU','ADU','MAT'))
+        OR
+        ("PLT_TYPE" IN {tuple(get_peuplements("taillis"))} AND "{field_name}" IN ('EXP','NEX'))
+        '''
+        description = "Le stade dépend du type de peuplements, ex: 'SFO' ou 'GPE' pour les renouvellements."
+        placette_f.set_constraint_expression(field_name, c_exp, description,  strength=QgsFieldConstraints.ConstraintStrengthHard)
 
         # PLT_PHOTO
         placette_f.add_external_resource("PLT_PHOTO")
@@ -338,8 +346,12 @@ class DiagnosticService:
             'SIN': 'Sinistré'
         }
         placette_f.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in richesse.items()]})
-        c_exp = f'"PLT_TYPE" IN {self.forest_plt} AND "{field_name}" IS NOT NULL'
-        placette_f.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} ne peut pas être vide.")
+        c_exp = f'''
+        ("PLT_TYPE" NOT IN {tuple(get_peuplements("futaie", "taillis"))})
+        OR
+        ("{field_name}" IS NOT NULL AND "{field_name}" <> '')
+        '''
+        placette_f.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} doit être rempli pour les futaies ou taillis.")
 
         # PLT_DMOY
         placette_f.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(5, 150 + 1, 10)]})

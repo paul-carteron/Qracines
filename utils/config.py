@@ -244,15 +244,26 @@ def _load_peuplement_config() -> dict:
             _PEUPLEMENT_CONFIG = yaml.safe_load(f)
     return _PEUPLEMENT_CONFIG
 
-def get_peuplements():
+def get_peuplements(*categories):
     """
     Return the list of guide names defined under 'guides' in stations.yaml.
     """
     peuplement_config = _load_peuplement_config()
     peuplements = peuplement_config.get("peuplement")
     if not isinstance(peuplements, dict):
-        raise KeyError("Missing or invalid top‐level 'guides' mapping in stations.yaml")
-    return peuplements
+        raise KeyError("Missing or invalid top-level 'peuplement' mapping in configuration file.")
+
+    # If no category provided, include all
+    selected_cats = categories or peuplements.keys()
+
+    # Validate and flatten
+    result = {}
+    for cat in selected_cats:
+        if cat not in peuplements:
+            raise KeyError(f"Unknown category '{cat}'. Available: {', '.join(peuplements.keys())}")
+        result.update(peuplements[cat])
+
+    return result
 
 # endregion
 
