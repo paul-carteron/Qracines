@@ -1,13 +1,13 @@
 from qgis.core import Qgis, QgsProject, QgsMessageLog, QgsLayerTreeGroup, QgsCoordinateReferenceSystem, QgsMapThemeCollection
 from qgis.utils import iface
 
-from .layers import load_vectors, load_wmts, set_layers_readonly, resolve_layer_name
+from .layers import load_vectors, load_wmts, set_layers_readonly, resolve_layer_name, load_rasters, load_gpkg
 from .config import get_wmts, get_display_name, get_wmts, get_project_canvas
 
 def create_theme(name: str, visible_keys: list[str]) -> None:
-     
-    resolved_names = {resolve_layer_name(key) for key in visible_keys}
 
+    resolved_names = {resolve_layer_name(key) for key in visible_keys}
+    print(f"resolved names for key '{visible_keys}': {resolved_names}")
     # 2. Prepare project and theme objects
     proj = QgsProject.instance()
     mtc = proj.mapThemeCollection()
@@ -30,7 +30,9 @@ def create_theme(name: str, visible_keys: list[str]) -> None:
 def create_project(project_key):
     loading_function = {
         "vector" : load_vectors,
-        "wmts" : load_wmts
+        "wmts" : load_wmts,
+        "raster" : load_rasters,
+        "gpkg" : load_gpkg
     }
     
     canvas_cfg = get_project_canvas(project_key)
@@ -39,7 +41,9 @@ def create_project(project_key):
         layers = g.get("layers") or []
         loader(*layers, group_name=g.get("name"))
     
-    set_layers_readonly(*canvas_cfg.readonly)
+    print(f"set readonly: {canvas_cfg.readonly}")
+    if canvas_cfg.readonly:
+        set_layers_readonly(*canvas_cfg.readonly)
 
     for t in reversed(canvas_cfg.themes):
         create_theme(t.get("name"), t.get("show"))

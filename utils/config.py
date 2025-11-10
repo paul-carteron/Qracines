@@ -166,9 +166,9 @@ def _load_project() -> dict:
 class ProjectCanvas:
     scale: int
     zoom_on: str
-    readonly: list
-    groups: list
-    themes: list
+    readonly: list | None
+    groups: list 
+    themes: list 
 
 @dataclass
 class ProjectLayout:
@@ -188,6 +188,9 @@ def get_project_canvas(name: str) -> ProjectCanvas:
         for t in raw["themes"]:
             if isinstance(t, dict) and "show" in t:
                 t["show"] = list(_flatten(t["show"]))
+
+    raw.setdefault("readonly", None)      
+
     return ProjectCanvas(**raw)
 
 def get_project_layout(name: str) -> ProjectLayout:

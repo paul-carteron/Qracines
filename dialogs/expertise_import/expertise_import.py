@@ -26,7 +26,7 @@ class ExpertiseImportDialog(QDialog):
         if self.loader.is_valid():
             gpkgs = self.loader.selected_files
 
-        out_path = get_path("expertise")
+        out_path = get_path("expertise_gpkg")
         layers = LayerFactory.get_layer_names("EXPERTISE")
 
         ess_layer_name = "essences"

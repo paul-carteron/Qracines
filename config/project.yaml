@@ -231,3 +231,35 @@ geologie:
         layers: ['parca_polygon_lgd_enjeux']
       - name: legend2
         layers: ['geol']
+
+
+expertise:
+  canvas:
+    scale: 10000
+    zoom_on: 'parca_polygon_occup'
+    readonly: [parca_polygon_occup]
+
+    groups:
+      - name: TERRAIN
+        type: gpkg
+        layers: ['expertise_gpkg']
+      - name: SEQUOIA
+        type: vector
+        layers: ['parca_polygon_occup']
+      - name: RASTER
+        type: raster
+        layers: ['plt_anc', 'irc', 'mnh']
+
+    themes:
+      - name: 1_PLT_ANC
+        show: ['placette', 'transect', 'plt_anc']
+      - name: 2_IRC
+        show: ['parca_polygon_occup', 'placette', 'transect',  'irc']
+      - name: 3_MNH
+        show: ['parca_polygon_occup', 'placette', 'transect', 'mnh']
+
+  layout:
+    theme: '1_PLT_ANC'
+    legends:
+      - name: legend1
+        layers: ['expertise']

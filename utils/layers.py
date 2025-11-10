@@ -1,4 +1,4 @@
-import yaml
+from pathlib import Path
 from qgis.core import (
     QgsProject,
     QgsRasterLayer,
@@ -130,6 +130,19 @@ def load_rasters(*raster_keys, group_name=None):
     return loaded_keys
 
 def load_gpkg(gpkg_path, *layers, group_name=None):
+
+    # Resolve the path if a key is given
+    if not Path(gpkg_path).exists():
+        try:
+            gpkg_path = get_path(gpkg_path)
+        except Exception:
+            raise FileNotFoundError(f"'{gpkg_path}' is not a valid path or key.")
+    else:
+        gpkg_path = Path(gpkg_path)
+
+    if not gpkg_path.exists():
+        raise FileNotFoundError(f"GeoPackage not found: {gpkg_path}")
+    
     datasource = ogr.Open(gpkg_path)
     if datasource is None:
         raise Exception("Failed to open GeoPackage.")
@@ -169,20 +182,23 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
 # endregion
 
 def resolve_layer_name(key: str) -> str:
-    # try alias lookup
+    # Try alias lookup
     try:
-        return get_display_name(key)   # vector/alias
+        name = get_display_name(key)   # vector/alias
+        if name:
+            return name
     except KeyError:
         pass
 
-    # try WTMS lookup
+    # Try WMTS lookup
     try:
         layer_name, _ = get_wmts(key)   # WMTS fallback
-        return layer_name
+        if layer_name:
+            return layer_name
     except KeyError:
         pass
 
-    # final fallback: assume it's already a layer name
+    # Final fallback: assume it's already a layer name
     return key
    
 
