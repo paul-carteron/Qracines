@@ -7,8 +7,9 @@ from .project_settings_service import compute_layout_info, import_layout, config
 from ...utils.config import get_project, get_path, get_project_canvas, get_project_layout
 from ...utils.layers import configure_snapping 
 from ...utils.utils import show_message, clear_project, create_project
-from ...utils.variable import set_project_variable, get_project_variable
+from ...utils.variable import set_project_variable, get_project_variable, get_global_variable
 from ..forest_settings.forest_settings import ForestSettingsDialog
+from ...core.layer import LayerManager
 
 from pathlib import Path
 
@@ -67,6 +68,15 @@ class ProjectSettingsDialog(QDialog):
             clear_project()
             create_project(project_key)
             configure_snapping()
+
+            if project_key == "expertise":
+                placette = LayerManager("placette").layer
+                style_path = Path(get_global_variable("styles_directory")) / "EXPERTISE_placette.qml"
+                placette.loadNamedStyle(str(style_path))
+
+                transect = LayerManager("transect").layer
+                style_path = Path(get_global_variable("styles_directory")) / "EXPERTISE_transect.qml"
+                transect.loadNamedStyle(str(style_path))
             
             show_message(self.iface, f"Projet {project_key} généré avec succès", "success", 15)
             

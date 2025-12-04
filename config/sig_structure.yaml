@@ -10,6 +10,7 @@ structure:
       enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, display_name: "Enjeux patrimoniaux" }
       enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, display_name: "Enjeux sociaux" }
       geologie: { filename: GEOLOGIE.qgz, display_name: "Géologie" }
+      expertise: { filename: EXPERTISE.qgz, display_name: "Expertise" }
 
   raster_folder:
     path: [SIG, 1_RASTER]
@@ -109,7 +110,7 @@ structure:
   gpkg_folder:
     path: [SIG, 4_TERRAIN]
     files:
-      expertise: { filename: expertise.gpkg }
+      expertise_gpkg: { filename: expertise.gpkg}
       expertise_synthese: { filename: expertise.xlsx }
       inventaire: { filename: inventaire.gpkg }
       inventaire_synthese: { filename: inventaire.xlsx }
