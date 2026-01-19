@@ -77,7 +77,7 @@ vect:
       point:   { filename: LIEUDIT_point.shp,         label: "Lieu-dit",               style: LIEUDIT_point.qml          }  
     parca:
       poly:    { filename: PARCA_polygon.shp,         label: "Parcelle cadastrale",    style: PARCA_polygon.qml          }
-      occup:   { filename: PARCA_polygon.shp,         label: "Parcelle cadastrale *",  style: PARCA_polygon_OCCUP.qml    }
+      occup:   { filename: PARCA_polygon.shp,         label: "Parcelle cadastrale *",  style: PARCA_polygon_occup_situation.qml}
       legend:  { filename: PARCA_polygon.shp,         label: "Légende",                style: INFRASTRUCTURE_polygon.qml }
       archive: { filename: PARCA-ARCHIVE_polygon.shp, label: "Parcha archive",         style: ~                          }
     pf:

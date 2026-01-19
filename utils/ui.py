@@ -335,8 +335,8 @@ class GridController(UIBinderMixin):
             'name': 'cross',
             'size': '3',
             'color': 'transparent',         # fill color (none)
-            'outline_color': '#ffffff',     # line color of the cross
-            'outline_width': '0.6',         # line thickness
+            'outline_color': '#ff5400',     # line color of the cross
+            'outline_width': '0.8',         # line thickness
         })
         sym.setOpacity(0.9)
         grid.setRenderer(QgsSingleSymbolRenderer(sym))

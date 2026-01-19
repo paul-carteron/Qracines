@@ -22,7 +22,7 @@ wmts:
     url: contextualWMSLegend=0&crs=EPSG:3857&dpiMode=7&featureCount=10&format=image/jpeg&layers=ORTHOIMAGERY.ORTHO-SAT.SPOT.2023&styles=normal&tileMatrixSet=PM_0_17&tilePixelRatio=0&url=https://data.geopf.fr/wmts?SERVICE%3DWMTS%26VERSION%3D1.0.0%26REQUEST%3DGetCapabilities
   wmts_pci:
     display_name: "IGN Parcellaire Image"
-    url: contextualWMSLegend=0&crs=EPSG:3857&dpiMode=7&featureCount=10&format=image/png&layers=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&styles=PCI vecteur&tileMatrixSet=PM_0_19&tilePixelRatio=0&url=https://data.geopf.fr/wmts?SERVICE%3DWMTS%26VERSION%3D1.0.0%26REQUEST%3DGetCapabilities
+    url: contextualWMSLegend=0&crs=EPSG:2154&dpiMode=7&featureCount=10&format=image/png&http-header:referer=&layers=FXX_PARIMG&styles&url=http://mapsref.brgm.fr/wxs/refcom-brgm/refign
   wmts_geol:
     display_name: "BRGM BD Scan-Geol-50"
     url: contextualWMSLegend=0&crs=EPSG:2154&dpiMode=7&featureCount=10&format=image/png&layers=SCAN_D_GEOL50&styles&url=http://geoservices.brgm.fr/geologie

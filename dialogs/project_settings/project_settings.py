@@ -39,6 +39,7 @@ class ProjectSettingsDialog(QDialog):
     
     def accept(self):
         project_key = self._get_project_key()
+        print("Selected project key:", project_key)
         if not project_key:
             show_message(self.iface, f"Projet {project_key} n'existe pas", "critical", 15)
             return 

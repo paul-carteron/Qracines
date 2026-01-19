@@ -1,8 +1,7 @@
 from typing import Any
 
-from qgis.core import QgsProject,QgsExpressionContextUtils,QgsCoordinateReferenceSystem
+from qgis.core import QgsProject,QgsExpressionContextUtils, QgsVectorLayer
 
-import geopandas as gpd
 from collections import defaultdict
 
 def get_global_variable(name: str) -> Any:
@@ -41,78 +40,96 @@ def _safe_set(setter, name: str, value: Any) -> None:
 
 # Fonction pour City & Owner
 def get_grouped_values_from_shapefile(shapefile_path, value_field, filter_field, surface_field):
-    # Lecture du shapefile
-    gdf = gpd.read_file(shapefile_path)
+
+    # Load shapefile as a QGIS vector layer
+    layer = QgsVectorLayer(str(shapefile_path), "input_layer", "ogr")
+    if not layer.isValid():
+        raise RuntimeError(f"Cannot load shapefile: {str(shapefile_path)}")
     
     # Dictionnaire pour regrouper les valeurs
     group_dict = defaultdict(list)
     
-    # Si filter_field est None, on va regrouper sous un groupe "No Filter"
-    if filter_field is None:
-        filter_field = "No Filter"
+    # Handle "no filter" case
+    use_filter = filter_field is not None
+    no_filter_label = "No Filter"
     
-    # Parcours des entités du GeoDataFrame
-    for _, row in gdf.iterrows():
-        # Si filter_field est "No Filter", on n'utilise pas de champ de filtre
-        filter_value = row[filter_field] if filter_field != "No Filter" else "No Filter"
-        value = row[value_field]
-        surface = row[surface_field]
-        
-        # Regroupement des valeurs par le champ de filtre (par exemple, DEP_CODE)
+    # Iterate over features in the layer
+    for feature in layer.getFeatures():
+        # Filter value
+        if use_filter:
+            filter_value = feature[filter_field]
+        else:
+            filter_value = no_filter_label
+
+        value = feature[value_field]
+        surface = feature[surface_field]
+
         group_dict[filter_value].append((value, surface))
-    
+
     result_list = []
     
-    # Pour chaque groupe, on agrège les valeurs par le champ de filtre
+    # Aggregate values per group
     for group, values in group_dict.items():
-        # Dictionnaire pour accumuler les valeurs uniques par COM_CODE
+
         aggregated_values = defaultdict(float)
-        
+
         for value, surface in values:
             aggregated_values[value] += surface
-        
-        # Trie les valeurs en fonction de la somme des surfaces
-        sorted_values = sorted(aggregated_values.items(), key=lambda x: x[1], reverse=True)
-        
+
+        # Sort by descending surface
+        sorted_values = sorted(
+            aggregated_values.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
         value_list = [v[0] for v in sorted_values]
-        
-        # Construction de la chaîne de caractères avec , et &
+
+        # Build string with ", " and " & "
         if len(value_list) == 2:
             result_string = f"{value_list[0]} & {value_list[1]}"
+        elif len(value_list) > 2:
+            result_string = f"{', '.join(value_list[:-1])} & {value_list[-1]}"
+        elif len(value_list) == 1:
+            result_string = value_list[0]
         else:
-            result_string = f"{', '.join(value_list[:-1])} & {value_list[-1]}" if len(value_list) > 1 else value_list[0]
-        
-        # Si filter_field était None, on ne veut pas afficher " (No Filter)"
-        if filter_field != "No Filter":
+            continue
+
+        # Append group label if filtering is used
+        if use_filter:
             result_list.append(f"{result_string} ({group})")
         else:
-            result_list.append(f"{result_string}")
-    
+            result_list.append(result_string)
+
     return "; ".join(result_list)
-  
+
 # Fonction pour Surface
 def sum_surface_from_shapefile(shapefile_path, surface_field, filter_field=None, filter_value=None):
-    # Lecture du shapefile
-    gdf = gpd.read_file(shapefile_path)
-    
-    # Si un filter_field et un filter_value sont spécifiés, on filtre les données
-    if filter_field and filter_value is not None:
-        gdf = gdf[gdf[filter_field] == filter_value]
-    
-    # Si filter_field est None ou si aucun filtre n'est appliqué, on calcule la somme globale
-    if filter_field is None or filter_value is None:
-        total_surface = gdf[surface_field].sum()
-        return total_surface
-    
-    # Si filter_field est spécifié mais filter_value est None, on groupe par ce champ
-    surface_by_group = gdf.groupby(filter_field)[surface_field].sum()
-    
-    # Vérifier si filter_value est dans les indices et retourner la somme correspondante
-    if filter_value in surface_by_group.index:
-        return surface_by_group[filter_value]
-    else:
-        # Si la valeur n'existe pas dans les indices, retourner None
+    # Load layer
+    layer = QgsVectorLayer(str(shapefile_path), "input_layer", "ogr")
+    if not layer.isValid():
+        raise RuntimeError(f"Cannot load shapefile: {str(shapefile_path)}")
+
+    total = 0.0
+    found = False
+
+    for feature in layer.getFeatures():
+
+        # Apply filter if requested
+        if filter_field is not None and filter_value is not None:
+            if feature[filter_field] != filter_value:
+                continue
+
+        surface = feature[surface_field]
+        if surface is not None:
+            total += surface
+            found = True
+
+    # If filtering was requested but no matching feature was found
+    if filter_field is not None and filter_value is not None and not found:
         return None
+
+    return total
   
 def get_formated_surface(surface_boisee, surface_non_boisee):
     surface_totale = surface_boisee + surface_non_boisee

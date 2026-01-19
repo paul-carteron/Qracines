@@ -54,11 +54,11 @@ structure:
       parca_polygon_lgd_enjeux: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_enjeux.qml, display_name: "Légende" }
       parca_polygon_lgd_peuplements: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_peuplements.qml, display_name: "Légende" }
       parca_polygon_lgd_situation: { filename: PARCA_polygon.shp, style: PARCA_polygon_lgd_situation.qml, display_name: "Légende" }
-      parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_OCCUP.qml, display_name: "Parcelle cadastrale *"}
+      parca_polygon_occup: { filename: PARCA_polygon.shp, style: PARCA_polygon_occup.qml, display_name: "Parcelle cadastrale *"}
       parcelles_polygon: { filename: PARCELLES_polygon.shp }
       pf_diag_line: { filename: PF_line.shp, style: PF-Diag_line.qml, display_name: "Limite de parcelle (blanche)" }
       pf_line: { filename: PF_line.shp, style: PF_line.qml, display_name: "Limite de parcelle (noire)"}
-      pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"}
+      pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"} 
       picto: {filename: Picto.shp, style: Picto.qml}
       placette: {filename: Placette.shp, style: Placette.qml}
       pn: { filename: PN_polygon.shp, style: PN_polygon.qml, display_name: "Parc national"}
@@ -82,15 +82,14 @@ structure:
       sondage: {filename: sondage.shp, style: sondage.qml}
       sspf_diag_polygon: { filename: SSPF_polygon.shp, style: SSPF-Diag_polygon.qml, display_name: "Sous-parcelle (blanche)"}
       sspf_polygon: { filename: SSPF_polygon.shp, style: SSPF_polygon.qml, display_name: "Sous-parcelle (noire)"}
-      sspf_polygon_plt: { filename: SSPF_polygon.shp, style: SSPF2_polygon.qml, display_name: "Peuplements (SSPF)" }
       sspfinv_polygon: { filename: SSPFinv_polygon.shp }
       topo_line: { filename: TOPO_line.shp, style: TOPO_line.qml, display_name: "Courbe de niveau"}
       transect: {filename: Transect.shp, style: Transect.qml}
       tse: {filename: Tse.shp, style: Tse.qml}
       ua_polygon: { filename: UA_polygon.shp, style: UA_polygon.qml, display_name: "Unité d analyse" }
-      ua_polygon_ame: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Aménagements (UA)" }
-      ua_polygon_occup: { filename: UA_polygon.shp, style: UA3_polygon.qml, display_name: "Occupation du sol"}
-      ua_polygon_plt: { filename: UA_polygon.shp, style: UA2_polygon.qml, display_name: "Peuplements (UA)" }
+      ua_polygon_ame: { filename: UA_polygon.shp, style: UA_polygon_ame.qml, display_name: "Aménagements (UA)" }
+      ua_polygon_occup: { filename: UA_polygon.shp, style: UA_polygon_occup.qml, display_name: "Occupation du sol"}
+      ua_polygon_plt: { filename: UA_polygon.shp, style: UA_polygon_plt.qml, display_name: "Peuplements (UA)" }
       va_ess: {filename: Va_ess.shp, style: Va_ess.qml}
       zico: { filename: ZICO_polygon.shp, style: ZICO_polygon.qml}
       znieff1: { filename: ZNIEFF1_polygon.shp, style: ZNIEFF1_polygon.qml, display_name: "Znieff 1"}

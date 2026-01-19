@@ -24,24 +24,19 @@ assemblage:
         type: vector
         layers: &assemblage_w_seq
           - prop_line
-          - parca_polygon_occup
-          - ua_polygon_occup
+          - parca_polygon
       - name: WMTS
         type: wmts
         layers: &assemblage_w_wmts
-          - wmts_scan25_grey
-          - wmts_scan100
-          - wmts_scan1000
           - wmts_pci
-          - wmts_irc
-          - wmts_rgb
+          - wmts_scan25_grey
     themes:
       - name: 1_VECTEUR+SEQUOIA
         show: [*assemblage_w_vect, *assemblage_w_seq]
       - name: 2_VECTEUR+SEQUOIA+WMTS
         show: [*assemblage_w_vect, *assemblage_w_seq, *assemblage_w_wmts]
       - name: 3_SEQUOIA+WMTS
-        show: [*assemblage_w_vect, *assemblage_w_wmts]
+        show: [*assemblage_w_seq, *assemblage_w_wmts]
   
   layout:
     theme: '1_VECTEUR+SEQUOIA'
@@ -49,7 +44,7 @@ assemblage:
       - name: legend1
         layers: ['parca_polygon_lgd_assemblage']
       - name: legend2
-        layers: ['parca_polygon_occup', 'ua_polygon_occup']
+        layers: ['parca_polygon']
 
 situation:
   canvas:
@@ -98,10 +93,10 @@ peuplements:
         layers: &peuplements_w_vect ['com_line', 'com_point', 'infra_point_peuplements', 'infra_line', 'topo_line', 'infra_polygon', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
       - name: SEQUOIA
         type: vector
-        layers: &peuplements_w_seq ['pf_line', 'pf_polygon', 'sspf_polygon', 'sspf_polygon_plt', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
+        layers: &peuplements_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'sspf_polygon', 'parca_polygon_occup', 'ua_polygon', 'ua_polygon_plt', 'ua_polygon_ame']
       - name: WMTS
         type: wmts
-        layers: &peuplements_w_wmts ['wmts_scan25_grey', 'wmts_scan100', 'wmts_scan1000', 'wmts_pci', 'wmts_irc', 'wmts_rgb']
+        layers: &peuplements_w_wmts ['wmts_scan25_grey', 'wmts_irc', 'wmts_rgb']
 
     themes:
       - name: 1_VECTEUR+SEQUOIA
@@ -109,7 +104,42 @@ peuplements:
       - name: 2_VECTEUR+SEQUOIA+WMTS
         show: [*peuplements_w_vect, *peuplements_w_seq, *peuplements_w_wmts]
       - name: 3_SEQUOIA+WMTS
-        show: [*peuplements_w_vect, *peuplements_w_wmts]
+        show: [*peuplements_w_seq, *peuplements_w_wmts]
+
+  layout:
+    theme: '1_VECTEUR+SEQUOIA'
+    legends:
+      - name: legend1
+        layers: ['parca_polygon_lgd_peuplements']
+      - name: legend2
+        layers: ['sspf_polygon_plt']
+
+amenagements:
+  canvas:
+    scale: 7500
+    zoom_on: 'parca_polygon_lgd_peuplements'
+    readonly: [parca_polygon_lgd_peuplements, parca_polygon_occup, ua_polygon_ame]
+    groups:
+      - name: LEGEND
+        type: vector
+        layers: ['parca_polygon_lgd_peuplements']
+      - name: VECTEUR
+        type: vector
+        layers: &amenagement_w_vect ['com_line', 'com_point', 'infra_point_peuplements', 'infra_line', 'topo_line', 'infra_polygon', 'lieudit_point', 'road_line', 'road_polygon', 'route_line', 'route_polygon']
+      - name: SEQUOIA
+        type: vector
+        layers: &amenagement_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'sspf_polygon', 'ua_polygon_ame']
+      - name: WMTS
+        type: wmts
+        layers: &amenagement_w_wmts ['wmts_scan25_grey']
+
+    themes:
+      - name: 1_VECTEUR+SEQUOIA
+        show: [*amenagement_w_vect, *amenagement_w_seq]
+      - name: 2_VECTEUR+SEQUOIA+WMTS
+        show: [*amenagement_w_vect, *amenagement_w_seq, *amenagement_w_wmts]
+      - name: 3_SEQUOIA+WMTS
+        show: [*amenagement_w_seq, *amenagement_w_wmts]
 
   layout:
     theme: '1_VECTEUR+SEQUOIA'
@@ -219,7 +249,7 @@ geologie:
         layers : &geol_w_seq ['prop_line', 'pf_line', 'pf_polygon', 'geol']
       - name : WMTS
         type : wmts
-        layers : &geol_w_wmts ['wmts_scan25_grey']
+        layers : &geol_w_wmts ['wmts_geol']
     themes:
       - name: 1_SEQUOIA+WMTS
         show: [*geol_w_seq, *geol_w_wmts]
@@ -231,7 +261,6 @@ geologie:
         layers: ['parca_polygon_lgd_enjeux']
       - name: legend2
         layers: ['geol']
-
 
 expertise:
   canvas:

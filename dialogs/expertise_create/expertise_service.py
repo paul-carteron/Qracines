@@ -115,16 +115,12 @@ class ExpertiseService:
 
     def _create_and_load_gpkg(self):
 
-        layers = [
-            LayerFactory.create("placette", "EXPERTISE"),
-            LayerFactory.create("transect", "EXPERTISE"),
-            LayerFactory.create("limite", "EXPERTISE"),
-            LayerFactory.create("gha", "EXPERTISE"),
-            LayerFactory.create("tse", "EXPERTISE"),
-            LayerFactory.create("reg", "EXPERTISE"),
-            LayerFactory.create("va", "EXPERTISE"),
-            self.essences_layer,
-        ]
+        self.parent_layers = ["placette", "transect", "limite"]
+        self.table_layers = ["gha", "tse", "reg", "va"]
+
+        layers = [LayerFactory.create(l, "EXPERTISE") for l in self.parent_layers + self.table_layers] + [self.essences_layer]
+        if self.grid_controller.is_valid():
+            layers = layers + [self.grid_controller.create_grid()]
 
         result = processing.run("native:package", {
             'LAYERS':      layers,
@@ -134,10 +130,10 @@ class ExpertiseService:
         })
 
         self.gpkg_path = result['OUTPUT']
-        load_gpkg(self.gpkg_path, group_name="EXPERTISE")
+        load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
         if self.grid_controller.is_valid():
-            self.grid_controller.add_grid("VECTEUR")
+            self.grid_controller.style_grid(LayerManager(self.grid_controller.name).layer)
 
     def _create_relations(self):
         pairs = [

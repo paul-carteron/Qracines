@@ -1,7 +1,7 @@
 [general]
 name=Qsequoia2
 plugin_id=qsequoia2
-version=1.0.1
+version=1.0.2
 mainFile=Qsequoia2.py
 qgisMinimumVersion=3.28
 description=Outils internes Racines pour QGIS
