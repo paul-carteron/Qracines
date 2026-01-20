@@ -1,3 +1,6 @@
 guides:
   CalClim: [F1*, F2A*, F2C*, F2N*, F3*, F4*, F5*, F6*, P1*, P10**, P2p*, P2s*, P3*, P4*, P5*, P6*, P7*, P8*, P9**, VA1*, VA2*, VA3*, VA4*, VA5*, VM1*, VM2*, VM3*, VM4*, VM5*, VU1, VU1*, VU2*, VU3*]
   PlaineLorraine: [V1, V2, V3, V4, AH, LH1, L1, LH2, Lh2, Lh3, L3, S1, SH, S2]
+  ChampagneHumide: [US1, US2, US3, US4, US5, US6, US7, US8, US9, US10, US11, US12, US13, US14, US15, US16, US17, US18]
+
+  
