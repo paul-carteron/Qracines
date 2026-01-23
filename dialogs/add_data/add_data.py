@@ -15,7 +15,7 @@ class AddDataDialog(QDialog):
         self.SEQUOIA_CHECKBOX_KEY_MAP = {
             self.ui.cb_vector_parca: ['parca_polygon'],
             self.ui.cb_vector_ua: ['ua_polygon', 'ua_polygon_plt', 'ua_polygon_occup', 'ua_polygon_ame'],
-            self.ui.cb_vector_sspf: ['sspf_polygon', 'sspf_polygon_plt'],
+            self.ui.cb_vector_sspf: ['sspf_polygon'],
             self.ui.cb_vector_pf: ['pf_polygon', 'pf_line']
         }
 

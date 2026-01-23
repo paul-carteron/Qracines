@@ -166,11 +166,12 @@ class DiagnosticService:
         for key in vecteur_layer + sequoia_layer:
             print(f"Configure layer: {key}")
             layer_name = get_display_name(key)
-            layer = LayerManager(layer_name).layer
+            layer = QgsProject.instance().mapLayersByName(layer_name)
 
             if not layer:
                 continue
 
+            layer = layer[0]
             # --- Flags communs à tous types de couches -----------------------------
             flags = layer.flags()
             flags &= ~QgsMapLayer.Searchable     # non recherchable
@@ -357,7 +358,7 @@ class DiagnosticService:
         placette_f.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} doit être rempli pour les futaies ou taillis.")
 
         # PLT_DMOY
-        placette_f.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(5, 150 + 1, 10)]})
+        placette_f.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(10, 150 + 1, 5)]})
 
         # PLT_ELAG
         elagage = {'2m':'2m', '4m': '4m', '6m': '6m'}
@@ -480,8 +481,8 @@ class DiagnosticService:
 
         # TSE_NATURE
         nature = {
-            "BI_BC" : "BI/BC", 
-            "BE" : "BE"
+            "BI_BE" : "BI/BE", 
+            "BC" : "BC"
         }
         placette_f.add_value_map('TSE_NATURE', {'map': [{str(name): str(code)} for code, name in nature.items()]})
         # endregion
