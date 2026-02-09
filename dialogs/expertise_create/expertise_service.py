@@ -254,13 +254,10 @@ class ExpertiseService:
         for field, alias in aliases:
             transect_f.set_alias(field, alias)
 
-        # FID
-        transect_f.set_default_value("fid", 'if (maximum("fid") is NULL, 1, maximum("fid") + 1)')
-
         # UUID
         field_name = "UUID"
         transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintUnique)
-        transect_f.set_default_value(field_name, "uuid()")
+        transect_f.set_default_value(field_name, "uuid()", apply_on_update=False)
         transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
 
         # TR_PARCELLE & TR_STRATE

@@ -61,7 +61,7 @@ structure:
       pf_polygon: { filename: PF_polygon.shp, style: PF_polygon.qml, display_name: "Parcelle forestière"} 
       picto: {filename: Picto.shp, style: Picto.qml}
       placette: {filename: Placette.shp, style: Placette.qml}
-      pn: { filename: PN_polygon.shp, style: PN_polygon.qml, display_name: "Parc national"}
+      pn: { filename: PARC_NATIONAL_polygon.shp, style: PN_polygon.qml, display_name: "Parc national"}
       pnr: { filename: PNR_polygon.shp, style: PNR_polygon.qml, display_name: "Parc naturel régional"}
       ppe: {filename: PPE_polygon.shp, style: PPE_polygon.qml, display_name: "Périmètre de protection éloigné"}
       ppi: {filename: PPI_polygon.shp, style: PPI_polygon.qml, display_name: "Périmètre de protection immédiat"}
