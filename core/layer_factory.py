@@ -117,6 +117,20 @@ class LayerFactory:
             },
         },
         "INVENTAIRE": {
+            "param": {
+                "fields": [
+                ("fid", QVariant.Int),
+                ("TYPE", QVariant.String),
+                ("LOT", QVariant.String),
+                ("PARCELLE", QVariant.String),
+                ("SURFACE", QVariant.Double),
+                ("MARQUAGE_BO", QVariant.String),
+                ("COULEUR_BO", QVariant.String),
+                ("MARQUAGE_BI", QVariant.String),
+                ("COULEUR_BI", QVariant.String),
+                ("MARQUE", QVariant.String),
+                ],
+            },
             "arbres": {
                 "fields": [
                 ("fid", QVariant.Int),

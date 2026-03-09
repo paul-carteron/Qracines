@@ -57,7 +57,7 @@ class DatabaseManager:
         ORDER BY ev.ordre ASC
         """
         return query
-  
+    
     def load_essences(self, name = "essences"):
         layer = self.load_layer_from_query(sql_query=self.q_essences(), layer_name = name)
 

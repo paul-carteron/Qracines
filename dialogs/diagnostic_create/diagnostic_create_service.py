@@ -1,8 +1,6 @@
-from pathlib import Path
 import processing
 
 from qgis.core import (
-    Qgis,
     QgsProject,
     QgsProcessing,
     QgsFieldConstraints,
@@ -14,159 +12,137 @@ from qgis.core import (
     QgsSymbolLayer,
     QgsProperty,
     QgsSingleSymbolRenderer,
-    QgsSimpleMarkerSymbolLayer
+    QgsSimpleMarkerSymbolLayer,
+    QgsWkbTypes
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import Qt
 from qgis.utils import iface
 
 from ...core.layer_factory import LayerFactory
-from ...core.layer.manager import LayerManager
-from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos, get_display_name
-from ...utils.layers import load_gpkg, create_relation, load_vectors
-from ...utils.utils import fold, unfold, create_theme
+from ...core.layer.manager import FormBuilder, FieldEditor
+from ...core.db.manager import DatabaseManager
+
+from ...utils.config import get_peuplements, get_limites_config, get_limites, get_pictos
+from ...utils.layers import load_gpkg, create_relation, load_vectors, get_display_name
+from ...utils.utils import fold, unfold
 
 class DiagnosticService:
     def __init__(
         self,
-        dmin: int,
-        dmax: int,
-        hmin: int,
-        hmax: int,
-        essences_layer: dict,
+        dendro_controller,
         grid_controller,
         raster_controller
     ):
         self.iface = iface
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
-        self.dmin, self.dmax = dmin, dmax
-        self.hmin, self.hmax = hmin, hmax
-        self.essences_layer = essences_layer
+        self.dendro = dendro_controller.get_values()
         self.grid_controller = grid_controller
         self.raster_controller = raster_controller
 
     def run(self):
-        """
-        Runs the full workflow. 
-        Returns the output_dir path (as str) if packaging was done, otherwise None.
-        Raises on any error.
-        """
-        
-        print("_create_and_load_gpkg")
-        self._create_and_load_gpkg()
+        layers = {
+            layer_name: LayerFactory.create(layer_name, "DIAGNOSTIC")
+            for layer_name in LayerFactory.get_layer_names("DIAGNOSTIC")
+        }
 
-        print("_configure_layers")
-        self._configure_layers()
+        layers["Essences"] = DatabaseManager().load_essences("Essences")
+        self.essences_layer = layers["Essences"]
 
-        print("_create_relations")
-        self._create_relations()
+        if self.grid_controller.is_valid():
+            layers["Grid"] = self.grid_controller.create_grid()
+
+        self.project.addMapLayers(list(layers.values()), addToLegend=False)
+
+        relations = {
+            "Gha": create_relation(layers["Placette"], layers["Gha"], "UUID", "UUID"),
+            "Tse": create_relation(layers["Placette"], layers["Tse"], "UUID", "UUID"),
+            "Va":  create_relation(layers["Placette"], layers["Va"], "UUID", "UUID"),
+            "Reg": create_relation(layers["Placette"], layers["Reg"], "UUID", "UUID"),
+        }
 
         # PLACETTE
-        print("configure PLACETTE layer")
-        placette_manager = LayerManager("Placette")
-        self._init_placette_form(placette_manager)
-        self._configure_placette(placette_manager)
-        self._style_placette(placette_manager)
-        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 29)
+        placette = layers["Placette"]
+        self._init_placette_form(placette, relations)
+        self._configure_placette(placette)
+        self._style_placette(placette)
+        placette.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 29)
         
         # TRANSECT
-        print("configure TRANSECT layer")
-        transect_manager = LayerManager("Transect")
-        self._init_transect_form(transect_manager)
-        self._configure_transect(transect_manager)
-        self._style_transect(transect_manager)
-        transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        transect = layers["Transect"]
+        self._init_transect_form(transect)
+        self._configure_transect(transect)
+        self._style_transect(transect)
+        transect.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # LIMITE
         print("configure LIMITE layer")
-        limite_manager = LayerManager("Limite")
-        self._init_limite_form(limite_manager)
-        self._configure_limite(limite_manager)
-        self._style_limite(limite_manager)
+        limite = layers["Limite"]
+        self._init_limite_form(limite)
+        self._configure_limite(limite)
+        self._style_limite(limite)
 
         # PICTO
         print("configure PICTO layer")
-        picto_manager = LayerManager("Picto")
-        self._init_picto_form(picto_manager)
-        self._configure_picto(picto_manager)
-        self._style_picto(picto_manager)
+        picto = layers["Picto"]
+        self._init_picto_form(picto)
+        self._configure_picto(picto)
+        self._style_picto(picto)
 
         # GHA
         print("configure GHA layer")
-        gha_manager = LayerManager("Gha")
-        self._init_gha_form(gha_manager)  
-        self._configure_gha(gha_manager)  
-        gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        gha = layers["Gha"]
+        self._init_gha_form(gha)  
+        self._configure_gha(gha)  
+        gha.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # TSE
         print("configure TSE layer")
-        tse_manager = LayerManager("Tse")
-        self._init_tse_form(tse_manager)  
-        self._configure_tse(tse_manager)  
-        tse_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        tse = layers["Tse"]
+        self._init_tse_form(tse)  
+        self._configure_tse(tse)  
+        tse.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # REG
         print("configure REG layer")
-        reg_manager = LayerManager("Reg")
-        self._init_reg_form(reg_manager)  
-        self._configure_reg(reg_manager)  
-        reg_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        reg = layers["Reg"]
+        self._init_reg_form(reg)  
+        self._configure_reg(reg)  
+        reg.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # VA
-        va_manager = LayerManager("Va")
-        self._init_va_form(va_manager)  
-        self._configure_va(va_manager)  
-        va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
-
-        fold()
-        unfold("DIAGNOSTIC")
-
-        return self.gpkg_path
-
-    def _create_and_load_gpkg(self):
-
-        self.parent_layers = ["Placette", "Transect", "Limite", "Picto"]
-        self.table_layers = ["Gha", "Tse", "Va", "Reg"]
-
-        layers = [LayerFactory.create(l, "DIAGNOSTIC") for l in self.parent_layers + self.table_layers] + [self.essences_layer]
-        if self.grid_controller.is_valid():
-            layers = layers + [self.grid_controller.create_grid()]
+        va = layers["Va"]
+        self._init_va_form(va)  
+        self._configure_va(va)  
+        va.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         result = processing.run("native:package", {
-            'LAYERS':      layers,
+            'LAYERS':      list(layers.values()),
             'OUTPUT':      QgsProcessing.TEMPORARY_OUTPUT,
             'OVERWRITE':   True,
-            'SAVE_STYLES': False
+            'SAVE_STYLES': True,
+            'EXPORT_RELATED_LAYERS': True
         })
 
         self.gpkg_path = result['OUTPUT']
-        load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        loaded_layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
-        if self.grid_controller.is_valid():
-            self.grid_controller.style_grid(LayerManager(self.grid_controller.name).layer)
+        for layer in loaded_layers:
+            if layer.geometryType() == QgsWkbTypes.NullGeometry:
+                flags = layer.flags()
+                flags |= QgsMapLayer.Private
+                layer.setFlags(flags)
 
-    def _configure_layers(self):
-        private_layers = self.table_layers + ['Essences']
-        for layer_name in private_layers:
-            layer = LayerManager(layer_name).layer
-            layer.setFlags(layer.flags() | QgsMapLayer.Private | QgsMapLayer.Removable)
-
-        vecteur_layer = ['infra_point', 'infra_line', 'infra_polygon', 'route_line', 'route_polygon'] # Infra polygon peu sauter, route polygon aussi
+        vecteur_layer = ['infra_point', 'infra_line', 'infra_polygon', 'route_line']
         load_vectors(*vecteur_layer, group_name="VECTEUR")
 
-        sequoia_layer = [
-            'prop_diag_line', 'prop_line',
-            'pf_diag_line', 'pf_line', 
-            'sspf_diag_polygon', 'sspf_polygon',
-            'pf_polygon', 'ua_polygon'
-        ]
+        sequoia_layer = ['ua_polygon']
         load_vectors(*sequoia_layer, group_name="SEQUOIA")
         
         for key in vecteur_layer + sequoia_layer:
-            print(f"Configure layer: {key}")
             layer_name = get_display_name(key)
-            layer = QgsProject.instance().mapLayersByName(layer_name)
+            layer = self.project.mapLayersByName(layer_name)
 
             if not layer:
                 continue
@@ -181,30 +157,16 @@ class DiagnosticService:
 
         self.raster_controller.load_selected_rasters()
 
-        create_theme("SCAN25", [*self.parent_layers, 'prop_line', 'pf_line', 'sspf_polygon', 'ua_polygon', 'pf_polygon', 'scan25'])
-        create_theme("IRC", [*vecteur_layer, *self.parent_layers, 'prop_diag_line', 'pf_diag_line', 'sspf_diag_polygon', 'ua_polygon', 'pf_polygon', 'irc'])
-        create_theme("MNH", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line', 'sspf_polygon','ua_polygon', 'pf_polygon', 'mnh'])
-        create_theme("PLT_ANC", [*vecteur_layer, *self.parent_layers, 'prop_line', 'pf_line','sspf_polygon', 'ua_polygon', 'pf_polygon', 'plt_anc'])
+        fold()
+        unfold("DIAGNOSTIC")
 
-    @staticmethod
-    def _create_relations():
-        pairs = [
-            ('Placette', 'Gha'),
-            ('Placette', 'Tse'),
-            ('Placette', 'Va'),
-            ('Placette', 'Reg')
-        ]
-        for parent, child in pairs:
-            create_relation(
-                parent_name = parent, child_name = child,
-                parent_field = 'UUID', child_field = 'UUID',
-                relation_id = f'{parent}_{child}',
-                relation_name = child
-            )
+        return self.gpkg_path
     
-    def _init_placette_form(self, placette_manager):
+    # region PLACETTE
 
-        placette_fb = placette_manager.forms
+    def _init_placette_form(self, placette, relations=None):
+
+        placette_fb = FormBuilder(placette)
         placette_fb.init_form()
 
         # ve: stand for visibility_expression
@@ -223,30 +185,30 @@ class DiagnosticService:
 
         # PEUPLEMENT
         tab_peupl = placette_fb.create_tab("Peuplement")
-        placette_fb.new_add_relation("Gha", tab_peupl, visibility_expression=forest_ve)
+        placette_fb.new_add_relation(relations["Gha"], tab_peupl, visibility_expression=forest_ve)
         placette_fb.new_add_fields(["PLT_RICH", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
         group = placette_fb.create_group("", parent = tab_peupl, columns=2)
         placette_fb.new_add_fields(["PLT_SINISTRE", "PLT_ACCESS"], parent = group)
 
-        # TAILLIS
+        # # TAILLIS
         tab_taillis = placette_fb.create_tab("Taillis")
-        placette_fb.new_add_relation("Tse", tab_taillis, visibility_expression=both)
+        placette_fb.new_add_relation(relations["Tse"], tab_taillis, visibility_expression=both)
         placette_fb.new_add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
 
         # REGE
         rege_taillis = placette_fb.create_tab("Régé")
-        placette_fb.new_add_relation("Reg", rege_taillis, visibility_expression=forest_ve)
+        placette_fb.new_add_relation(relations["Reg"], rege_taillis, visibility_expression=forest_ve)
 
         # RENOUVELLEMENT
         tab_va = placette_fb.create_tab("Renouvellement")
-        placette_fb.new_add_relation("Va", tab_va, visibility_expression=va_ve)
+        placette_fb.new_add_relation(relations["Va"], tab_va, visibility_expression=va_ve)
         placette_fb.new_add_fields(["VA_HT", "PLT_ELAG", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
 
         # Apply to layer
         placette_fb.apply()
 
-    def _configure_placette(self, placette_manager):
-        placette_f = placette_manager.fields
+    def _configure_placette(self, placette):
+        placette_f = FieldEditor(placette)
 
         # ALIASES
         aliases = [
@@ -332,7 +294,7 @@ class DiagnosticService:
         ("PLT_TYPE" IN {tuple(get_peuplements("taillis"))} AND "{field_name}" IN ('EXP','NEX'))
         '''
         description = "Le stade dépend du type de peuplements, ex: 'SFO' ou 'GPE' pour les renouvellements."
-        placette_f.set_constraint_expression(field_name, c_exp, description,  strength=QgsFieldConstraints.ConstraintStrengthHard)
+        placette_f.set_constraint_expression(field_name, c_exp, description, strength=QgsFieldConstraints.ConstraintStrengthHard)
 
         # PLT_PHOTO
         placette_f.add_external_resource("PLT_PHOTO")
@@ -489,16 +451,19 @@ class DiagnosticService:
         return None
 
     @staticmethod
-    def _style_placette(placette_manager):
-        layer = placette_manager.layer
-        s = layer.renderer().symbol()
+    def _style_placette(placette):
+        s = placette.renderer().symbol()
         s.symbolLayer(0).setSize(3)
-        layer.triggerRepaint()
+        placette.triggerRepaint()
+
+    # endregion
+
+    # region TRANSECT
 
     @staticmethod
-    def _init_transect_form(transect_manager):
+    def _init_transect_form(transect):
 
-        transect_fb = transect_manager.forms
+        transect_fb = FormBuilder(transect)
         transect_fb.init_form()
 
         transect_fb.new_add_fields(["TR_PARCELLE"])
@@ -512,8 +477,8 @@ class DiagnosticService:
         
         transect_fb.apply()
     
-    def _configure_transect(self, transect_manager):
-        transect_f = transect_manager.fields
+    def _configure_transect(self, transect):
+        transect_f = FieldEditor(transect)
 
         # ALIASES
         aliases = [
@@ -582,14 +547,16 @@ class DiagnosticService:
         # TR_DIAM
         field_name = "TR_DIAM"
         transect_f.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        transect_f.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(self.dmin, self.dmax + 1, 5)]})
+        dmin, dmax = self.dendro['dmin'], self.dendro['dmax']
+        transect_f.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax + 1, 5)]})
         expression = '"TR_DIAM" != \'\''
         description = "Le champ TR_DIAM ne peut pas être vide."
         transect_f.set_constraint_expression(field_name, expression, description, QgsFieldConstraints.ConstraintStrengthHard)
 
         # TR_HAUTEUR
         field_name = "TR_HAUTEUR"
-        transect_f.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(self.hmin, self.hmax + 1)]})
+        hmin, hmax = self.dendro['hmin'], self.dendro['hmax']
+        transect_f.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax + 1)]})
 
         # TR_EFFECTIF
         field_name = "TR_EFFECTIF"
@@ -598,19 +565,23 @@ class DiagnosticService:
         transect_f.set_default_value(field_name, '1', False)
 
     @staticmethod
-    def _style_transect(transect_manager):
-        layer = transect_manager.layer
-        s = layer.renderer().symbol()
+    def _style_transect(transect):
+        s = transect.renderer().symbol()
         s.symbolLayer(0).setSize(2)
-        layer.triggerRepaint()
+        transect.triggerRepaint()
+    
+    # endregion
+
+    # region GHA
 
     @staticmethod
-    def _init_gha_form(gha_manager):
-        gha_manager.forms.init_form()
-        gha_manager.forms.new_add_fields(["GHA_ESS", "GHA_G"])
+    def _init_gha_form(gha):
+        gha_fb = FormBuilder(gha)
+        gha_fb.init_form()
+        gha_fb.new_add_fields(["GHA_ESS", "GHA_G"])
 
-    def _configure_gha(self, gha_manager):
-        gha_f = gha_manager.fields
+    def _configure_gha(self, gha):
+        gha_f = FieldEditor(gha)
 
         # ALIASES
         aliases = [
@@ -634,7 +605,7 @@ class DiagnosticService:
                 )
             )
             """
-        gha_manager.set_display_expression(display_expression)
+        gha.setDisplayExpression(display_expression)
 
         # GHA_ESS
         field_name = "GHA_ESS"
@@ -654,13 +625,18 @@ class DiagnosticService:
         gha_f.set_default_value(field_name, '1', False)
         gha_f.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
 
-    @staticmethod
-    def _init_va_form(va_manager):
-        va_manager.forms.init_form()
-        va_manager.forms.new_add_fields(["VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA"])
+    # endregion
 
-    def _configure_va(self, va_manager):
-        va_f = va_manager.fields
+    # region VA
+
+    @staticmethod
+    def _init_va_form(va):
+        va_fb = FormBuilder(va)
+        va_fb.init_form()
+        va_fb.new_add_fields(["VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA"])
+
+    def _configure_va(self, va):
+        va_f = FieldEditor(va)
 
         # ALIASES
         aliases = [
@@ -685,7 +661,7 @@ class DiagnosticService:
                 )
             )
             """
-        va_manager.set_display_expression(display_expression)
+        va.setDisplayExpression(display_expression)
 
         # VA_ESS
         field_name = "VA_ESS"
@@ -711,14 +687,19 @@ class DiagnosticService:
         default_value = """aggregate(layer:='Va', aggregate:='sum', expression:="VA_TX_HA", filter:="UUID" = attribute(@parent, 'UUID'))"""
         va_f.set_default_value(field_name, default_value)
         va_f.set_read_only(field_name)
+    
+    # endregion
+
+    # region TSE
 
     @staticmethod
-    def _init_tse_form(tse_manager):
-        tse_manager.forms.init_form()
-        tse_manager.forms.new_add_fields(["TSE_ESS", "TSE_DIM"])
+    def _init_tse_form(tse):
+        tse_fb = FormBuilder(tse)
+        tse_fb.init_form()
+        tse_fb.new_add_fields(["TSE_ESS", "TSE_DIM"])
 
-    def _configure_tse(self, tse_manager):
-        tse_f = tse_manager.fields
+    def _configure_tse(self, tse):
+        tse_f = FieldEditor(tse)
 
         # ALIASES
         aliases = [
@@ -737,7 +718,7 @@ class DiagnosticService:
                 concat(attribute(@ess, 'essence_variation'), ' : ', "TSE_DIM")
             )
             """
-        tse_manager.set_display_expression(display_expression)
+        tse.setDisplayExpression(display_expression)
 
         # TSE_ESS
         field_name = "TSE_ESS"
@@ -760,13 +741,18 @@ class DiagnosticService:
             }
         tse_f.add_value_map('TSE_DIM', {'map': [{str(name): str(code)} for code, name in tse_dim.items()]})
 
-    @staticmethod
-    def _init_reg_form(reg_manager):
-        reg_manager.forms.init_form()
-        reg_manager.forms.new_add_fields(["REG_ESS", "REG_STADE", "REG_ETAT"])
+    # endregion
 
-    def _configure_reg(self, reg_manager):
-        reg_f = reg_manager.fields
+    # region REG
+
+    @staticmethod
+    def _init_reg_form(reg):
+        reg_fb = FormBuilder(reg)
+        reg_fb.init_form()
+        reg_fb.new_add_fields(["REG_ESS", "REG_STADE", "REG_ETAT"])
+
+    def _configure_reg(self, reg):
+        reg_f = FieldEditor(reg)
 
         # ALIASES
         aliases = [
@@ -776,7 +762,7 @@ class DiagnosticService:
         ]
         
         for field, alias in aliases:
-            reg_manager.fields.set_alias(field, alias)
+            reg_f.set_alias(field, alias)
 
         # DISPLAY EXPRESSION
         display_expression = """
@@ -786,7 +772,7 @@ class DiagnosticService:
                 concat(attribute(@ess, 'essence_variation'), ' : ', "REG_STADE", ' - ', "REG_ETAT")
             )
             """
-        reg_manager.set_display_expression(display_expression)
+        reg.setDisplayExpression(display_expression)
 
         # REG_ESS
         field_name = "REG_ESS"
@@ -807,7 +793,7 @@ class DiagnosticService:
             "semis_3_5": "Gaulis 3-5m",
             "semis_5_15": "Perchis 5m-15cm"
             }
-        reg_manager.fields.add_value_map('REG_STADE', {'map': [{str(value): str(descr)} for descr, value in stades.items()]})
+        reg_f.add_value_map('REG_STADE', {'map': [{str(value): str(descr)} for descr, value in stades.items()]})
 
         # REG_ETAT
         etats = {
@@ -816,16 +802,21 @@ class DiagnosticService:
             "moderee_30_50": "Modérée 30-50%",
             "eparse_10_30": "Eparse 10-30%",
             "infime_inf_10": "Infime <10%"}
-        reg_manager.fields.add_value_map('REG_ETAT', {'map': [{str(value): str(descr)} for descr, value in etats.items()]})
+        reg_f.add_value_map('REG_ETAT', {'map': [{str(value): str(descr)} for descr, value in etats.items()]})
+    
+    # endregion
+
+    # region LIMITE
 
     @staticmethod
-    def _init_limite_form(limite_manager):
-        limite_manager.forms.init_form()
-        limite_manager.forms.new_add_fields(["LIMITE_TYPE", "LIMITE_RMQ", "LIMITE_PHOTO"])
+    def _init_limite_form(limite):
+        limite_fb = FormBuilder(limite)
+        limite_fb.init_form()
+        limite_fb.new_add_fields(["LIMITE_TYPE", "LIMITE_RMQ", "LIMITE_PHOTO"])
 
     @staticmethod
-    def _configure_limite(limite_manager):
-        limite_f = limite_manager.fields
+    def _configure_limite(limite):
+        limite_f = FieldEditor(limite)
 
         # ALIASES
         aliases = [
@@ -845,9 +836,8 @@ class DiagnosticService:
         limite_f.add_external_resource("LIMITE_PHOTO")
 
     @staticmethod
-    def _style_limite(limite_manager):
+    def _style_limite(limite):
         field = 'LIMITE_TYPE'
-        layer = limite_manager.layer
         cfg = get_limites_config()  # YAML → dict
 
         style_map = {
@@ -870,27 +860,31 @@ class DiagnosticService:
             line_layer.setWidth(width)
             line_layer.setPenStyle(style_map.get(line_type, Qt.SolidLine))
 
-            symbol = QgsSymbol.defaultSymbol(layer.geometryType())
+            symbol = QgsSymbol.defaultSymbol(limite.geometryType())
             symbol.deleteSymbolLayer(0)
             symbol.appendSymbolLayer(line_layer)
 
             categories.append(QgsRendererCategory(code, symbol, label))
 
         renderer = QgsCategorizedSymbolRenderer(field, categories)
-        layer.setRenderer(renderer)
-        layer.triggerRepaint()
+        limite.setRenderer(renderer)
+        limite.triggerRepaint()
+
+    # endregion
+
+    # region PICTO
 
     @staticmethod
-    def _init_picto_form(picto_manager):
-        picto_f = picto_manager.forms
+    def _init_picto_form(picto):
+        picto_f = FormBuilder(picto)
         picto_f.init_form()
         picto_f.new_add_fields(["PICTO_TYPE", "PICTO_RMQ", "PICTO_PHOTO"])
         grp_shape = picto_f.create_group(name="Symbologie", columns=2)
         picto_f.new_add_fields(["PICTO_COLOR", "PICTO_SHAPE"], grp_shape)
 
     @staticmethod
-    def _configure_picto(picto_manager):
-        picto_f = picto_manager.fields
+    def _configure_picto(picto):
+        picto_f = FieldEditor(picto)
 
         # ALIASES
         aliases = [
@@ -943,20 +937,18 @@ class DiagnosticService:
         picto_f.set_reuse_last_value("PICTO_SHAPE")
 
     @staticmethod
-    def _style_picto(picto_manager):
-        layer = picto_manager.layer
-        
+    def _style_picto(picto):
         sym_layer = QgsSimpleMarkerSymbolLayer()
         sym_layer.setDataDefinedProperty(QgsSymbolLayer.PropertyFillColor, QgsProperty.fromExpression('"PICTO_COLOR"'))
         sym_layer.setDataDefinedProperty(QgsSymbolLayer.PropertyName, QgsProperty.fromExpression('"PICTO_SHAPE"'))
 
         # Wrap in a symbol (container)
-        symbol = QgsSymbol.defaultSymbol(layer.geometryType())
+        symbol = QgsSymbol.defaultSymbol(picto.geometryType())
         symbol.deleteSymbolLayer(0)
         symbol.appendSymbolLayer(sym_layer)
 
         # Apply to layer
-        layer.setRenderer(QgsSingleSymbolRenderer(symbol))
-        layer.triggerRepaint()
+        picto.setRenderer(QgsSingleSymbolRenderer(symbol))
+        picto.triggerRepaint()
 
-
+    # endregion

@@ -131,6 +131,7 @@ def load_rasters(*raster_keys, group_name=None):
 
 def load_gpkg(gpkg_path, *layers, group_name=None):
 
+
     # Resolve the path if a key is given
     if not Path(gpkg_path).exists():
         try:
@@ -153,16 +154,19 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
     if group_name:
         group = root.findGroup(group_name) or root.addGroup(group_name)
 
-    available_layers = [layer.GetName() for layer in datasource]
+    SYSTEM_TABLES = {"layer_styles", "gpkg_contents", "gpkg_geometry_columns"}
+
+    available_layers = [layer.GetName() for layer in datasource if layer.GetName() not in SYSTEM_TABLES]
 
     # If no layer names provided, load all
     layers_to_load = layers or available_layers
 
+    loaded_layers = []
     for layer in layers_to_load:
         if layer not in available_layers:
             continue
 
-        uri = f"{gpkg_path}|layername={layer}"
+        uri = f"{str(gpkg_path)}|layername={layer}"
         imported_layer = QgsVectorLayer(uri, layer, 'ogr')
         # Skip invalid layers
         if not imported_layer.isValid():
@@ -177,7 +181,10 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
         if group:
             group.addLayer(imported_layer)
 
-    return None
+        imported_layer.loadDefaultStyle()
+        loaded_layers.append(imported_layer)
+
+    return loaded_layers
     
 # endregion
 
@@ -201,63 +208,37 @@ def resolve_layer_name(key: str) -> str:
     # Final fallback: assume it's already a layer name
     return key
    
+def create_relation(parent_layer, child_layer, parent_field, child_field,
+                    relation_id=None, relation_name=None):
 
-def create_relation(parent_name, child_name, parent_field, child_field, relation_id, relation_name):
-    """
-    Crée une relation de composition et configure le champ child_field pour RelationReference.
-    Version simple sans gestion d'exception.
-    """
     proj = QgsProject.instance()
-    parent_layers = proj.mapLayersByName(parent_name)
-    child_layers = proj.mapLayersByName(child_name)
-    if not parent_layers or not child_layers:
-        print(f"Couche parent '{parent_name}' ou enfant '{child_name}' introuvable")
-        return False
-    parent_layer = parent_layers[0]
-    child_layer = child_layers[0]
 
-    # Création de la relation
+    if parent_layer is None or child_layer is None:
+        raise ValueError("parent_layer and child_layer must be valid QgsVectorLayer objects")
+
+    relation_id = relation_id or f"{parent_layer.name()}_{child_layer.name()}"
+    relation_name = relation_name or child_layer.name()
+
     relation = QgsRelation()
     relation.setId(relation_id)
     relation.setName(relation_name)
-    relation.setReferencedLayer(parent_layer.id())
-    relation.setReferencingLayer(child_layer.id())
+
+    relation.setReferencedLayer(parent_layer.id())   # parent
+    relation.setReferencingLayer(child_layer.id())   # child
+
     relation.addFieldPair(child_field, parent_field)
     relation.setStrength(QgsRelation.Composition)
 
+    relation.generateId()   # ← important
+
     if not relation.isValid():
-        print(f"Relation invalide pour ID '{relation_id}'")
-        return False
+        raise RuntimeError(
+            f"Invalid relation {relation_id}: {relation.validationError()}"
+        )
 
     proj.relationManager().addRelation(relation)
 
-    # Configuration du widget RelationReference
-    child_layer.updateFields()
-    idx = child_layer.fields().indexOf(child_field)
-    if idx == -1:
-        print(f"Champ '{child_field}' introuvable dans la couche '{child_name}'")
-        return True  # relation créée, mais widget non configuré
-
-    config = {
-        'Relation': relation_id,
-        'AllowAddFeatures': False,
-        'AllowNULL': False,
-        'FetchLimitActive': True,
-        'FetchLimitNumber': 100,
-        'MapIdentification': False,
-        'ReadOnly': False,
-        'ReferencedLayerDataSource': parent_layer.source(),
-        'ReferencedLayerId': parent_layer.id(),
-        'ReferencedLayerName': parent_layer.name(),
-        'ReferencedLayerProviderKey': parent_layer.providerType(),
-        'ShowForm': False,
-        'ShowOpenFormButton': True
-    }
-    setup = QgsEditorWidgetSetup('RelationReference', config)
-    child_layer.setEditorWidgetSetup(idx, setup)
-
-    print(f"Relation '{relation_id}' créée et widget configuré sur '{child_name}.{child_field}'")
-    return True
+    return relation
 
 def set_layers_readonly(*keys):
     for key in keys:

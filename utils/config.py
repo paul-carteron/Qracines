@@ -324,3 +324,25 @@ def get_pictos():
         raise KeyError("Missing or invalid top‐level 'pictos' mapping in stations.yaml")
     return pictos
 # endregion
+
+# region ESSENCE
+_NEW_TO_OLD_CONFIG: dict | None = None
+
+def _load_NEW_TO_OLD_CONFIG() -> dict:
+    global _NEW_TO_OLD_CONFIG
+    if _NEW_TO_OLD_CONFIG is None:
+        new_to_old_config_path = get_config_path("new_to_old.yaml")
+        with open(new_to_old_config_path, encoding="utf-8") as f:
+            _NEW_TO_OLD_CONFIG = yaml.safe_load(f)
+    return _NEW_TO_OLD_CONFIG
+
+def get_new_to_old():
+    """
+    Return the list of guide names defined under 'guides' in stations.yaml.
+    """
+    new_to_old_config = _load_NEW_TO_OLD_CONFIG()
+    new_to_old = new_to_old_config.get("new_to_old")
+    if not isinstance(new_to_old, dict):
+        raise KeyError("Missing or invalid top‐level 'new_to_old' mapping in new_to_old.yaml")
+    return new_to_old
+# endregion

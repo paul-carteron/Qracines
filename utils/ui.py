@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog, QDoubleSpinBox
+from PyQt5.QtWidgets import QCheckBox, QAbstractItemView, QListWidget, QPushButton, QLineEdit, QMessageBox, QFileDialog, QDoubleSpinBox, QSpinBox
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 
 from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsMarkerSymbol, QgsVectorLayer
@@ -33,6 +33,21 @@ class UIBinderMixin:
             raise AttributeError(f"Expected {cls.__name__} at ui.{name}")
         return w
 
+class DendroController(UIBinderMixin):
+
+    def __init__(self, ui, dendro_spinbox):
+        self.ui = ui
+
+        # bind widgets
+        self.widgets = {
+            key: self._bind_widget(attr, QSpinBox)
+            for key, attr in dendro_spinbox.items()
+        }
+
+    def get_values(self):
+        """Return current dendrometric values from UI"""
+        return {key: w.value() for key, w in self.widgets.items()}
+    
 class RasterController(UIBinderMixin):
 
     def __init__(self, ui, raster_checkbox):
@@ -327,10 +342,12 @@ class GridController(UIBinderMixin):
         
         self.name = f"Grille ({self.points_per_ha.value()} pts/ha)"
         grid = create_grid(parca_layer, name = self.name, points_per_ha=float(self.points_per_ha.value()))
-        
+        grid = self.style_grid(grid)
+
         return grid
     
-    def style_grid(self, grid: QgsVectorLayer) -> None: 
+    @staticmethod
+    def style_grid(grid: QgsVectorLayer) -> None: 
         sym = QgsMarkerSymbol.createSimple({
             'name': 'cross',
             'size': '3',
@@ -342,4 +359,4 @@ class GridController(UIBinderMixin):
         grid.setRenderer(QgsSingleSymbolRenderer(sym))
         grid.triggerRepaint()
 
-        return None
+        return grid

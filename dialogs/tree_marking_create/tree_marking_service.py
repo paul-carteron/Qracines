@@ -20,6 +20,7 @@ from ...core.layer_factory import LayerFactory
 from ...core.layer.manager import LayerManager
 from ...utils.layers import load_gpkg
 from ...utils.utils import replier
+from ..tree_marking_config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
 
 
 class TreeMarkingService:
@@ -49,17 +50,20 @@ class TreeMarkingService:
         """
         self._create_and_load_gpkg()
 
+        param_manager = LayerManager("param")
         arbres_manager = LayerManager("arbres")
         essences_manager = LayerManager("essences")
 
-        self._init_form(arbres_manager)
+        self._init_param_form(param_manager)
+        self._configure_param(param_manager)
+
+        self._init_arbre_form(arbres_manager)
 
         self._configure_essence_field(arbres_manager, essences_manager, self.codes)
         self._configure_aliases(arbres_manager)
-        self._configure_fid(arbres_manager)
         self._configure_uuid(arbres_manager)
         self._configure_compteur(arbres_manager)
-        self._configure_parcelle(arbres_manager)
+        self._configure_parcelle(arbres_manager, param_manager)
         self._configure_diametre(arbres_manager, self.dmin, self.dmax)
         self._configure_hauteur(arbres_manager, self.hmin, self.hmax)
         self._configure_effectif(arbres_manager)
@@ -74,6 +78,7 @@ class TreeMarkingService:
 
     def _create_and_load_gpkg(self):
         layers = [
+            LayerFactory.create("param", "INVENTAIRE"),
             LayerFactory.create("arbres", "INVENTAIRE"),
             self.essences_layer
         ]
@@ -91,14 +96,60 @@ class TreeMarkingService:
         load_gpkg(self.gpkg_path, group_name="INVENTAIRE")
 
     @staticmethod
-    def _init_form(arbres_manager):
+    def _init_param_form(param_manager):
+        param_f = param_manager.forms
+
+        param_f.init_form() 
+        param_f.add_fields("TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI", name="Paramétrage")
+    
+    def _configure_param(self, param_manager):
+
+        aliases = [
+            ("TYPE", "Type"),
+            ("LOT", "Lot"),
+            ("PARCELLE", "Parcelle"),
+            ("SURFACE", "Surface [ha]"),
+            ("MARQUAGE_BO", "Marquage BO"),
+            ("COULEUR_BO", "Couleur BO"),
+            ("MARQUAGE_BI", "Marquage BI"),
+            ("COULEUR_BI", "Couleur BI"),
+            ("MARQUE", "Marque"),
+        ]
+        
+        for field, alias in aliases:
+            param_manager.fields.set_alias(field, alias)
+
+        reuse = ["TYPE", "LOT","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"]
+        for field_name in reuse:
+            param_manager.fields.set_reuse_last_value(field_name)
+
+        param_manager.fields.set_constraint("TYPE", QgsFieldConstraints.ConstraintNotNull)
+        param_manager.fields.set_constraint("LOT", QgsFieldConstraints.ConstraintNotNull)
+        param_manager.fields.set_constraint("PARCELLE", QgsFieldConstraints.ConstraintNotNull)
+        param_manager.fields.set_constraint("SURFACE", QgsFieldConstraints.ConstraintNotNull)
+        param_manager.fields.add_range("SURFACE", {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 2, 'Step': 0.01})
+
+        param_manager.fields.add_value_map("TYPE", {'map': [{v: k} for k, v in TYPE_CHOICES.items()]})
+
+        for field_name in ["MARQUAGE_BO", "MARQUAGE_BI"]:
+            param_manager.fields.add_value_map(field_name, {'map': [{v: k} for k, v in MARQUAGE_CHOICES.items()]})
+
+        for field_name in ["COULEUR_BO", "COULEUR_BI"]:
+            param_manager.fields.add_value_map(field_name, {'map': [{v: k} for k, v in COULEUR_CHOICES.items()]})
+
+        param_manager.fields.add_value_map("MARQUE", {'map': [{v: k} for k, v in MARTEAU_CHOICES.items()]})
+
+    @staticmethod
+    def _init_arbre_form(arbres_manager):
         arbre_f = arbres_manager.forms
 
         arbre_f.init_form()
-        arbre_f.add_fields("COMPTEUR")
-        arbre_f.add_fields("LOT", "PARCELLE", name="Localisation" ,columns=2)
-        arbre_f.add_fields("ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "OBSERVATION", "FAVORI", "ID_CODE")
-    
+        
+        tab = arbre_f.create_tab("")
+        group1 = arbre_f.create_group("", columns=2, parent=tab)
+        arbre_f.new_add_fields(["COMPTEUR", "PARCELLE"], parent = group1)
+        arbre_f.new_add_fields(["ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "FAVORI", "OBSERVATION", "ID_CODE"], parent = tab)
+
     @staticmethod
     def _configure_essence_field(arbres_manager, essences_manager, codes):
         # 1. Build value map for main ESSENCE_ID field
@@ -146,14 +197,10 @@ class TreeMarkingService:
             ("ESSENCE_ID", "ESSENCE"),
             ("ESSENCE_SECONDAIRE_ID", "ESSENCE SECONDAIRE"),
             ("FAVORI", "⭐"),
-            ("COMPTEUR", "ID")]
+            ("COMPTEUR", "N°")]
         
         for field, alias in aliases:
             layer_manager.fields.set_alias(field, alias)
-
-    @staticmethod
-    def _configure_fid(layer_manager):
-        layer_manager.fields.set_default_value("fid", 'if (maximum("fid") is NULL, 1 ,maximum("fid") + 1)')
 
     @staticmethod
     def _configure_uuid(layer_manager):
@@ -169,10 +216,18 @@ class TreeMarkingService:
         layer_manager.fields.set_default_value(field_name, 'count("fid") + 1')
 
     @staticmethod
-    def _configure_parcelle(layer_manager):
+    def _configure_parcelle(layer_manager, param_manager):
         field_name = "PARCELLE"
         layer_manager.fields.set_reuse_last_value(field_name)
         layer_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        config = {
+            'Key': 'PARCELLE',
+            'Layer': param_manager.layer.id(),
+            'Value': 'PARCELLE',
+            'AllowNull': False
+        }
+        layer_manager.fields.add_value_relation(field_name, config)
+
 
     @staticmethod
     def _configure_diametre(layer_manager, dmin, dmax):
@@ -235,6 +290,11 @@ class TreeMarkingService:
                     CASE
                         WHEN "HAUTEUR" IS NOT NULL AND "HAUTEUR" != ''
                         THEN concat(' H', "HAUTEUR")
+                        ELSE ''
+                    END,
+                    CASE
+                        WHEN "EFFECTIF" IS NOT NULL
+                        THEN concat(' N', "EFFECTIF")
                         ELSE ''
                     END
                 )

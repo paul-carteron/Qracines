@@ -9,6 +9,7 @@ from ...utils.processing import calculate_essence_id, merge_with_ess, save_as_xl
 from ...utils.ui import GpkgLoader
 
 from ...core.layer_factory import LayerFactory
+from ...core.layer.manager import LayerManager
 
 from ..diagnostic_create.diagnostic_create_service import DiagnosticService
 
@@ -76,9 +77,73 @@ class DiagnosticImportDialog(QDialog):
         return None
     
     def load(self):
+
+        # 1. load gpkg
         load_gpkg(self.outpath, group_name="DIAGNOSTIC")
+
+        project = QgsProject.instance()
+
+        # 2. create relations
         DiagnosticService._create_relations()
-        return None
+        gha_manager = LayerManager("Gha")       
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "GHA_ESS"),
+                concat(
+                    attribute(@ess, 'essence_variation'),
+                    ' : ',
+                    "GHA_G",
+                    ' m²/ha '
+                )
+            )
+            """
+        gha_manager.set_display_expression(display_expression)
+
+        va_manager = LayerManager("Va")
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "VA_ESS"),
+                concat(
+                    attribute(@ess, 'essence_variation'),
+                    ' : ',
+                    "VA_TX_HA",
+                    ' %'
+                )
+            )
+            """
+        va_manager.set_display_expression(display_expression)
+
+        tse_manager = LayerManager("Tse")
+        display_expression = """
+            WITH_VARIABLE(
+                'ess',
+                get_feature('Essences', 'fid', "TSE_ESS"),
+                concat(attribute(@ess, 'essence_variation'), ' : ', "TSE_DIM")
+            )
+            """
+        tse_manager.set_display_expression(display_expression)
+
+        # 3. save styles inside gpkg
+        for layer in project.mapLayers().values():
+
+            if self.outpath not in layer.source():
+                continue
+
+            layer.saveStyleToDatabase(
+                name="default",
+                description="default",
+                useAsDefault=True,
+                uiFileContent=""
+            )
+
+        # 4. reload gpkg so relations stored in style apply
+        for layer in list(project.mapLayers().values()):
+            if self.outpath in layer.source():
+                project.removeMapLayer(layer.id())
+
+        load_gpkg(self.outpath, group_name="DIAGNOSTIC")
 
     def accept(self):
         try:

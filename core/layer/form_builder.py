@@ -129,18 +129,20 @@ class FormBuilder:
             field = QgsAttributeEditorField(fname, idx, parent)
             parent.addChildElement(field)
 
-    def new_add_relation(self, relation_name, parent, visibility_expression=None):
+    def new_add_relation(self, relation, parent, visibility_expression=None):
         """Add a relation widget to a container (usually a tab)."""
-        relation = LayerFetcher.get_relation_by_name(relation_name)
-        if not relation:
-            print(f"⚠️ Relation '{relation_name}' not found.")
+        if relation is None or not relation.isValid():
             return
 
         if visibility_expression:
-            parent.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
+            parent.setVisibilityExpression(
+                QgsOptionalExpression(QgsExpression(visibility_expression))
+            )
 
         relation_editor = QgsAttributeEditorRelation(relation, parent)
         parent.addChildElement(relation_editor)
+
+        return relation_editor
 
     def apply(self):
         """Apply changes to the layer form."""

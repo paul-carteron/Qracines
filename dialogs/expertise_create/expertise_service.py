@@ -8,18 +8,23 @@ from qgis.core import (
     QgsExpression,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
-    QgsSymbol
+    QgsSymbol,
+    QgsWkbTypes,
+    QgsSimpleLineSymbolLayer,
+    QgsMapLayer
 )
 
 from qgis.utils import iface
+from qgis.PyQt.QtCore import Qt
 
 from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QColor
 
 from ...core.layer_factory import LayerFactory
-from ...core.layer.manager import LayerManager
-from ...utils.config import get_peuplements, get_limites
-from ...utils.layers import load_gpkg, create_relation
+from ...core.layer.manager import FormBuilder, FieldEditor
+from ...utils.config import get_peuplements, get_limites, get_limites_config
+from ...utils.layers import load_gpkg, create_relation, load_vectors
+from ...utils.utils import fold, unfold
 
 class ExpertiseService:
 
@@ -32,7 +37,8 @@ class ExpertiseService:
         hmin: int,
         hmax: int,
         essences_layer: dict,
-        grid_controller
+        grid_controller,
+        raster_controller
     ):
         self.iface = iface
         self.project = QgsProject.instance()
@@ -43,6 +49,7 @@ class ExpertiseService:
         self.hmin, self.hmax = hmin, hmax
         self.essences_layer = essences_layer
         self.grid_controller = grid_controller
+        self.raster_controller = raster_controller
 
     def run(self):
         """
@@ -50,115 +57,112 @@ class ExpertiseService:
         Returns the output_dir path (as str) if packaging was done, otherwise None.
         Raises on any error.
         """
+        layers = {
+            layer_name: LayerFactory.create(layer_name, "EXPERTISE")
+            for layer_name in LayerFactory.get_layer_names("EXPERTISE")
+        }
 
-        print("_create_and_load_gpkg")
-        self._create_and_load_gpkg()
-        print("_create_relations")
-        self._create_relations()
-        essences_manager = LayerManager("essences")
+        layers["essences"] = self.essences_layer
+
+        if self.grid_controller.is_valid():
+            layers["grid"] = self.grid_controller.create_grid()
+
+        self.project.addMapLayers(list(layers.values()), addToLegend=False)
+
+        relations = {
+            "gha": create_relation(layers["placette"], layers["gha"], "UUID", "UUID"),
+            "tse": create_relation(layers["placette"], layers["tse"], "UUID", "UUID"),
+            "va":  create_relation(layers["placette"], layers["va"], "UUID", "UUID"),
+            "reg": create_relation(layers["placette"], layers["reg"], "UUID", "UUID"),
+        }
 
         # PLACETTE
-        print("configure PLACETTE layer")
-        placette_manager = LayerManager("placette")
-        self._init_placette_form(placette_manager)
-        self._configure_placette(placette_manager, essences_manager)
-        placette_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 13)
+        placette = layers["placette"]
+        self._init_placette_form(placette, relations)
+        self._configure_placette(placette)
+        placette.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 13)
 
         # TRANSECT
         print("configure TRANSECT layer")
-        transect_manager = LayerManager("transect")
-        self._init_transect_form(transect_manager)
-        self._configure_transect(transect_manager, self.dmin, self.dmax, self.hmin, self.hmax)
-        self._configure_essence_field(transect_manager, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = True)
-        transect_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        transect = layers["transect"]
+        essences = layers["essences"]
+        self._init_transect_form(transect)
+        self._configure_transect(transect, self.dmin, self.dmax, self.hmin, self.hmax)
+        self._configure_essence_field(transect, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", essences, self.codes, with_variation = True)
+        transect.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # LIMITE
         print("configure LIMITE layer")
-        limite_manager = LayerManager("limite")
-        self._init_limite_form(limite_manager)
-        self._configure_limite(limite_manager)
-        self._style_limite(limite_manager)
+        limite = layers["limite"]
+        self._init_limite_form(limite)
+        self._configure_limite(limite)
+        self._style_limite(limite)
 
         # GHA
         print("configure GHA layer")
-        gha_manager = LayerManager("gha")
-        self._init_gha_form(gha_manager)  
-        self._configure_gha(gha_manager)  
-        self._configure_essence_field(gha_manager, "GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
-        gha_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        gha = layers["gha"]
+        self._init_gha_form(gha)  
+        self._configure_gha(gha)  
+        self._configure_essence_field(gha, "GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", essences, self.codes, with_variation = False)
+        gha.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
-        # TAILLIS
+        # # TAILLIS
         print("configure TAILLIS layer")
-        tse_manager = LayerManager("tse")
-        self._init_tse_form(tse_manager)  
-        self._configure_tse(tse_manager)  
-        self._configure_essence_field(tse_manager, "TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes_taillis, with_variation = False, selected_field = "selected_taillis")
-        tse_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        tse = layers["tse"]
+        self._init_tse_form(tse)  
+        self._configure_tse(tse)  
+        self._configure_essence_field(tse, "TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID", essences, self.codes_taillis, with_variation = False, selected_field = "selected_taillis")
+        tse.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # VALEUR AVENIR
         print("configure VALEUR AVENIR layer")
-        va_manager = LayerManager("va")
-        self._init_va_form(va_manager)  
-        self._configure_va(va_manager)  
-        self._configure_essence_field(va_manager, "VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
-        va_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
+        va = layers["va"]
+        self._init_va_form(va)  
+        self._configure_va(va)  
+        self._configure_essence_field(va, "VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", essences, self.codes, with_variation = False)
+        va.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         # REGENERATION
         print("configure REGENERATION layer")
-        reg_manager = LayerManager("reg")
-        self._init_reg_form(reg_manager)  
-        self._configure_reg(reg_manager)  
-        self._configure_essence_field(reg_manager, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", essences_manager, self.codes, with_variation = False)
-        reg_manager.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
-
-        return self.gpkg_path
-
-    def _create_and_load_gpkg(self):
-
-        self.parent_layers = ["placette", "transect", "limite"]
-        self.table_layers = ["gha", "tse", "reg", "va"]
-
-        layers = [LayerFactory.create(l, "EXPERTISE") for l in self.parent_layers + self.table_layers] + [self.essences_layer]
-        if self.grid_controller.is_valid():
-            layers = layers + [self.grid_controller.create_grid()]
+        reg = layers["reg"]
+        self._init_reg_form(reg)  
+        self._configure_reg(reg)  
+        self._configure_essence_field(reg, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", essences, self.codes, with_variation = False)
+        reg.layer.setCustomProperty("QFieldSync/value_map_button_interface_threshold", 99)
 
         result = processing.run("native:package", {
-            'LAYERS':      layers,
+            'LAYERS':      list(layers.values()),
             'OUTPUT':      QgsProcessing.TEMPORARY_OUTPUT,
             'OVERWRITE':   True,
-            'SAVE_STYLES': False
+            'SAVE_STYLES': True,
+            'EXPORT_RELATED_LAYERS': True
         })
 
         self.gpkg_path = result['OUTPUT']
-        load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        loaded_layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
 
-        if self.grid_controller.is_valid():
-            self.grid_controller.style_grid(LayerManager(self.grid_controller.name).layer)
+        for layer in loaded_layers:
+            if layer.geometryType() == QgsWkbTypes.NullGeometry:
+                flags = layer.flags()
+                flags |= QgsMapLayer.Private
+                layer.setFlags(flags)
 
-    def _create_relations(self):
-        pairs = [
-            ('placette', 'gha'),
-            ('placette', 'tse'),
-            ('placette', 'reg'),
-            ('placette', 'va')
-        ]
-        for parent, child in pairs:
-            create_relation(
-                parent_name = parent, child_name = child,
-                parent_field = 'UUID', child_field = 'UUID',
-                relation_id = f'{parent}_{child}',
-                relation_name = child
-            )
+        load_vectors("parca_polygon_occup", group_name= "VECTEUR")
+
+        self.raster_controller.load_selected_rasters()
+
+        fold()
+        unfold("EXPERTISE")
+
+        return self.gpkg_path
+    
     
     @staticmethod
-    def _init_placette_form(placette_manager):
+    def _init_placette_form(placette, relations):
 
-        placette_fb = placette_manager.forms
+        placette_fb = FormBuilder(placette)
 
         placette_fb.init_form()
-        placette_fb.add_fields("COMPTEUR")
-        placette_fb.add_fields("PLTM_PARCELLE", "PLTM_STRATE", name="Localisation", columns=2)
-        placette_fb.add_fields("PLTM_TYPE", "PLA_RMQ")
 
         # ve: stand for visibility_expression
         forest_plt = "('FRF', 'FIF', 'REF', 'PLF', 'FRM', 'FIM', 'REM', 'PLM', 'FRR', 'FIR', 'RER', 'PLR', 'PEU', 'MFT', 'MRT', 'MMT', 'TSB', 'TSN')"
@@ -166,16 +170,24 @@ class ExpertiseService:
 
         forest_ve = f"\"PLTM_TYPE\" IN {forest_plt}"
         va_ve = f"\"PLTM_TYPE\" IN {va_plt}"
+        
+        general_tab = placette_fb.create_tab("Général")
+        placette_fb.new_add_fields(["COMPTEUR"], parent = general_tab)
+        group = placette_fb.create_group("Localisation", parent = general_tab, columns=2)
+        placette_fb.new_add_fields(["PLTM_PARCELLE", "PLTM_STRATE"], parent = group)
+        placette_fb.new_add_fields(["PLTM_TYPE", "PLA_RMQ"], parent = general_tab)
 
-        placette_fb.add_relation("gha", name="Surface terrière", visibility_expression = forest_ve)
-        placette_fb.add_fields("TSE_STERE_HA", name="Taillis")
-        placette_fb.add_relation("tse", name="Taillis", visibility_expression = forest_ve)
-        placette_fb.add_relation("va", name="Valeur d'avenir", visibility_expression = va_ve)
-        placette_fb.add_relation("reg", name="Régénération", visibility_expression = forest_ve)
+        placette_fb.new_add_relation(relations["gha"], parent=general_tab, visibility_expression = forest_ve)
+        placette_fb.new_add_fields(["TSE_STERE_HA"], parent=general_tab)
+        placette_fb.new_add_relation(relations["tse"], parent=general_tab, visibility_expression = forest_ve)
+        placette_fb.new_add_relation(relations["va"], parent=general_tab, visibility_expression = va_ve)
+        placette_fb.new_add_relation(relations["reg"], parent=general_tab, visibility_expression = forest_ve)
+
+        placette_fb.apply()
 
     @staticmethod
-    def _configure_placette(placette_manager, essences_manager):
-        placette_f = placette_manager.fields
+    def _configure_placette(placette):
+        placette_f = FieldEditor(placette)
 
         # ALIASES
         aliases = [
@@ -224,22 +236,23 @@ class ExpertiseService:
 
         # RELATIONS
         ## This line has to be after all fields are configured
-        placette_f.set_relation_label("gha", label = False)
-        placette_f.set_relation_label("tse", label = "Essence taillis")
-        placette_f.set_relation_label("va", label = False)
-        placette_f.set_relation_label("reg", label = False)
+        # placette_f.set_relation_label("gha", label = False)
+        # placette_f.set_relation_label("tse", label = "Essence taillis")
+        # placette_f.set_relation_label("va", label = False)
+        # placette_f.set_relation_label("reg", label = False)
 
         return None
 
     @staticmethod
-    def _init_transect_form(transect_manager):
-        transect_manager.forms.init_form()
-        fields = ["TR_PARCELLE", "TR_STRATE", "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", "TR_DIAMETRE", "TR_EFFECTIF", "TR_HAUTEUR"]
-        transect_manager.forms.add_fields(*fields)
+    def _init_transect_form(transect):
+        transect_fb = FormBuilder(transect)
+        transect_fb.init_form()
+        transect_fb.new_add_fields(["TR_PARCELLE", "TR_STRATE", "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID", "TR_DIAMETRE", "TR_EFFECTIF", "TR_HAUTEUR"])
+        transect_fb.apply()
     
     @staticmethod
-    def _configure_transect(transect_manager, dmin, dmax, hmin, hmax):
-        transect_f = transect_manager.fields
+    def _configure_transect(transect, dmin, dmax, hmin, hmax):
+        transect_f = FieldEditor(transect)
 
         # ALIASES
         aliases = [
@@ -289,13 +302,15 @@ class ExpertiseService:
         return None
     
     @staticmethod
-    def _init_limite_form(limite_manager):
-        limite_manager.forms.init_form()
-        limite_manager.forms.add_fields("LIMITE_TYPE", "LIMITE_RMQ")
+    def _init_limite_form(limite):
+        limite_fb = FormBuilder(limite)
+        limite_fb.init_form()
+        limite_fb.new_add_fields(["LIMITE_TYPE", "LIMITE_RMQ"])
+        limite_fb.apply()
 
     @staticmethod
-    def _configure_limite(limite_manager):
-        limite_f = limite_manager.fields
+    def _configure_limite(limite):
+        limite_f = FieldEditor(limite)
 
         # ALIASES
         aliases = [
@@ -311,44 +326,50 @@ class ExpertiseService:
         limite_f.add_value_map('LIMITE_TYPE', {'map': [{str(name): str(code)} for code, name in limites.items()]})
     
     @staticmethod
-    def _style_limite(limite_manager):
+    def _style_limite(limite):
         field = 'LIMITE_TYPE'
-        labels = get_limites()
-        layer = limite_manager.layer
-        # 2) define your fixed color mapping
-        colors = {
-            'LPL': (238,255,0,255),
-            'LPF': (0,224,0,255),
-            'RFO': (247,0,255,255),
-            'PNA': (247,0,255,255),
-            'RUI': (0,251,255,255),
-            'TAL': (214,163,62,255),
-            'CLO': (0,0,0,255),
-            'MEM': (238,255,0,255),
-            'OTH': (125,139,143,255),
+        cfg = get_limites_config()  # YAML → dict
+
+        style_map = {
+            "solid": Qt.SolidLine,
+            "dash": Qt.DashLine,
+            "dot": Qt.DotLine,
+            "dashdot": Qt.DashDotLine,
+            "dashdotdot": Qt.DashDotDotLine,
         }
 
-        # 3) build categories
         categories = []
-        for code, label in labels.items():
-            sym = QgsSymbol.defaultSymbol(layer.geometryType())
-            r, g, b, a = colors.get(code, (0,0,0,255))
-            for sl in sym.symbolLayers():
-                sl.setColor(QColor(r, g, b, a))
-            categories.append(QgsRendererCategory(code, sym, label))
+        for code, props in cfg.items():
+            color = QColor(props.get("color", "black"))
+            width = float(props.get("width", 0.6))
+            line_type = props.get("style", "solid").lower()
+            label = props.get("label", code)
 
-        # 4) apply renderer
+            line_layer = QgsSimpleLineSymbolLayer()
+            line_layer.setColor(color)
+            line_layer.setWidth(width)
+            line_layer.setPenStyle(style_map.get(line_type, Qt.SolidLine))
+
+            symbol = QgsSymbol.defaultSymbol(limite.geometryType())
+            symbol.deleteSymbolLayer(0)
+            symbol.appendSymbolLayer(line_layer)
+
+            categories.append(QgsRendererCategory(code, symbol, label))
+
         renderer = QgsCategorizedSymbolRenderer(field, categories)
-        layer.setRenderer(renderer)
-        layer.triggerRepaint()
+        limite.setRenderer(renderer)
+        limite.triggerRepaint()
 
     @staticmethod
-    def _init_gha_form(gha_manager):
-        gha_manager.forms.init_form()
-        gha_manager.forms.add_fields("GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G")
+    def _init_gha_form(gha):
+        gha_fb = FormBuilder(gha)
+        gha_fb.init_form()
+        gha_fb.new_add_fields(["GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G"])
+        gha_fb.apply()
     
     @staticmethod
-    def _configure_gha(gha_manager):
+    def _configure_gha(gha):
+        gha_fe = FieldEditor(gha)
         # ALIASES
         aliases = [
             ("GHA_ESSENCE_ID", "Essence"),
@@ -357,7 +378,7 @@ class ExpertiseService:
         ]
         
         for field, alias in aliases:
-            gha_manager.fields.set_alias(field, alias)
+            gha_fe.set_alias(field, alias)
         
         # DISPLAY EXPRESSION
         display_expression = """
@@ -374,21 +395,25 @@ class ExpertiseService:
                 ' m²/ha ')
             )
             """
-        gha_manager.set_display_expression(display_expression)
+        gha.setDisplayExpression(display_expression)
 
         # GHA_G
         field_name = "GHA_G"
-        gha_manager.fields.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        gha_manager.fields.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
-        gha_manager.fields.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
+        gha_fe.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        gha_fe.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
+        gha_fe.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
 
     @staticmethod
-    def _init_tse_form(tse_manager):
-        tse_manager.forms.init_form()
-        tse_manager.forms.add_fields("TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID")
+    def _init_tse_form(tse):
+        tse_fb = FormBuilder(tse)
+        tse_fb.init_form()
+        tse_fb.new_add_fields(["TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID"])
+        tse_fb.apply()
     
     @staticmethod
-    def _configure_tse(tse_manager):
+    def _configure_tse(tse):
+        tse_fe = FieldEditor(tse)
+
         # ALIASES
         aliases = [
             ("TSE_ESSENCE_ID", "Essence"),
@@ -396,7 +421,7 @@ class ExpertiseService:
         ]
         
         for field, alias in aliases:
-            tse_manager.fields.set_alias(field, alias)
+            tse_fe.set_alias(field, alias)
         
         # DISPLAY EXPRESSION
         display_expression = """
@@ -410,16 +435,18 @@ class ExpertiseService:
                 attribute(@ess, 'essence_variation')
             )
             """
-        tse_manager.set_display_expression(display_expression)
+        tse.setDisplayExpression(display_expression)
 
     @staticmethod
-    def _init_va_form(va_manager):
-        va_manager.forms.init_form()
-        va_manager.forms.add_fields("VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_TX_TROUEE", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA")
-    
+    def _init_va_form(va):
+        va_fb = FormBuilder(va)
+        va_fb.init_form()
+        va_fb.new_add_fields(["VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID", "VA_TX_TROUEE", "VA_AGE_APP", "VA_TX_HA", "CUMUL_TX_VA"])
+        va_fb.apply()
+
     @staticmethod
-    def _configure_va(va_manager):
-        va_f = va_manager.fields
+    def _configure_va(va):
+        va_f = FieldEditor(va)
 
         # ALIASES
         aliases = [
@@ -451,7 +478,7 @@ class ExpertiseService:
                 )
             )
             """
-        va_manager.set_display_expression(display_expression)
+        va.setDisplayExpression(display_expression)
 
         # VA_AGE_APP
         field_name = "VA_AGE_APP"
@@ -476,12 +503,16 @@ class ExpertiseService:
         va_f.set_default_value(field_name, default_value)
 
     @staticmethod
-    def _init_reg_form(reg_manager):
-        reg_manager.forms.init_form()
-        reg_manager.forms.add_fields("REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", "REG_STADE", "REG_ETAT")
+    def _init_reg_form(reg):
+        reg_fb = FormBuilder(reg)
+        reg_fb.init_form()
+        reg_fb.new_add_fields(["REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID", "REG_STADE", "REG_ETAT"])
+        reg_fb.apply()
     
     @staticmethod
-    def _configure_reg(reg_manager):
+    def _configure_reg(reg):
+        reg_fe = FieldEditor(reg)
+
         # ALIASES
         aliases = [
             ("REG_ESSENCE_ID", "Essence"),
@@ -491,7 +522,7 @@ class ExpertiseService:
         ]
         
         for field, alias in aliases:
-            reg_manager.fields.set_alias(field, alias)
+            reg_fe.set_alias(field, alias)
 
         # DISPLAY EXPRESSION
         display_expression = """
@@ -511,7 +542,7 @@ class ExpertiseService:
                 )
             )
             """
-        reg_manager.set_display_expression(display_expression)
+        reg.setDisplayExpression(display_expression)
 
         # REG_STADE
         stades = {
@@ -521,7 +552,7 @@ class ExpertiseService:
             "semis_3_5": "Gaulis 3-5m",
             "semis_5_15": "Perchis 5m-15cm"
             }
-        reg_manager.fields.add_value_map('REG_STADE', {'map': [{str(value): str(descr)} for descr, value in stades.items()]})
+        reg_fe.add_value_map('REG_STADE', {'map': [{str(value): str(descr)} for descr, value in stades.items()]})
 
         # REG_ETAT
         etats = {
@@ -530,12 +561,13 @@ class ExpertiseService:
             "moderee_30_50": "Modérée 30-50%",
             "eparse_10_30": "Eparse 10-30%",
             "infime_inf_10": "Infime <10%"}
-        reg_manager.fields.add_value_map('REG_ETAT', {'map': [{str(value): str(descr)} for descr, value in etats.items()]})
+        reg_fe.add_value_map('REG_ETAT', {'map': [{str(value): str(descr)} for descr, value in etats.items()]})
 
     @staticmethod
-    def _configure_essence_field(layer_manager, essence_field, essence_secondaire_field, essences_manager, codes, with_variation = False, selected_field = "selected"):
+    def _configure_essence_field(layer, essence_field, essence_secondaire_field, essence_layer, codes, with_variation = False, selected_field = "selected"):
         # This function is quite complicated with a lot of parameter because i need to deal with variation or not and with codes input (GHA/TRANSECT vs TAILLIS).
         # TO-DO : I can surely divide this into piece
+        layer_fe = FieldEditor(layer)
 
         # Build expression
         codes_string = ", ".join([f"'{code}'" for code in codes])
@@ -543,7 +575,7 @@ class ExpertiseService:
         unselected_code_query = f"code NOT IN ({codes_string})"
 
         essences_list = dict()
-        for ess in essences_manager.layer.getFeatures(QgsFeatureRequest(QgsExpression(selected_code_query))):
+        for ess in essence_layer.getFeatures(QgsFeatureRequest(QgsExpression(selected_code_query))):
             label = ess['code']
             if with_variation:
                 if ess['variation'] in ('foudroyé', 'nécrosé', 'dépérissant'):
@@ -552,14 +584,14 @@ class ExpertiseService:
             # Avoid overwriting in case of ess whith multiple variation
             if label not in essences_list:
                 essences_list[label] = ess['fid']
-        layer_manager.fields.add_value_map(essence_field, {'map': essences_list})
+        layer_fe.add_value_map(essence_field, {'map': essences_list})
 
         # 2. Ensure "selected" field for secondary essences
-        if selected_field not in [f.name() for f in essences_manager.layer.fields()]:
-            essences_manager.fields.add_field(selected_field, QVariant.Bool)
+        if selected_field not in [f.name() for f in essence_layer.fields()]:
+            layer_fe.add_field(selected_field, QVariant.Bool)
 
         # 3. Mark secondary essences as selected
-        essences_manager.fields.set_field_value_by_expression(selected_field, True, unselected_code_query)
+        layer_fe.set_field_value_by_expression(selected_field, True, unselected_code_query)
 
         # 4. Add value relation for ESSENCE_SECONDAIRE_ID
         expression = f'"{selected_field}" = True' if with_variation else f'"{selected_field}" = True AND "variation" IS NULL'
@@ -568,11 +600,11 @@ class ExpertiseService:
             'AllowNull': True,
             'FilterExpression': expression,
             'Key': 'fid',
-            'Layer': essences_manager.layer.id(),
+            'Layer': essence_layer.id(),
             'Value': 'essence_variation'
         }
 
-        layer_manager.fields.add_value_relation(essence_secondaire_field, config)
+        layer_fe.add_value_relation(essence_secondaire_field, config)
 
         # 5. Constrain ESSENCE_ID & ESSENCE_SECONDAIRE_ID
         ess_expr = f"""
@@ -581,6 +613,6 @@ class ExpertiseService:
         ((COALESCE("{essence_field}", '') = '') AND "{essence_secondaire_field}" IS NOT NULL)
         """
         msg = "Veuillez sélectionner une valeur pour ESSENCE ou ESSENCE_SECONDAIRE (mais pas les deux)."
-        layer_manager.fields.set_constraint_expression(essence_field, ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
+        layer_fe.set_constraint_expression(essence_field, ess_expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
 
         return None
