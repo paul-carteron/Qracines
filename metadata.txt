@@ -1,15 +1,21 @@
 [general]
-name=Qsequoia2
-plugin_id=qsequoia2
-version=1.0.4
-mainFile=Qsequoia2.py
+name=Qsequoia2 – Racines
+plugin_id=qsequoia2_racines
+version=0.1.0
+mainFile=qsequoia2_racines.py
 qgisMinimumVersion=3.28
-description=Outils internes Racines pour QGIS
-about=Création de projet, carte et Qfield pour le cabinet Racines.
+
+description=Extensions Racines pour Qsequoia2
+about=Fonctionnalités spécifiques au cabinet Racines reposant sur l’API de Qsequoia2.
+
 author=Paul Carteron - Matthieu Chevereau
 email=p.carteron@racines.com
+
 icon=icons/icon.svg
 category=Plugins
+
+plugin_dependencies=Qsequoia2
+
 hasProcessingProvider=no
 experimental=False
 deprecated=False

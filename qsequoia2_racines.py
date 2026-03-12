@@ -79,12 +79,12 @@ class QfieldButton:
             toolbar.removeAction(self._widget_action)
         self.button.deleteLater() 
 
-class Qsequoia2:
+class Qsequoia2Racines:
     def __init__(self, iface):
         self.iface = iface
 
         self.plugin_dir = Path(__file__).parent
-        self.plugin_name = "Qsequoia2"
+        self.plugin_name = "Qsequoia2 – Racines"
 
         self.toolbar = None
         self.buttons = []
@@ -111,7 +111,7 @@ class Qsequoia2:
 
         # Toolbar
         self.toolbar = self.iface.addToolBar(self.plugin_name)
-        self.toolbar.setObjectName("Qsequoia2Toolbar")
+        self.toolbar.setObjectName("Qsequoia2RacinesToolbar")
 
         for icon, tooltip, handler in CLASSIC_BUTTONS:
             btn = ClassicButton(
