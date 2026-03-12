@@ -4,14 +4,12 @@ from qgis.core import QgsProject
 
 from .pedology_dialog import Ui_PedologyCreateDialog
 
-from ....utils.config import get_guides, get_style, get_stations, get_racines_path
-from ....utils.variable import get_project_variable
-from ....utils.layers import load_vectors, load_gpkg, create_relation
-from ....utils.utils import clear_project
-from ....utils.ui import RasterController, QfieldPackager
+from ...utils.config import get_guides, get_style, get_stations, get_racines_path
+from ...utils.layers import load_vectors, load_gpkg, create_relation
+from ...utils.utils import clear_project
+from ...utils.ui import RasterController, QfieldPackager
 
-from ....core.layer_factory import LayerFactory
-from ....core.layer import LayerManager
+from ...core.layer.factory import LayerFactory
 
 import processing
 

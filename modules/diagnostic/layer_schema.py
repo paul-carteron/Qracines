@@ -113,4 +113,4 @@ DIAGNOSTIC_LAYERS = {
             ("REG_ETAT", QVariant.String),
         ],
     },
-},
+}

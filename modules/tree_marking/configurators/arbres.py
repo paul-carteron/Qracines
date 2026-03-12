@@ -6,8 +6,8 @@ from qgis.core import (
 )
 from PyQt5.QtGui import QFont
 
-from .....core.layer.manager import FormBuilder, FieldEditor
-from .....utils.essence import configure_essence_field
+from ....core.layer import FormBuilder, FieldEditor
+from ....utils.essence import configure_essence_field
 
 class ArbresConfigurator:
 

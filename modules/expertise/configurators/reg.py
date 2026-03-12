@@ -1,5 +1,5 @@
-from .....core.layer.manager import FormBuilder, FieldEditor
-from .....utils.essence import configure_essence_field
+from ....core.layer import FormBuilder, FieldEditor
+from ....utils.essence import configure_essence_field
 
 
 class RegConfigurator:

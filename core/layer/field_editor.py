@@ -9,7 +9,6 @@ from qgis.core import (
     QgsEditorWidgetSetup,
     QgsValueMapFieldFormatter
 )
-from .fetcher import LayerFetcher
 
 class FieldEditor:
     def __init__(self, layer):
@@ -117,19 +116,3 @@ class FieldEditor:
         index = self._get_field_index(field_name)
         widget_setup = QgsEditorWidgetSetup('Color', {})
         self.layer.setEditorWidgetSetup(index, widget_setup)
-
-    def set_relation_label(self, relation_name, label):
-        relation = LayerFetcher.get_relation_by_name(relation_name)
-        if not relation:
-            print(f"Relation '{relation_name}' not found.")
-            return
-        
-        form_config = self.layer.editFormConfig()
-        root = form_config.invisibleRootContainer()
-        for widget in root.findElements(Qgis.AttributeEditorType.Relation):
-            if isinstance(widget, QgsAttributeEditorRelation) and widget.relation().id() == relation.id():
-                widget.setLabel(label or '')
-                widget.setShowLabel(bool(label))
-                self.layer.setEditFormConfig(form_config)
-                return
-        print(f"No editor for relation '{relation_name}' in form.")

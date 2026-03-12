@@ -1,5 +1,5 @@
 from qgis.core import QgsFieldConstraints
-from ..core.layer.manager import FieldEditor
+from ..core.layer import FieldEditor
 
 
 _SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}

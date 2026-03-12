@@ -7,8 +7,8 @@ from qgis.core import (
     QgsSymbol
 )
 
-from .....core.layer.manager import FormBuilder, FieldEditor
-from .....utils.config import get_pictos
+from ....core.layer import FormBuilder, FieldEditor
+from ....utils.config import get_pictos
 
 class PictoConfigurator:
 

@@ -26,8 +26,7 @@ from ..configurators.tse import TseConfigurator
 from ..configurators.va import VaConfigurator
 from ..configurators.reg import RegConfigurator
 
-
-class DiagnosticService:
+class DiagnosticCreateService:
     def __init__(
         self,
         dendro_controller,
@@ -45,7 +44,9 @@ class DiagnosticService:
 
     def run(self):
         
+        print("_create_layers")
         layers = self._create_layers()
+        print("_package_layers")
         gpkg_path = self._package_layers(layers)
 
         layers = load_gpkg(gpkg_path, group_name="DIAGNOSTIC")

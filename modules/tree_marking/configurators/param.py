@@ -1,9 +1,9 @@
 
 from qgis.core import QgsFieldConstraints
 
-from .....core.layer.manager import FormBuilder, FieldEditor
+from ....core.layer import FormBuilder, FieldEditor
 
-from ...tree_marking_config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
+from ...tree_marking.config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
 
 class ParamConfigurator:
 

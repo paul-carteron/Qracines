@@ -6,8 +6,6 @@ from qgis.core import (
     QgsOptionalExpression,
     QgsExpression
 )
-from .fetcher import LayerFetcher
-
 
 class FormBuilder:
     def __init__(self, layer):
@@ -33,20 +31,6 @@ class FormBuilder:
                 field = QgsAttributeEditorField(name, index, container)
                 container.addChildElement(field)
 
-        self.layer.setEditFormConfig(self.config)
-
-    def add_relation(self, relation_name, name=None, visibility_expression=None, type="group"):
-        relation = LayerFetcher.get_relation_by_name(relation_name)
-        if not relation:
-            print(f"Relation '{relation_name}' not found.")
-            return
-
-        container = self._get_or_create_container(name, type=type)
-        if visibility_expression:
-            container.setVisibilityExpression(QgsOptionalExpression(QgsExpression(visibility_expression)))
-        
-        relation_editor = QgsAttributeEditorRelation(relation, container)
-        container.addChildElement(relation_editor)
         self.layer.setEditFormConfig(self.config)
 
     def _get_or_create_container(self, name, clear_tab=False, type="group"):

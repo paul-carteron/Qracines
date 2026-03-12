@@ -1,6 +1,6 @@
 from qgis.core import QgsFieldConstraints
-from .....core.layer.manager import FormBuilder, FieldEditor
-from .....utils.config import get_peuplements
+from ....core.layer import FormBuilder, FieldEditor
+from ....utils.config import get_peuplements
 
 class PlacetteConfigurator:
 

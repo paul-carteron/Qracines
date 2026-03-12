@@ -6,8 +6,8 @@ from .global_settings_dialog import Ui_GlobalSettingsDialog
 import yaml
 
 # Import from utils folder
-from ....utils.variable import get_global_variable, set_global_variable
-from ....utils.config import get_config_path, get_racines_path
+from ...utils.variable import get_global_variable, set_global_variable
+from ...utils.config import get_config_path, get_racines_path
 
 
 _agence_config_path = get_config_path("agences.yaml")

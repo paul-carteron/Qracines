@@ -1,22 +1,26 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from .expertise_create_dialog import Ui_ExpertiseCreateDialog
-from .expertise_create_service import ExpertiseService
+from qgis.PyQt import uic
 
+from .expertise_create_service import ExpertiseCreateService
 from ....core.db.manager import DatabaseManager
 
 from ....utils.config import get_racines_path
 from ....utils.utils import clear_project
 from ....utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController, DendroController
 
-class ExpertiseCreateDialog(QDialog):
+from pathlib import Path
+FORM_CLASS, _ = uic.loadUiType(
+    Path(__file__).parent / "expertise_create.ui")
+
+class ExpertiseCreateDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_ExpertiseCreateDialog()
-        self.ui.setupUi(self)
+        self.setupUi(self)
+
         self.essences = DatabaseManager().load_essences("essences")
         
         self.dendro_controller = DendroController(
-            self.ui,
+            ui = self,
             dendro_spinbox={
                 'dmin': 'sp_dmin',
                 'dmax': 'sp_dmax',
@@ -26,7 +30,7 @@ class ExpertiseCreateDialog(QDialog):
         )
 
         self.raster_controller = RasterController(
-            ui=self.ui,
+            ui = self,
             raster_checkbox={
                 #   'key':     'checkbox_name',
                 'plt_anc': 'cb_plt_anc',
@@ -39,14 +43,14 @@ class ExpertiseCreateDialog(QDialog):
         
 
         self.gha_tra_selector = SpeciesSelector(
-            ui = self.ui, layer = self.essences,
+            ui = self, layer = self.essences,
             choices="lw_species", selected="lw_selected_species",
             add="pb_add_species", remove="pb_remove_species",
             filter="le_filter_species"
         )
 
         self.tse_selector = SpeciesSelector(
-            ui = self.ui, layer = self.essences,
+            ui = self, layer = self.essences,
             choices="lw_species_taillis", selected="lw_selected_species_taillis",
             add="pb_add_species_taillis", remove="pb_remove_species_taillis",
             filter="le_filter_species_taillis"
@@ -56,14 +60,14 @@ class ExpertiseCreateDialog(QDialog):
         self.tse_selector.selected.addItems(tse_default_label)
 
         self.packager = QfieldPackager(
-            self.ui,
+            self,
             default_dir = get_racines_path("expertise", "Qfield", "Expertise"),
             package_ui = 'cb_package_for_qfield',
             outdir_ui = 'fw_outdir'
             )
         
         self.grid_controller = GridController(
-            self.ui,
+            self,
             create_grid_ui = 'cb_create_grid',
             points_per_ha_ui = 'dsp_points_per_ha'
         )
@@ -78,9 +82,7 @@ class ExpertiseCreateDialog(QDialog):
         codes_gha_tra = self.gha_tra_selector.selected_codes()
         codes_taillis = self.tse_selector.selected_codes()
 
-
-        # 2) call service
-        svc = ExpertiseService(
+        svc = ExpertiseCreateService(
             codes=codes_gha_tra,
             codes_taillis=codes_taillis,
             dendro_controller = self.dendro_controller,

@@ -8,8 +8,8 @@ from qgis.core import (
 
 from PyQt5.QtGui import QColor
 
-from .....core.layer.manager import FormBuilder, FieldEditor
-from .....utils.config import get_limites, get_limites_config
+from ....core.layer import FormBuilder, FieldEditor
+from ....utils.config import get_limites, get_limites_config
 
 
 class LimiteConfigurator:

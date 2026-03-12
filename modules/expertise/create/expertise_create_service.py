@@ -26,8 +26,7 @@ from ..configurators.tse import TseConfigurator
 from ..configurators.va import VaConfigurator
 from ..configurators.reg import RegConfigurator
 
-
-class ExpertiseService:
+class ExpertiseCreateService:
 
     def __init__(
         self,
@@ -139,7 +138,8 @@ class ExpertiseService:
         }
 
         for name, label in relation_labels.items():
-            set_relation_label(placette, relations[name], label)
+            relation = relations[name]
+            set_relation_label(placette, relation, label)
 
     def _configure_flags(self, layers):
 

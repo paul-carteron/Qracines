@@ -1,33 +1,36 @@
-from PyQt5.QtWidgets import QMessageBox, QDialog, QFileDialog
-from .expertise_import_dialog import Ui_ExpertiseImportDialog
+import processing
+
+from PyQt5.QtWidgets import QMessageBox, QDialog
 from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
+from qgis.PyQt import uic
 
 # Import from utils folder
 from ....utils.layers import get_path, load_gpkg
 from ....utils.processing import calculate_essence_id, merge_with_ess, save_as_xlsx
 from ....utils.ui import GpkgLoader
 
-from ....core.layer.factory import LayerFactory
+from ..layer_schema import EXPERTISE_LAYERS
 
-import processing
+from pathlib import Path
+FORM_CLASS, _ = uic.loadUiType(
+    Path(__file__).parent / "expertise_load.ui")
 
-class ExpertiseImportDialog(QDialog):
+class ExpertiseLoadDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setupUi(self)
         self.project = QgsProject.instance()
         self.iface = iface
-        self.ui = Ui_ExpertiseImportDialog()  
-        self.ui.setupUi(self)
-        
-        self.loader = GpkgLoader(ui = self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
+
+        self.gpkg_loader = GpkgLoader(ui = self, add = 'pb_import_files', selected = 'lw_selected_files')
 
     def merge_files(self):
-        if self.loader.is_valid():
-            gpkgs = self.loader.selected_files
+        if self.gpkg_loader.is_valid():
+            gpkgs = self.gpkg_loader.selected_files
 
         out_path = get_path("expertise_gpkg")
-        layers = LayerFactory.get_layer_names("EXPERTISE")
+        layers = list(EXPERTISE_LAYERS.keys())
 
         ess_layer_name = "essences"
         ess_layer = QgsVectorLayer(f"{gpkgs[0]}|layername={ess_layer_name}", ess_layer_name, "ogr")

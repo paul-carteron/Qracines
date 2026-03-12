@@ -1,34 +1,38 @@
-from PyQt5.QtWidgets import QMessageBox, QDialog
-from .tree_marking_import_dialog import Ui_TreeMarkingImportDialog
+import processing
+
 from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
+from PyQt5.QtWidgets import QMessageBox, QDialog
+from qgis.PyQt import uic
 
 # Import from utils folder
 from ....utils.layers import get_path, load_gpkg
 from ....utils.processing import calculate_essence_id, merge_with_ess, save_as_xlsx
 from ....utils.ui import GpkgLoader
 from ....utils.config import get_new_to_old
-from ....core.layer.factory import LayerFactory
-from ..tree_marking_config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
 
-import processing
+from ..config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
+from ..layer_schema import TREE_MARKING_LAYERS
 
-class TreeMarkingImportDialog(QDialog):
+from pathlib import Path
+FORM_CLASS, _ = uic.loadUiType(
+    Path(__file__).parent / "tree_marking_load.ui")
+
+class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setupUi(self)
         self.project = QgsProject.instance()
         self.iface = iface
-        self.ui = Ui_TreeMarkingImportDialog()  
-        self.ui.setupUi(self)
         
-        self.loader = GpkgLoader(ui = self.ui, add = 'pb_import_files', selected = 'lw_selected_files')
+        self.gpkg_loader = GpkgLoader(ui = self, add = 'pb_import_files', selected = 'lw_selected_files')
 
     def merge_files(self):
-        if self.loader.is_valid():
-            gpkgs = self.loader.selected_files
+        if self.gpkg_loader.is_valid():
+            gpkgs = self.gpkg_loader.selected_files
 
         out_path = get_path("inventaire")
-        layers = LayerFactory.get_layer_names("INVENTAIRE")
+        layers = list(TREE_MARKING_LAYERS.keys())
 
         ess_layer_name = "essences"
         ess_layer = QgsVectorLayer(f"{gpkgs[0]}|layername={ess_layer_name}", ess_layer_name, "ogr")

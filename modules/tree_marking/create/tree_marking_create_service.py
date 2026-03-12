@@ -13,7 +13,7 @@ from ..layer_schema import TREE_MARKING_LAYERS
 from ..configurators.param import ParamConfigurator
 from ..configurators.arbres import ArbresConfigurator
 
-class TreeMarkingService:
+class TreeMarkingCreateService:
 
     def __init__(
         self,

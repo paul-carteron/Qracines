@@ -5,9 +5,9 @@ from typing import Tuple
 from qgis.core import QgsVectorLayer, QgsRectangle, QgsWkbTypes, QgsUnitTypes, QgsPrintLayout, QgsReadWriteContext, QgsLayoutItemMap, QgsLayoutFrame, QgsLayoutItemAttributeTable
 from qgis.PyQt.QtXml import QDomDocument
 
-from ....utils.variable import get_global_variable
-from ....utils.processing import buffer, multipart_to_singleparts
-from ....utils.config import get_display_name, get_path
+from ...utils.variable import get_global_variable
+from ...utils.processing import buffer, multipart_to_singleparts
+from ...utils.config import get_display_name, get_path
 
 # region LAYOUT CREATION
 @dataclass

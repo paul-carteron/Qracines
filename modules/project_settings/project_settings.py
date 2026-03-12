@@ -4,12 +4,11 @@ from .project_settings_dialog import Ui_ProjectSettingsDialog
 from .project_settings_service import compute_layout_info, import_layout, configure_layout
 
 # Import from utils folder
-from ....utils.config import get_project, get_path, get_project_canvas, get_project_layout
-from ....utils.layers import configure_snapping 
-from ....utils.utils import show_message, clear_project, create_project
-from ....utils.variable import set_project_variable, get_project_variable, get_global_variable
+from ...utils.config import get_project, get_path, get_project_canvas, get_project_layout
+from ...utils.layers import configure_snapping 
+from ...utils.utils import show_message, clear_project, create_project
+from ...utils.variable import set_project_variable, get_project_variable, get_global_variable
 from ..forest_settings.forest_settings import ForestSettingsDialog
-from ....core.layer import LayerManager
 
 from pathlib import Path
 

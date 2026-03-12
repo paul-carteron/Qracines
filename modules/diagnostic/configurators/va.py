@@ -1,6 +1,6 @@
 from qgis.core import QgsFieldConstraints
 
-from .....core.layer.manager import FormBuilder, FieldEditor
+from ....core.layer import FormBuilder, FieldEditor
 
 class VaConfigurator:
 

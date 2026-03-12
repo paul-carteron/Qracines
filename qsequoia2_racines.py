@@ -1,25 +1,24 @@
 from qgis.PyQt.QtWidgets import QMessageBox, QAction, QToolButton, QMenu
 from qgis.PyQt.QtGui import QIcon
 
-# Import from dialogs folder
-from .dialogs.add_data.add_data import AddDataDialog
+from .modules.add_data.add_data import AddDataDialog
 
-from .dialogs.expertise_create.expertise_create import ExpertiseCreateDialog
-from .dialogs.expertise_import.expertise_import import ExpertiseImportDialog
+from .modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
+from .modules.diagnostic.load.diagnostic_load import DiagnosticLoadDialog
 
-from .dialogs.forest_settings.forest_settings import ForestSettingsDialog
+from .modules.expertise.create.expertise_create import ExpertiseCreateDialog
+from .modules.expertise.load.expertise_load import ExpertiseLoadDialog
 
-from .dialogs.global_settings.global_settings import GlobalSettingsDialog
+from .modules.forest_settings.forest_settings import ForestSettingsDialog
 
-from .dialogs.pedology_create.pedology_create import PedologyCreateDialog
+from .modules.global_settings.global_settings import GlobalSettingsDialog
 
-from .dialogs.project_settings.project_settings import ProjectSettingsDialog
+from .modules.pedology.pedology_create import PedologyCreateDialog
 
-from .dialogs.tree_marking_create.tree_marking_create import TreeMarkingCreateDialog
-from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
+from .modules.project_settings.project_settings import ProjectSettingsDialog
 
-from .dialogs.diagnostic_create.diagnostic_create import DiagnosticDialog
-from .dialogs.diagnostic_import.diagnostic_import import DiagnosticImportDialog
+from .modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDialog
+from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoadDialog
 
 # import utils
 from .utils.variable import get_project_variable, get_global_variable
@@ -173,7 +172,7 @@ class Qsequoia2Racines:
     # region DIAGNOSTIC
     def open_diagnostic_create(self):
         if not self.diagnostic_create:
-            self.diagnostic_create = DiagnosticDialog()
+            self.diagnostic_create = DiagnosticCreateDialog()
         self.diagnostic_create.exec_()
 
     def open_diagnostic_import(self):
@@ -181,10 +180,9 @@ class Qsequoia2Racines:
             return None
 
         if not self.diagnostic_import:
-            self.diagnostic_import = DiagnosticImportDialog()
+            self.diagnostic_import = DiagnosticLoadDialog()
         self.diagnostic_import.exec_()
         
-    
     # endregion
         
     # region PEDOLOGY
@@ -209,7 +207,7 @@ class Qsequoia2Racines:
 
     def open_tree_marking_import(self):
         if not self.tree_marking_import:
-            self.tree_marking_import = TreeMarkingImportDialog()
+            self.tree_marking_import = TreeMarkingLoadDialog()
         self.tree_marking_import.exec_()
 
     # endregion
@@ -228,7 +226,7 @@ class Qsequoia2Racines:
             return None
 
         if not self.expertise_import:
-            self.expertise_import = ExpertiseImportDialog()
+            self.expertise_import = ExpertiseLoadDialog()
         self.expertise_import.exec_()
         
     # endregion
