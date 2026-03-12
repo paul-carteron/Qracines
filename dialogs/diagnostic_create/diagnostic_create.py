@@ -61,7 +61,7 @@ class DiagnosticDialog(QDialog):
         try:
             svc.run()
 
-            msg = "Expertise complète !"
+            msg = "Diagnodtic complète !"
             if self.packager.is_valid():
                 packaged_dir = self.packager.package(prefix="DIAG")
                 msg += f"\nProjet packagé dans :\n{packaged_dir}"

@@ -6,7 +6,8 @@ from qgis.core import (
     QgsEditorWidgetSetup,
     QgsFeatureRequest,
     QgsAttributeEditorRelation,
-    QgsEditorWidgetSetup
+    QgsEditorWidgetSetup,
+    QgsValueMapFieldFormatter
 )
 from .fetcher import LayerFetcher
 
@@ -63,17 +64,29 @@ class FieldEditor:
         form_config.setReuseLastValue(index, True)
         self.layer.setEditFormConfig(form_config)
 
-    def add_value_map(self, field_name, config):
+    def add_value_map(self, field_name, config, allow_null=False):
+
         index = self._get_field_index(field_name)
-        widget_setup = QgsEditorWidgetSetup('ValueMap', config)
+        mapping = config.get("map", {})
+
+        # Normalize dict -> list-of-dict
+        if isinstance(mapping, dict):
+            mapping = [{k: v} for k, v in mapping.items()]
+
+        if allow_null:
+            mapping = [{"(aucun)": QgsValueMapFieldFormatter.NULL_VALUE}] + mapping
+
+        config = {"map": mapping}
+
+        widget_setup = QgsEditorWidgetSetup("ValueMap", config)
+
         self.layer.setEditorWidgetSetup(index, widget_setup)
-        print(f"Value Map widget set for '{field_name}' field in '{self.layer.name()}' layer with map: {config}")
 
     def add_value_relation(self, field_name, config):
         index = self._get_field_index(field_name)
         widget = QgsEditorWidgetSetup('ValueRelation', config)
         self.layer.setEditorWidgetSetup(index, widget)
-
+        
     def add_range(self, field_name, config):
         index = self._get_field_index(field_name)
         widget_setup = QgsEditorWidgetSetup('Range', config)

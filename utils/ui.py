@@ -64,14 +64,20 @@ class RasterController(UIBinderMixin):
             return
 
     def load_selected_rasters(self):
-        asked_keys = [key for key, cb in self.cbs.items() if cb.isChecked()]
+        asked_keys = [k for k, cb in self.cbs.items() if cb.isChecked()]
         if not asked_keys:
             return
 
-        loaded_keys = load_rasters(*asked_keys, group_name="RASTER")
-        if loaded_keys:
-            zoom_on(loaded_keys[0])
-        
+        loaded = load_rasters(*asked_keys, group_name="RASTER")
+
+        group = QgsProject.instance().layerTreeRoot().findGroup("RASTER")
+        if group:
+            for i, node in enumerate(group.children()):
+                node.setItemVisibilityChecked(i == 0)
+
+        if loaded:
+            zoom_on(loaded[0])
+
         replier()
 
 class QfieldPackager(UIBinderMixin):
@@ -208,8 +214,8 @@ class SpeciesSelector(UIBinderMixin):
 
     def populate_species_list(self) -> None:
         """
-        Fill the 'choices' QListWidget from self.essences_layer.
-        Expects self.essences_layer.getFeatures() to yield features
+        Fill the 'choices' QListWidget from self.essences.
+        Expects self.essences.getFeatures() to yield features
         with 'essence' and 'code' attributes.
         """
 

@@ -1,42 +1,52 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from .expertise_create_dialog import Ui_ExpertiseCreateDialog
-from .expertise_service import ExpertiseService
+from .expertise_create_service import ExpertiseService
 
 from ...core.db.manager import DatabaseManager
 
 from ...utils.config import get_racines_path
-from ...utils.layers import load_vectors
 from ...utils.utils import clear_project
-from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController
+from ...utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController, DendroController
 
 class ExpertiseCreateDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_ExpertiseCreateDialog()
         self.ui.setupUi(self)
-        self.essences_layer = DatabaseManager().load_essences("essences")
+        self.essences = DatabaseManager().load_essences("essences")
+        
+        self.dendro_controller = DendroController(
+            self.ui,
+            dendro_spinbox={
+                'dmin': 'sp_dmin',
+                'dmax': 'sp_dmax',
+                'hmin': 'sp_hmin',
+                'hmax': 'sp_hmax'
+            }
+        )
 
-        # --- initialize from helpers class ---
-        raster_checkbox = {
-            #   'key':     'checkbox_name',
+        self.raster_controller = RasterController(
+            ui=self.ui,
+            raster_checkbox={
+                #   'key':     'checkbox_name',
                 'plt_anc': 'cb_plt_anc',
                 'plt':     'cb_plt',
                 'mnh':     'cb_mnh',
                 'scan25':  'cb_scan25',
                 'irc':     'cb_irc',
                 'rgb':     'cb_rgb',
-            }
-        self.raster_controller = RasterController(ui=self.ui, raster_checkbox=raster_checkbox)
+            })
         
+
         self.gha_tra_selector = SpeciesSelector(
-            ui = self.ui, layer = self.essences_layer,
+            ui = self.ui, layer = self.essences,
             choices="lw_species", selected="lw_selected_species",
             add="pb_add_species", remove="pb_remove_species",
             filter="le_filter_species"
         )
 
         self.tse_selector = SpeciesSelector(
-            ui = self.ui, layer = self.essences_layer,
+            ui = self.ui, layer = self.essences,
             choices="lw_species_taillis", selected="lw_selected_species_taillis",
             add="pb_add_species_taillis", remove="pb_remove_species_taillis",
             filter="le_filter_species_taillis"
@@ -73,11 +83,7 @@ class ExpertiseCreateDialog(QDialog):
         svc = ExpertiseService(
             codes=codes_gha_tra,
             codes_taillis=codes_taillis,
-            dmin=self.ui.sp_dmin.value(),
-            dmax=self.ui.sp_dmax.value(),
-            hmin=self.ui.sp_hmin.value(),
-            hmax=self.ui.sp_hmax.value(),
-            essences_layer = self.essences_layer,
+            dendro_controller = self.dendro_controller,
             grid_controller = self.grid_controller,
             raster_controller = self.raster_controller,
         )

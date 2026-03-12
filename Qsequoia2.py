@@ -15,7 +15,7 @@ from .dialogs.pedology_create.pedology_create import PedologyCreateDialog
 
 from .dialogs.project_settings.project_settings import ProjectSettingsDialog
 
-from .dialogs.tree_marking_create.tree_marking import TreeMarkingCreateDialog
+from .dialogs.tree_marking_create.tree_marking_create import TreeMarkingCreateDialog
 from .dialogs.tree_marking_import.tree_marking_import import TreeMarkingImportDialog
 
 from .dialogs.diagnostic_create.diagnostic_create import DiagnosticDialog

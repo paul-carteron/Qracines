@@ -6,7 +6,7 @@ from qgis.core import (
     QgsMessageLog,
     Qgis,
     QgsRelation,
-    QgsEditorWidgetSetup,
+    QgsAttributeEditorRelation,
 )
 from osgeo import ogr
 
@@ -55,7 +55,7 @@ def load_vectors(*vector_keys, group_name=None):
     project = QgsProject.instance()
     root = project.layerTreeRoot()
     group = None
-    loaded_keys = []
+    loaded_layers = []
 
     for key in vector_keys:
         display_name = get_display_name(key)
@@ -83,9 +83,9 @@ def load_vectors(*vector_keys, group_name=None):
             QgsMessageLog.logMessage(f"Could not style '{key}': {e}", "Qsequoia2", Qgis.Warning)
 
         layer.triggerRepaint()
-        loaded_keys.append(key)
+        loaded_layers.append(layer)
 
-    return loaded_keys
+    return loaded_layers
 
 def load_rasters(*raster_keys, group_name=None):
     """
@@ -130,9 +130,25 @@ def load_rasters(*raster_keys, group_name=None):
     return loaded_keys
 
 def load_gpkg(gpkg_path, *layers, group_name=None):
+    """
+    Load layers from a GeoPackage into the QGIS project.
 
+    Parameters
+    ----------
+    gpkg_path : str or Path
+        Path to the GeoPackage or key resolved via get_path().
+    *layers : str
+        Optional list of layer names to load. If empty, all layers are loaded.
+    group_name : str, optional
+        Name of the layer tree group where layers will be inserted.
 
-    # Resolve the path if a key is given
+    Returns
+    -------
+    dict
+        Dictionary {layer_name: QgsVectorLayer}
+    """
+
+    # Resolve path
     if not Path(gpkg_path).exists():
         try:
             gpkg_path = get_path(gpkg_path)
@@ -143,46 +159,66 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
 
     if not gpkg_path.exists():
         raise FileNotFoundError(f"GeoPackage not found: {gpkg_path}")
-    
-    datasource = ogr.Open(gpkg_path)
+
+    datasource = ogr.Open(str(gpkg_path))
     if datasource is None:
-        raise Exception("Failed to open GeoPackage.")
+        raise Exception(f"Failed to open GeoPackage: {gpkg_path}")
 
     project = QgsProject.instance()
     root = project.layerTreeRoot()
+
+    # Create / find group
     group = None
     if group_name:
-        group = root.findGroup(group_name) or root.addGroup(group_name)
+        group = root.findGroup(group_name)
+        if not group:
+            group = root.addGroup(group_name)
 
-    SYSTEM_TABLES = {"layer_styles", "gpkg_contents", "gpkg_geometry_columns"}
+    SYSTEM_TABLES = {
+        "layer_styles",
+        "gpkg_contents",
+        "gpkg_geometry_columns",
+        "gpkg_spatial_ref_sys",
+        "gpkg_extensions",
+        "sqlite_sequence"
+    }
 
-    available_layers = [layer.GetName() for layer in datasource if layer.GetName() not in SYSTEM_TABLES]
+    available_layers = [
+        layer.GetName()
+        for layer in datasource
+        if layer.GetName() not in SYSTEM_TABLES
+    ]
 
-    # If no layer names provided, load all
+    # If no layers specified → load everything
     layers_to_load = layers or available_layers
 
-    loaded_layers = []
-    for layer in layers_to_load:
-        if layer not in available_layers:
+    loaded_layers = {}
+
+    for layer_name in layers_to_load:
+
+        if layer_name not in available_layers:
             continue
 
-        uri = f"{str(gpkg_path)}|layername={layer}"
-        imported_layer = QgsVectorLayer(uri, layer, 'ogr')
-        # Skip invalid layers
-        if not imported_layer.isValid():
-            QgsMessageLog.logMessage(f"Failed to load gpkg from {gpkg_path}", "Qsequoia2", Qgis.Warning)
+        uri = f"{gpkg_path}|layername={layer_name}"
+        vl = QgsVectorLayer(uri, layer_name, "ogr")
+
+        if not vl.isValid():
+            QgsMessageLog.logMessage(
+                f"Failed to load layer '{layer_name}' from {gpkg_path}",
+                "Qsequoia2",
+                Qgis.Warning
+            )
             continue
 
-        # Create group only if a layer will be added
-        if group_name and group is None:
-            group = root.findGroup(group_name) or root.addGroup(group_name)
+        project.addMapLayer(vl, not bool(group))
 
-        project.addMapLayer(imported_layer, not bool(group))
+        # Load style AFTER adding to project to properly load relation
+        vl.loadDefaultStyle()
+
         if group:
-            group.addLayer(imported_layer)
+            group.addLayer(vl)
 
-        imported_layer.loadDefaultStyle()
-        loaded_layers.append(imported_layer)
+        loaded_layers[layer_name] = vl
 
     return loaded_layers
     
@@ -239,6 +275,30 @@ def create_relation(parent_layer, child_layer, parent_field, child_field,
     proj.relationManager().addRelation(relation)
 
     return relation
+
+def set_relation_label(layer, relation, label):
+
+    if relation is None:
+        print("Relation not found.")
+        return
+
+    form_config = layer.editFormConfig()
+    root = form_config.invisibleRootContainer()
+
+    for widget in root.findElements(Qgis.AttributeEditorType.Relation):
+
+        if (
+            isinstance(widget, QgsAttributeEditorRelation)
+            and widget.relation().id() == relation.id()
+        ):
+
+            widget.setLabel(label or "")
+            widget.setShowLabel(bool(label))
+
+            layer.setEditFormConfig(form_config)
+            return
+
+    print(f"No editor for relation '{relation.name()}' in form.")
 
 def set_layers_readonly(*keys):
     for key in keys:

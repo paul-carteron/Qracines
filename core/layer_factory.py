@@ -117,7 +117,7 @@ class LayerFactory:
             },
         },
         "INVENTAIRE": {
-            "param": {
+            "Param": {
                 "fields": [
                 ("fid", QVariant.Int),
                 ("TYPE", QVariant.String),
@@ -131,7 +131,7 @@ class LayerFactory:
                 ("MARQUE", QVariant.String),
                 ],
             },
-            "arbres": {
+            "Arbres": {
                 "fields": [
                 ("fid", QVariant.Int),
                 ("ID_CODE", QVariant.String),
@@ -190,9 +190,8 @@ class LayerFactory:
             },
         },
         "EXPERTISE": {
-            "placette": {
+            "Placette": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("COMPTEUR", QVariant.LongLong),
                     ("PLA_RMQ", QVariant.String),
@@ -205,9 +204,8 @@ class LayerFactory:
             ],
                 "geometry": "Point"
             },
-            "transect": {
+            "Transect": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("TR_PARCELLE", QVariant.String),
                     ("TR_STRATE", QVariant.String),
@@ -219,34 +217,30 @@ class LayerFactory:
                 ],
                 "geometry": "Point"
             },
-            "limite": {
+            "Limite": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("LIMITE_TYPE", QVariant.String), 
                     ("LIMITE_RMQ", QVariant.String)
                 ],
                 "geometry": "LineString"
             },
-            "gha": {
+            "Gha": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("GHA_ESSENCE_ID", QVariant.String),
                     ("GHA_ESSENCE_SECONDAIRE_ID", QVariant.String),
                     ("GHA_G", QVariant.Int),
                 ],
             },
-            "tse": {
+            "Tse": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("TSE_ESSENCE_ID", QVariant.String),
                     ("TSE_ESSENCE_SECONDAIRE_ID", QVariant.String),
                 ],
             },
-            "va": {
+            "Va": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("VA_ESSENCE_ID", QVariant.String),
                     ("VA_ESSENCE_SECONDAIRE_ID", QVariant.String),
@@ -256,9 +250,8 @@ class LayerFactory:
                     ("CUMUL_TX_VA", QVariant.Double)
                 ],
             },
-            "reg": {
+            "Reg": {
                 "fields": [
-                    ("fid", QVariant.Int),
                     ("UUID", QVariant.String),
                     ("REG_ESSENCE_ID", QVariant.String),
                     ("REG_ESSENCE_SECONDAIRE_ID", QVariant.String),

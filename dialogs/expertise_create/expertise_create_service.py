@@ -3,31 +3,33 @@ import processing
 from qgis.core import (
     QgsProject,
     QgsProcessing,
-    QgsMapLayer,
-    QgsWkbTypes
+    QgsWkbTypes,
+    QgsMapLayer
 )
+
 from qgis.utils import iface
 
 from ...core.layer_factory import LayerFactory
 from ...core.db.manager import DatabaseManager
-
-from ...utils.layers import load_gpkg, create_relation, set_relation_label, load_vectors
+from ...utils.layers import load_gpkg, create_relation, set_relation_label
 from ...utils.utils import fold, unfold
 
 # configurators
 from .configurators.placette import PlacetteConfigurator
 from .configurators.transect import TransectConfigurator
 from .configurators.limite import LimiteConfigurator
-from .configurators.picto import PictoConfigurator
 from .configurators.gha import GhaConfigurator
 from .configurators.tse import TseConfigurator
 from .configurators.va import VaConfigurator
 from .configurators.reg import RegConfigurator
 
 
-class DiagnosticService:
+class ExpertiseService:
+
     def __init__(
         self,
+        codes: list,
+        codes_taillis: list,
         dendro_controller,
         grid_controller,
         raster_controller
@@ -36,47 +38,41 @@ class DiagnosticService:
         self.iface = iface
         self.project = QgsProject.instance()
 
+        self.codes = codes
+        self.codes_taillis = codes_taillis
         self.dendro = dendro_controller.get_values()
 
         self.grid_controller = grid_controller
         self.raster_controller = raster_controller
 
     def run(self):
-        
+
         layers = self._create_layers()
         gpkg_path = self._package_layers(layers)
 
-        layers = load_gpkg(gpkg_path, group_name="DIAGNOSTIC")
+        layers = load_gpkg(gpkg_path, group_name="EXPERTISE")
 
         relations = self._create_relations(layers)
-        
+
         self._configure_layers(layers, relations)
-
-        print("load_vectors")
-        vector_layers = load_vectors('ua_polygon', 'infra_point', 'infra_line', 'infra_polygon', 'route_line', group_name="VECTEUR")
-
-        print("_configure_flags")
-        self._configure_flags(layers, vector_layers)
-        
-        print("_save_style")
+        self._configure_flags(layers)
         self._save_style(layers)
 
         self.raster_controller.load_selected_rasters()
 
         fold()
-        unfold("DIAGNOSTIC")
+        unfold("EXPERTISE")
 
         return gpkg_path
 
     def _create_layers(self):
 
         layers = {
-            layer_name: LayerFactory.create(layer_name, "DIAGNOSTIC")
-            for layer_name in LayerFactory.get_layer_names("DIAGNOSTIC")
+            name: LayerFactory.create(name, "EXPERTISE")
+            for name in LayerFactory.get_layer_names("EXPERTISE")
         }
 
         layers["Essences"] = DatabaseManager().load_essences("Essences")
-        self.essences = layers["Essences"]
 
         if self.grid_controller.is_valid():
             layers["Grid"] = self.grid_controller.create_grid()
@@ -84,7 +80,7 @@ class DiagnosticService:
         self.project.addMapLayers(list(layers.values()), addToLegend=False)
 
         return layers
-
+    
     def _package_layers(self, layers, outpath=QgsProcessing.TEMPORARY_OUTPUT):
 
         result = processing.run(
@@ -107,7 +103,7 @@ class DiagnosticService:
         return gpkg_path
 
     def _create_relations(self, layers):
-        
+
         relations = {
             "Gha": create_relation(layers["Placette"], layers["Gha"], "UUID", "UUID"),
             "Tse": create_relation(layers["Placette"], layers["Tse"], "UUID", "UUID"),
@@ -116,26 +112,24 @@ class DiagnosticService:
         }
 
         return relations
-    
+
     def _configure_layers(self, layers, relations):
         essences = layers["Essences"]
         placette = layers["Placette"]
         transect = layers["Transect"]
         limite = layers["Limite"]
-        picto = layers["Picto"]
         gha = layers["Gha"]
         tse = layers["Tse"]
         va = layers["Va"]
         reg = layers["Reg"]
 
         PlacetteConfigurator(placette, relations).configure()
-        TransectConfigurator(transect, self.dendro, essences).configure()
+        TransectConfigurator(transect, self.dendro, essences, self.codes).configure()
         LimiteConfigurator(limite).configure()
-        PictoConfigurator(picto).configure()
-        GhaConfigurator(gha, essences).configure()
-        TseConfigurator(tse, essences).configure()
-        VaConfigurator(va, essences).configure()
-        RegConfigurator(reg, essences).configure()
+        GhaConfigurator(gha, essences, self.codes).configure()
+        TseConfigurator(tse, essences,self.codes_taillis).configure()
+        VaConfigurator(va, essences,self.codes).configure()
+        RegConfigurator(reg, essences, self.codes).configure()
 
         relation_labels = {
             "Gha": "Surface terrière",
@@ -144,25 +138,18 @@ class DiagnosticService:
             "Reg": "Régénération",
         }
 
-        print("set_relation_label")
         for name, label in relation_labels.items():
             set_relation_label(placette, relations[name], label)
 
-    def _configure_flags(self, layers, vector_layers):
+    def _configure_flags(self, layers):
 
         for layer in layers.values():
+
             if layer.geometryType() == QgsWkbTypes.NullGeometry:
 
                 flags = layer.flags()
                 flags |= QgsMapLayer.Private
                 layer.setFlags(flags)
-
-        for layer in vector_layers:
-            flags = layer.flags()
-            flags &= ~QgsMapLayer.Searchable     # non recherchable
-            flags &= ~QgsMapLayer.Identifiable   # non cliquable avec l'outil Identifier
-            layer.setFlags(flags)
-            layer.setReadOnly(True)
 
     def _save_style(self, layers):
 
