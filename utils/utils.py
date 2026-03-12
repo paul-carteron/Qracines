@@ -49,7 +49,7 @@ def create_project(project_key):
         create_theme(t.get("name"), t.get("show"))
 
     # Gestion des groupes
-    replier()
+    fold()
     unfold("SEQUOIA")
     print("start zoom on")
     zoom_on(canvas_cfg.zoom_on)
@@ -106,14 +106,6 @@ def zoom_on(key):
     canvas.setExtent(layer.extent())
     canvas.refresh()
       
-def replier():
-    root = QgsProject.instance().layerTreeRoot()
-    for node in root.children():
-        node.setExpanded(False)  # Replie le groupe ou la couche
-        if isinstance(node, QgsLayerTreeGroup):  # Si c'est un groupe, on repli ses enfants aussi
-            for enfant in node.children():
-                enfant.setExpanded(False)
-
 def fold(node=None):
     """Replie tous les groupes et couches du panneau des couches."""
     if node is None:

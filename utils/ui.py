@@ -8,7 +8,7 @@ from qgis.utils import iface
 from .variable import get_project_variable
 from .layers import load_rasters
 from .qfield import package_for_qfield
-from .utils import zoom_on, replier
+from .utils import zoom_on, fold
 from .processing import create_grid
 from .config import get_path, get_display_name
 
@@ -78,7 +78,7 @@ class RasterController(UIBinderMixin):
         if loaded:
             zoom_on(loaded[0])
 
-        replier()
+        fold()
 
 class QfieldPackager(UIBinderMixin):
     """Utility class that wires UI elements and calls *package_for_qfield*.
