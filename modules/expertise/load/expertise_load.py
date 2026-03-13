@@ -1,8 +1,9 @@
 import processing
+from collections import defaultdict
 
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from qgis.utils import iface
-from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
+from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject, QgsFeature
 from qgis.PyQt import uic
 
 # Import from utils folder
@@ -124,10 +125,10 @@ class ExpertiseLoadDialog(QDialog, FORM_CLASS):
                 {'expression': '"PLTM_PARCELLE"',  'name': 'PARCELLE',    'type': 10, 'length': 50, 'precision': 0},
                 {'expression': '"PLTM_TYPE"',      'name': 'PEUPLEMENT',  'type': 10, 'length': 50, 'precision': 0},
                 {'expression': '"GHA_G"',          'name': 'G',           'type': 2,  'length': 50, 'precision': 0},
-                {'expression': '"code"',           'name': 'CODE',      'type': 10, 'length': 50, 'precision': 0},
-                {'expression': '"essence"',        'name': 'ESSENCE',   'type': 10, 'length': 50, 'precision': 0},
-                {'expression': '"variation"',      'name': 'VARIATION', 'type': 10, 'length': 50, 'precision': 0},
-                {'expression': '"type"',           'name': 'TYPE',      'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"code"',           'name': 'CODE',        'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"essence"',        'name': 'ESSENCE',     'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"variation"',      'name': 'VARIATION',   'type': 10, 'length': 50, 'precision': 0},
+                {'expression': '"type"',           'name': 'TYPE',        'type': 10, 'length': 50, 'precision': 0},
             ],
             'OUTPUT': 'memory:'
         })['OUTPUT']
@@ -135,7 +136,82 @@ class ExpertiseLoadDialog(QDialog, FORM_CLASS):
         formated_gha.setName("gha")
 
         return formated_gha
+    
+    def format_gha_label(self):
 
+        gha_with_ess_id = calculate_essence_id(self.gha, "GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID")
+        gha_with_ess = merge_with_ess(gha_with_ess_id, self.ess)
+
+        gha_summary = processing.run(
+            "native:aggregate",
+            {
+                'INPUT': gha_with_ess,
+                'GROUP_BY': 'Array("UUID", "code")',
+                'AGGREGATES': [
+                    {
+                        'aggregate': 'first_value',
+                        'input': 'UUID',
+                        'name': 'UUID',
+                        'type': 10
+                    },
+                    {
+                        'aggregate': 'first_value',
+                        'input': 'code',
+                        'name': 'code',
+                        'type': 10
+                    },
+                    {
+                        'aggregate': 'sum',
+                        'input': '"GHA_G"',
+                        'name': 'G_SUM',
+                        'type': 6,
+                        'length': 10,
+                        'precision': 2
+                    }
+                ],
+                'OUTPUT': 'TEMPORARY_OUTPUT'
+            }
+        )['OUTPUT']
+
+        gha_label = processing.run(
+            "native:aggregate",
+            {
+                'INPUT': gha_summary,
+                'GROUP_BY': '"UUID"',
+                'AGGREGATES': [
+                    {
+                        'aggregate': 'first_value',
+                        'input': 'UUID',
+                        'name': 'UUID',
+                        'type': 10
+                    },
+                    {
+                        'aggregate': 'concatenate',
+                        'input': """concat("code", ': ', "G_SUM", 'm²')""",
+                        'name': 'LABEL',
+                        'type': 10,
+                        'length': 255,
+                        'precision': 0,
+                        'delimiter': '\n'
+                    },
+                    {
+                        'aggregate': 'sum',
+                        'input': '"G_SUM"',
+                        'name': 'G_TOTAL',
+                        'type': 6,
+                        'length': 10,
+                        'precision': 2
+                    }
+                ],
+                'OUTPUT': 'TEMPORARY_OUTPUT'
+            }
+        )['OUTPUT']
+
+
+        gha_label.setName("gha_label")
+
+        return gha_label
+        
     def format_va(self):
 
         va_with_ess_id = calculate_essence_id(self.va, "VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID")
@@ -269,6 +345,8 @@ class ExpertiseLoadDialog(QDialog, FORM_CLASS):
             formated_va = self.format_va()
             formated_tse = self.format_tse()
             formated_reg = self.format_reg()
+            gha_label = self.format_gha_label()
+            self.project.addMapLayers(gha_label, addToLegend=True)
 
             out_path = get_path("expertise_synthese")
             save_as_xlsx(formated_tra, formated_gha, formated_va, formated_tse, formated_reg, path = out_path)

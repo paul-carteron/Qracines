@@ -3,7 +3,7 @@ from qgis.PyQt.QtCore import QVariant
 
 EXPERTISE_LAYERS = {
   
-    "Placette": {
+    "placette": {
         "geometry": "Point",
         "fields": [
             ("UUID", QVariant.String),
@@ -18,7 +18,7 @@ EXPERTISE_LAYERS = {
         ],
     },
 
-    "Transect": {
+    "transect": {
         "geometry": "Point",
         "fields": [
             ("UUID", QVariant.String),
@@ -32,7 +32,7 @@ EXPERTISE_LAYERS = {
         ],
     },
 
-    "Limite": {
+    "limite": {
         "geometry": "LineString",
         "fields": [
             ("LIMITE_TYPE", QVariant.String), 
@@ -40,7 +40,7 @@ EXPERTISE_LAYERS = {
         ],
     },
 
-    "Gha": {
+    "gha": {
         "fields": [
             ("UUID", QVariant.String),
             ("GHA_ESSENCE_ID", QVariant.String),
@@ -49,7 +49,7 @@ EXPERTISE_LAYERS = {
         ],
     },
 
-    "Tse": {
+    "tse": {
         "fields": [
             ("UUID", QVariant.String),
             ("TSE_ESSENCE_ID", QVariant.String),
@@ -57,7 +57,7 @@ EXPERTISE_LAYERS = {
         ],
     },
 
-    "Va": {
+    "va": {
         "fields": [
             ("UUID", QVariant.String),
             ("VA_ESSENCE_ID", QVariant.String),
@@ -69,7 +69,7 @@ EXPERTISE_LAYERS = {
         ],
     },
 
-    "Reg": {
+    "reg": {
         "fields": [
             ("UUID", QVariant.String),
             ("REG_ESSENCE_ID", QVariant.String),
