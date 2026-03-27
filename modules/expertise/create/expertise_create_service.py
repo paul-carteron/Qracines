@@ -71,7 +71,7 @@ class ExpertiseCreateService:
 
         layers = LayerFactory.create_all(EXPERTISE_LAYERS)
 
-        layers["Essences"] = DatabaseManager().load_essences("Essences")
+        layers["essences"] = DatabaseManager().load_essences("essences")
 
         if self.grid_controller.is_valid():
             layers["Grid"] = self.grid_controller.create_grid()
@@ -104,23 +104,23 @@ class ExpertiseCreateService:
     def _create_relations(self, layers):
 
         relations = {
-            "Gha": create_relation(layers["Placette"], layers["Gha"], "UUID", "UUID"),
-            "Tse": create_relation(layers["Placette"], layers["Tse"], "UUID", "UUID"),
-            "Va":  create_relation(layers["Placette"], layers["Va"], "UUID", "UUID"),
-            "Reg": create_relation(layers["Placette"], layers["Reg"], "UUID", "UUID"),
+            "gha": create_relation(layers["placette"], layers["gha"], "UUID", "UUID"),
+            "tse": create_relation(layers["placette"], layers["tse"], "UUID", "UUID"),
+            "va":  create_relation(layers["placette"], layers["va"], "UUID", "UUID"),
+            "reg": create_relation(layers["placette"], layers["reg"], "UUID", "UUID"),
         }
 
         return relations
 
     def _configure_layers(self, layers, relations):
-        essences = layers["Essences"]
-        placette = layers["Placette"]
-        transect = layers["Transect"]
-        limite = layers["Limite"]
-        gha = layers["Gha"]
-        tse = layers["Tse"]
-        va = layers["Va"]
-        reg = layers["Reg"]
+        essences = layers["essences"]
+        placette = layers["placette"]
+        transect = layers["transect"]
+        limite = layers["limite"]
+        gha = layers["gha"]
+        tse = layers["tse"]
+        va = layers["va"]
+        reg = layers["reg"]
 
         PlacetteConfigurator(placette, relations).configure()
         TransectConfigurator(transect, self.dendro, essences, self.codes).configure()
@@ -131,10 +131,10 @@ class ExpertiseCreateService:
         RegConfigurator(reg, essences, self.codes).configure()
 
         relation_labels = {
-            "Gha": "Surface terrière",
-            "Tse": "Essence taillis",
-            "Va": "Valeur avenir",
-            "Reg": "Régénération",
+            "gha": "Surface terrière",
+            "tse": "Essence taillis",
+            "va": "Valeur avenir",
+            "reg": "Régénération",
         }
 
         for name, label in relation_labels.items():

@@ -27,13 +27,13 @@ class PlacetteConfigurator:
             parent=general_tab
         )
 
-        self.fb.new_add_relation(self.relations["Gha"], parent=general_tab)
+        self.fb.new_add_relation(self.relations["gha"], parent=general_tab)
 
         self.fb.new_add_fields(["TSE_STERE_HA"], parent=general_tab)
 
-        self.fb.new_add_relation(self.relations["Tse"], parent=general_tab)
-        self.fb.new_add_relation(self.relations["Va"], parent=general_tab)
-        self.fb.new_add_relation(self.relations["Reg"], parent=general_tab)
+        self.fb.new_add_relation(self.relations["tse"], parent=general_tab)
+        self.fb.new_add_relation(self.relations["va"], parent=general_tab)
+        self.fb.new_add_relation(self.relations["reg"], parent=general_tab)
 
         self.fb.apply()
 

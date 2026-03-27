@@ -159,10 +159,7 @@ class ArbresConfigurator:
 
     def _set_qfield_properties(self):
 
-        threshold = max(
-            self.dendro["hmax"] + 1,
-            (self.dendro["dmax"] + 1) / 5
-        )
+        threshold = max(self.dendro["hmax"] + 1, (self.dendro["dmax"] + 1) / 5)
 
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",

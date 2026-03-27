@@ -31,13 +31,12 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
         if self.gpkg_loader.is_valid():
             gpkgs = self.gpkg_loader.selected_files
 
-        out_path = get_path("inventaire")
         layers = list(TREE_MARKING_LAYERS.keys())
 
-        ess_layer_name = "essences"
+        ess_layer_name = "Essences"
         ess_layer = QgsVectorLayer(f"{gpkgs[0]}|layername={ess_layer_name}", ess_layer_name, "ogr")
 
-        merged_layers = []
+        merged_layers = {}
         for layer in layers:
             all_layer = []
             for gpkg in gpkgs:
@@ -63,23 +62,11 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
             })['OUTPUT']
 
             merge_layer.setName(layer)
-            merged_layers.append(merge_layer)
+            merged_layers[layer] = merge_layer
 
-            if layer == "arbres":
-                ess_summary = self.compute_ess_summary(merge_layer)
-                merged_layers.append(ess_summary)
+        merged_layers[ess_layer_name] = ess_layer
 
-        merged_layers.append(ess_layer)
-        merged_result = processing.run("native:package", {
-            'LAYERS':      merged_layers,
-            'OUTPUT':      str(out_path),
-            'OVERWRITE':   True,
-            'SAVE_STYLES': False
-        })
-
-        gpkg_path = merged_result['OUTPUT']
-
-        return gpkg_path
+        return merged_layers
 
     @staticmethod
     def build_qgis_map_expr(field, mapping):
@@ -118,9 +105,9 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
 
         return formated_param
 
-    def format_arbres(self, arbres, for_invpap = True):
+    def format_arbres(self, for_invpap = True):
 
-        arbres_with_ess_id = calculate_essence_id(arbres, "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID")
+        arbres_with_ess_id = calculate_essence_id(self.arbres, "ESSENCE_ID", "ESSENCE_SECONDAIRE_ID")
         arbres_with_ess = merge_with_ess(arbres_with_ess_id, self.ess)
 
         if for_invpap:
@@ -140,7 +127,7 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
             )
             """
 
-            formated_tra = processing.run("qgis:refactorfields", {
+            formated_arbres = processing.run("qgis:refactorfields", {
                 'INPUT': arbres_with_ess,
                 'FIELDS_MAPPING': [
                     {'expression': '"fid"',         'name': 'ID',         'type': 10, 'length': 50, 'precision': 0},
@@ -155,10 +142,10 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
                 'OUTPUT': 'memory:'
             })['OUTPUT']
 
-            formated_tra.setName("arbres")
+            formated_arbres.setName("arbres")
 
         else:
-            formated_tra = processing.run("qgis:refactorfields", {
+            formated_arbres = processing.run("qgis:refactorfields", {
                 'INPUT': arbres_with_ess,
                 'FIELDS_MAPPING': [
                     {'expression': '"PARCELLE"',    'name': 'PARCELLE',    'type': 10, 'length': 50, 'precision': 0},
@@ -175,18 +162,18 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
                 'OUTPUT': 'memory:'
             })['OUTPUT']
 
-            formated_tra.setName("transect")
+            formated_arbres.setName("transect")
 
-        return formated_tra
+        return formated_arbres
 
-    def compute_ess_summary(self, arbres):
+    def compute_ess_summary(self):
 
         ess_id = 'coalesce(nullif("ESSENCE_ID", \'\'), nullif("ESSENCE_SECONDAIRE_ID", \'\'))'
 
         ess_summary = processing.run(
             "native:aggregate",
             {
-                'INPUT': arbres,
+                'INPUT': self.arbres,
                 'GROUP_BY': ess_id,
                 'AGGREGATES': [
                     {
@@ -240,26 +227,37 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
 
     def accept(self):
         try:
-            gpkg_path = self.merge_files()
-            load_gpkg(gpkg_path, group_name="INVENTAIRE")
+            merged_layers = self.merge_files()
 
-            self.ess = self.project.mapLayersByName('essences')[0]
+            self.ess = merged_layers["Essences"]
+            self.arbres = merged_layers["Arbres"]
+            self.param = merged_layers["Param"]
 
-            self.param = self.project.mapLayersByName('param')[0]
+            formated_arbres = self.format_arbres()
             formated_param = self.format_param()
 
-            arbres = self.project.mapLayersByName('arbres')[0]
-            formated_tra = self.format_arbres(arbres)
+            ess_summary = self.compute_ess_summary()
+            merged_layers[ess_summary.name()] = ess_summary
+
+            gpkg_path = get_path("inventaire")
+            merged_result = processing.run("native:package", {
+                'LAYERS':      list(merged_layers.values()),
+                'OUTPUT':      str(gpkg_path),
+                'OVERWRITE':   True,
+                'SAVE_STYLES': True
+            })
+            
+            load_gpkg(merged_result['OUTPUT'], group_name="INVENTAIRE")
 
             unique_ess = processing.run("qgis:listuniquevalues", {
-                'INPUT': formated_tra,
+                'INPUT': formated_arbres,
                 'FIELDS':['ESSENCE'],
                 'OUTPUT':'TEMPORARY_OUTPUT'
             })['OUTPUT']
             unique_ess.setName("essence")
 
             out_path = get_path("inventaire_synthese")
-            save_as_xlsx(formated_param, unique_ess, formated_tra, path = out_path)
+            save_as_xlsx(formated_param, unique_ess, formated_arbres, path = out_path)
             
             QMessageBox.information(self, "Succès",  f"Géopackage(s) compilé(s) et extrait(s) dans :\n{out_path}")
             

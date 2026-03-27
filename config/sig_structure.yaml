@@ -101,18 +101,11 @@ structure:
     files:
       parcellaire: { filename: parcellaire.csv }
       inventaire: { filename: inventaire.gpkg }
+      inventaire_synthese: { filename: inventaire.xlsx }
       inv_qfield: { filename: inv_qfield.zip }
-      diagnostic: { filename: diagnostic.gpkg }
+      diag: { filename: diagnostic.gpkg }
       diag_qfield: { filename: diag_qfield.zip }
+      diag_synthese: { filename: diag.xlsx }
       pedology_qfield: { filename: pedology.zip }
-
-  gpkg_folder:
-    path: [SIG, 4_TERRAIN]
-    files:
       expertise_gpkg: { filename: expertise.gpkg}
       expertise_synthese: { filename: expertise.xlsx }
-      inventaire: { filename: inventaire.gpkg }
-      inventaire_synthese: { filename: inventaire.xlsx }
-      diag: { filename: diag.gpkg }
-      diag_synthese: { filename: diag.xlsx }
-
