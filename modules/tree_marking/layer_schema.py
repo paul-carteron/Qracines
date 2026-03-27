@@ -4,7 +4,6 @@ TREE_MARKING_LAYERS = {
 
     "Param": {
         "fields": [
-        ("fid", QVariant.Int),
         ("TYPE", QVariant.String),
         ("LOT", QVariant.String),
         ("PARCELLE", QVariant.String),
@@ -14,16 +13,18 @@ TREE_MARKING_LAYERS = {
         ("MARQUAGE_BI", QVariant.String),
         ("COULEUR_BI", QVariant.String),
         ("MARQUE", QVariant.String),
+        ("HMIN", QVariant.Int),
+        ("HMAX", QVariant.Int),
+        ("DMIN", QVariant.Int),
+        ("DMAX", QVariant.Int),
         ],
     },
 
     "Arbres": {
         "geometry": "Point",
         "fields": [
-        ("fid", QVariant.Int),
         ("ID_CODE", QVariant.String),
         ("UUID", QVariant.String),
-        ("LOT", QVariant.String),
         ("PARCELLE", QVariant.String),
         ("ESSENCE_ID", QVariant.String),
         ("ESSENCE_SECONDAIRE_ID", QVariant.String),
@@ -33,6 +34,18 @@ TREE_MARKING_LAYERS = {
         ("FAVORI", QVariant.Bool),
         ("OBSERVATION", QVariant.String),
         ("COMPTEUR", QVariant.LongLong),
+        ],
+    },
+
+    "lst_hauteur": {
+        "fields": [
+        ("VALEUR", QVariant.Int),
+        ],
+    },
+
+    "lst_diam": {
+        "fields": [
+        ("VALEUR", QVariant.Int),
         ],
     },
 }

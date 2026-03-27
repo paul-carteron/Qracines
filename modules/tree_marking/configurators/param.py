@@ -23,6 +23,18 @@ class ParamConfigurator:
         self.fb.new_add_fields(["TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"])
         self.fb.apply()
 
+        self.fb.init_form()
+  
+        tab1 = self.fb.create_tab("Parcelle")
+        tab2 = self.fb.create_tab("Marquage")
+        tab3 = self.fb.create_tab("Dendro")
+        self.fb.new_add_fields(["TYPE", "LOT", "PARCELLE", "SURFACE"], parent = tab1)
+        self.fb.new_add_fields(["MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"], parent = tab2)
+        self.fb.new_add_fields(["HMIN", "HMAX", "DMIN", "DMAX"], parent = tab3)
+
+        self.fb.apply()
+
+
     def _configure_fields(self):
 
         aliases = [
@@ -40,7 +52,7 @@ class ParamConfigurator:
         for field, alias in aliases:
             self.fe.set_alias(field, alias)
 
-        reuse = ["TYPE", "LOT","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"]
+        reuse = ["TYPE", "LOT", "MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI", "HMIN", "HMAX", "DMIN", "DMAX"]
         for field_name in reuse:
             self.fe.set_reuse_last_value(field_name)
 
@@ -61,3 +73,8 @@ class ParamConfigurator:
             self.fe.add_value_map(field_name, {'map': [{v: k} for k, v in COULEUR_CHOICES.items()]})
 
         self.fe.add_value_map("MARQUE", {'map': [{v: k} for k, v in MARTEAU_CHOICES.items()]})
+
+        self.fe.set_default_value("HMIN", "3")
+        self.fe.set_default_value("HMAX", "15")
+        self.fe.set_default_value("DMIN", "30")
+        self.fe.set_default_value("DMAX", "100")

@@ -1,6 +1,7 @@
 import processing
 
-from qgis.core import QgsProject, QgsProcessing, QgsMapLayer
+from qgis.core import QgsProject, QgsProcessing, QgsMapLayer, QgsField, QgsFeature
+from qgis.PyQt.QtCore import QVariant
 
 from ....core.layer.factory import LayerFactory
 from ....core.db.manager import DatabaseManager
@@ -39,12 +40,17 @@ class TreeMarkingCreateService:
         param = layers["Param"]
         arbres = layers["Arbres"]
         essences = layers["Essences"]
+        lst_hauteur = layers["lst_hauteur"]
+        lst_diam = layers["lst_diam"]
 
         ParamConfigurator(param).configure()
-        ArbresConfigurator(arbres, param, self.dendro, essences, self.codes).configure()
+        ArbresConfigurator(arbres, param, self.dendro, essences, lst_hauteur, lst_diam).configure()
 
-        # Make essence layer private
-        essences.setFlags(essences.flags() | QgsMapLayer.Private)
+        # Make layer private
+        lst_hauteur.setFlags(lst_hauteur.flags() | QgsMapLayer.Private)
+        lst_diam.setFlags(lst_diam.flags() | QgsMapLayer.Private)
+
+        self.essences.setDisplayExpression('''CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation"''')
 
         self._save_style(layers)
 
@@ -59,12 +65,52 @@ class TreeMarkingCreateService:
 
         layers = LayerFactory.create_all(TREE_MARKING_LAYERS)
 
-        layers["Essences"] = DatabaseManager().load_essences("Essences")
+        essences = DatabaseManager().load_essences("Essences")
+        layers["Essences"] = essences
 
         self.project.addMapLayers(list(layers.values()), addToLegend=False)
 
+        self._init_essences(essences)
+        self._init_range_layer(layers["lst_hauteur"], 0, 50)
+        self._init_range_layer(layers["lst_diam"], 5, 150, 5)
+
         return layers
     
+    def _init_essences(self, layer):
+
+        # ajouter champ si absent
+        if layer.fields().indexOf("selected") == -1:
+            layer.dataProvider().addAttributes([QgsField("selected", QVariant.Bool)])
+            layer.updateFields()
+
+        if not layer.isEditable():
+            layer.startEditing()
+
+        selected_idx = layer.fields().indexOf("selected")
+
+        # défaut = False
+        for f in layer.getFeatures():
+            layer.changeAttributeValue(f.id(), selected_idx, False)
+
+        layer.commitChanges()
+
+    def _init_range_layer(self, layer, min_val, max_val, step=1):
+        if not layer.isEditable():
+            layer.startEditing()
+
+        provider = layer.dataProvider()
+
+        provider.deleteFeatures([f.id() for f in layer.getFeatures()])
+
+        feats = []
+        for v in range(min_val, max_val + 1, step):
+            f = QgsFeature(layer.fields())
+            f["VALEUR"] = v
+            feats.append(f)
+
+        provider.addFeatures(feats)
+        layer.commitChanges()
+
     def _package_layers(self, layers, outpath=QgsProcessing.TEMPORARY_OUTPUT):
 
         result = processing.run(

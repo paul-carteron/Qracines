@@ -11,12 +11,13 @@ from ....utils.essence import configure_essence_field
 
 class ArbresConfigurator:
 
-    def __init__(self, layer, param, dendro, essences, codes):
+    def __init__(self, layer, param, dendro, essences, lst_hauteur, lst_diam):
         self.layer = layer
         self.param = param
         self.dendro = dendro
         self.essences = essences
-        self.codes = codes
+        self.lst_hauteur = lst_hauteur
+        self.lst_diam = lst_diam
 
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
@@ -78,21 +79,11 @@ class ArbresConfigurator:
         # DIAMETRE
         field_name = "DIAMETRE"
         self.fe.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
-        dmin = self.dendro["dmin"]
-        dmax = self.dendro["dmax"]
-        self.fe.add_value_map(field_name, {'map': [{str(d): str(d)} for d in range(dmin, dmax + 1, 5)]})
-        self.fe.set_constraint_expression(
-            field_name,
+        self.fe.set_constraint_expression(field_name,
             '"DIAMETRE" != \'\'',
             "Le champ DIAMETRE ne peut pas être vide.", 
             QgsFieldConstraints.ConstraintStrengthHard
             )
-
-        # HAUTEUR
-        field_name = "HAUTEUR"
-        hmin = self.dendro["hmin"]
-        hmax = self.dendro["hmax"]
-        self.fe.add_value_map(field_name, {'map': [{str(h): str(h)} for h in range(hmin, hmax + 1)]})
 
         # EFFECTIF
         field_name = "EFFECTIF"
@@ -148,18 +139,57 @@ class ArbresConfigurator:
 
     def _configure_essence(self):
 
-        configure_essence_field(
-            self.layer,
-            "ESSENCE_ID",
-            "ESSENCE_SECONDAIRE_ID",
-            self.essences,
-            self.codes,
-            with_variation=True
-        )
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': False,
+            'FilterExpression': '"selected" = true'
+        }
+
+        self.fe.add_value_relation("ESSENCE_ID", config)
+
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': False,
+            'FilterExpression': '"selected" = false OR "selected" IS NULL'
+        }
+
+        self.fe.add_value_relation("ESSENCE_SECONDAIRE_ID", config)
+
+        config = {
+            'Key': 'fid',
+            'Layer': self.lst_hauteur.id(),
+            'Value': 'VALEUR',
+            'AllowNull': False,
+            'FilterExpression': '''
+            "VALEUR" >= attribute(get_feature_by_id('Param',1), 'HMIN') 
+            AND 
+            "VALEUR" <= attribute(get_feature_by_id('Param',1), 'HMAX')
+            '''
+        }
+
+        self.fe.add_value_relation("HAUTEUR", config)
+
+        config = {
+            'Key': 'fid',
+            'Layer': self.lst_diam.id(),
+            'Value': 'VALEUR',
+            'AllowNull': False,
+            'FilterExpression': '''
+            "VALEUR" >= attribute(get_feature_by_id('Param',1), 'DMIN') 
+            AND 
+            "VALEUR" <= attribute(get_feature_by_id('Param',1), 'DMAX')
+            '''
+        }
+
+        self.fe.add_value_relation("DIAMETRE", config)
 
     def _set_qfield_properties(self):
 
-        threshold = max(self.dendro["hmax"] + 1, (self.dendro["dmax"] + 1) / 5)
+        threshold = 30
 
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",
