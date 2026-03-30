@@ -34,7 +34,6 @@ class ParamConfigurator:
 
         self.fb.apply()
 
-
     def _configure_fields(self):
 
         aliases = [

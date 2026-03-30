@@ -50,7 +50,8 @@ class TreeMarkingCreateService:
         lst_hauteur.setFlags(lst_hauteur.flags() | QgsMapLayer.Private)
         lst_diam.setFlags(lst_diam.flags() | QgsMapLayer.Private)
 
-        self.essences.setDisplayExpression('''CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation"''')
+        essences.setDisplayExpression('''CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation"''')
+        param.setDisplayExpression('"PARCELLE" || "SURFACE"')
 
         self._save_style(layers)
 
