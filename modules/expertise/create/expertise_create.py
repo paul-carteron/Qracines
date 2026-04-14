@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from qgis.PyQt import uic
+from qgis.core import QgsProject, QgsCoordinateReferenceSystem
+from PyQt5.QtCore import QTimer
+from qgis.utils import iface
 
 from .expertise_create_service import ExpertiseCreateService
 from ....core.db.manager import DatabaseManager
 
 from ....utils.config import get_racines_path
-from ....utils.utils import clear_project
+from ....utils.variable import get_project_variable
 from ....utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController, DendroController
 
 from pathlib import Path
@@ -18,6 +21,7 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.essences = DatabaseManager().load_essences("essences")
+        self.seq_dir = get_project_variable("QS2_seq_dir") or None
         
         self.dendro_controller = DendroController(
             ui = self,
@@ -30,15 +34,14 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
         )
 
         self.raster_controller = RasterController(
-            ui = self,
+            ui=self,
             raster_checkbox={
                 #   'key':     'checkbox_name',
-                'plt_anc': 'cb_plt_anc',
-                'plt':     'cb_plt',
-                'mnh':     'cb_mnh',
-                'scan25':  'cb_scan25',
-                'irc':     'cb_irc',
-                'rgb':     'cb_rgb',
+                'r.seq.mnh': 'cb_plt',
+                'r.alt.mnh': 'cb_mnh',
+                'r.scan.25': 'cb_scan25',
+                'r.ortho.irc': 'cb_irc',
+                'r.ortho.rgb': 'cb_rgb',
             })
         
 
@@ -77,14 +80,19 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
         if not self.gha_tra_selector.is_valid(): return
         if not self.tse_selector.is_valid(): return
 
-        clear_project()
+        iface.actionNewProject().trigger()
+
+        QTimer.singleShot(0, lambda: QgsProject.instance().setCrs(
+            QgsCoordinateReferenceSystem("EPSG:2154")
+        ))
 
         codes_gha_tra = self.gha_tra_selector.selected_codes()
         codes_taillis = self.tse_selector.selected_codes()
 
         svc = ExpertiseCreateService(
-            codes=codes_gha_tra,
-            codes_taillis=codes_taillis,
+            seq_dir = self.seq_dir,
+            codes = codes_gha_tra,
+            codes_taillis = codes_taillis,
             dendro_controller = self.dendro_controller,
             grid_controller = self.grid_controller,
             raster_controller = self.raster_controller,

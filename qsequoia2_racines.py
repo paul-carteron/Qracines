@@ -230,7 +230,7 @@ class Qsequoia2Racines:
 
     # region EXPERTISE
     def open_expertise_create(self):
-        if not self._check_forest_is_selected():
+        if not self._check_seq_dir():
             return None
         
         if not self.expertise_create:
@@ -246,6 +246,13 @@ class Qsequoia2Racines:
         self.expertise_import.exec_()
         
     # endregion
+    
+    def _check_seq_dir(self):
+        seq_dir = get_project_variable("QS2_seq_dir")
+        if not seq_dir:
+            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée", "Veuillez sélectionner une forêt.")
+            return False
+        return True
     
     def _check_forest_is_selected(self):
         forest = get_project_variable("forest_prefix")

@@ -63,12 +63,7 @@ class TreeMarkingCreateService:
         try:
             self.raster_controller.load_selected_rasters(self.seq_dir)
         except Exception as e:
-            iface.messageBar().pushMessage(
-                "Erreur",
-                str(e),
-                level=Qgis.Info,
-                duration=5
-            )
+            iface.messageBar().pushMessage("Erreur", str(e), level=Qgis.Info, duration=5)
 
         fold()
         unfold("INVENTAIRE")

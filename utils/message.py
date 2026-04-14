@@ -46,4 +46,4 @@ def messageLog(text, level="info"):
 
     qlevel = levels.get(level, Qgis.Info)
 
-    QgsMessageLog.logMessage(text, "QSEQUOIA2", level=qlevel)
+    QgsMessageLog.logMessage(text, "QRACINES", level=qlevel)

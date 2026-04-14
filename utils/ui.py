@@ -358,12 +358,12 @@ class GridController(UIBinderMixin):
             return False
         return True
 
-    def create_grid(self, parca_key="parca_polygon_occup"):
-        path = get_path(parca_key)
-        parca_layer = QgsVectorLayer(str(path), get_display_name(parca_key), "ogr")
+    def create_grid(self, seq_dir):
+        
+        parca = seq_read("parca", seq_dir=seq_dir, add_to_project=False)
         
         self.name = f"Grille ({self.points_per_ha.value()} pts/ha)"
-        grid = create_grid(parca_layer, name = self.name, points_per_ha=float(self.points_per_ha.value()))
+        grid = create_grid(parca, name = self.name, points_per_ha=float(self.points_per_ha.value()))
         grid = self.style_grid(grid)
 
         return grid

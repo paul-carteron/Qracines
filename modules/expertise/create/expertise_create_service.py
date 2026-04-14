@@ -1,12 +1,6 @@
 import processing
 
-from qgis.core import (
-    QgsProject,
-    QgsProcessing,
-    QgsWkbTypes,
-    QgsMapLayer
-)
-
+from qgis.core import Qgis, QgsProject, QgsProcessing, QgsWkbTypes, QgsMapLayer
 from qgis.utils import iface
 
 from ....core.layer.factory import LayerFactory
@@ -14,7 +8,7 @@ from ....core.db.manager import DatabaseManager
 
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.utils import fold, unfold
-
+from ....utils.message import messageLog
 from ..layer_schema import EXPERTISE_LAYERS
 
 # configurators
@@ -30,6 +24,7 @@ class ExpertiseCreateService:
 
     def __init__(
         self,
+        seq_dir,
         codes: list,
         codes_taillis: list,
         dendro_controller,
@@ -40,6 +35,8 @@ class ExpertiseCreateService:
         self.iface = iface
         self.project = QgsProject.instance()
 
+        self.seq_dir = seq_dir
+
         self.codes = codes
         self.codes_taillis = codes_taillis
         self.dendro = dendro_controller.get_values()
@@ -48,19 +45,27 @@ class ExpertiseCreateService:
         self.raster_controller = raster_controller
 
     def run(self):
-
+        
+        messageLog(f"start _create_layers")
         layers = self._create_layers()
+        messageLog(f"start layer:{layers}")
         gpkg_path = self._package_layers(layers)
 
+        messageLog(f"start load_gpkg")
         layers = load_gpkg(gpkg_path, group_name="EXPERTISE")
 
+        messageLog(f"start _create_relations")
         relations = self._create_relations(layers)
 
+        messageLog(f"start _configure_layers")
         self._configure_layers(layers, relations)
+        messageLog(f"start _configure_flags")
         self._configure_flags(layers)
-        self._save_style(layers)
 
-        self.raster_controller.load_selected_rasters()
+        try:
+            self.raster_controller.load_selected_rasters(self.seq_dir)
+        except Exception as e:
+            iface.messageBar().pushMessage("Erreur", str(e), level=Qgis.Info, duration=5)
 
         fold()
         unfold("EXPERTISE")
@@ -74,7 +79,7 @@ class ExpertiseCreateService:
         layers["essences"] = DatabaseManager().load_essences("essences")
 
         if self.grid_controller.is_valid():
-            layers["Grid"] = self.grid_controller.create_grid()
+            layers["Grid"] = self.grid_controller.create_grid(self.seq_dir)
 
         self.project.addMapLayers(list(layers.values()), addToLegend=False)
 
@@ -150,14 +155,3 @@ class ExpertiseCreateService:
                 flags = layer.flags()
                 flags |= QgsMapLayer.Private
                 layer.setFlags(flags)
-
-    def _save_style(self, layers):
-
-        for layer in layers.values():
-
-            layer.saveStyleToDatabase(
-                name="default",
-                description="default",
-                useAsDefault=True,
-                uiFileContent=""
-            )
