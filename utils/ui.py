@@ -16,6 +16,7 @@ import unicodedata
 from pathlib import Path
 from typing import Type, Any, List, Iterable, Optional
 
+from qsequoia2.modules.utils.seq_config import seq_read
 
 class UIBinderMixin:
     """
@@ -63,20 +64,35 @@ class RasterController(UIBinderMixin):
                 cb.setEnabled(False)
             return
 
-    def load_selected_rasters(self):
+    def load_selected_rasters(self, seq_dir, group_name = "RASTER"):
+
+        if not seq_dir:
+            raise RuntimeError("Pas de forêt sélectionnée, impossible de charger des rasters")
+    
         asked_keys = [k for k, cb in self.cbs.items() if cb.isChecked()]
+        print(f"asked_keys: {asked_keys}")
         if not asked_keys:
             return
+        
+        group = QgsProject.instance().layerTreeRoot().findGroup(group_name)
+        if not group:
+            group = QgsProject.instance().layerTreeRoot().addGroup(group_name)
 
-        loaded = load_rasters(*asked_keys, group_name="RASTER")
+        print(f"group: {group}")
+        for key in asked_keys:
+            try:
+                loaded = seq_read(key, seq_dir=seq_dir, add_to_project=True, group=group)
+            except Exception as e:
+                continue
 
-        group = QgsProject.instance().layerTreeRoot().findGroup("RASTER")
         if group:
             for i, node in enumerate(group.children()):
                 node.setItemVisibilityChecked(i == 0)
 
         if loaded:
-            zoom_on(loaded[0])
+            canvas = iface.mapCanvas()
+            canvas.setExtent(loaded.extent())
+            canvas.refresh()
 
         fold()
 

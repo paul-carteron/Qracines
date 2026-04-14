@@ -21,11 +21,8 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.forest_id = get_project_variable("forest_prefix") or None
-        if not self.forest_id:
-            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt.")
-            return
-
+        self.seq_id = get_project_variable("QS2_seq_id") or None
+        
         self.essences = DatabaseManager().load_essences("Essences")
         
         self.dendro_controller = DendroController(
@@ -43,11 +40,11 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
             raster_checkbox={
                 #   'key':     'checkbox_name',
                 'plt_anc': 'cb_plt_anc',
-                'plt':     'cb_plt',
-                'mnh':     'cb_mnh',
-                'scan25':  'cb_scan25',
-                'irc':     'cb_irc',
-                'rgb':     'cb_rgb',
+                'plt': 'cb_plt',
+                'r.alt.mnh': 'cb_mnh',
+                'r.scan.25': 'cb_scan25',
+                'r.ortho.irc': 'cb_irc',
+                'r.ortho.rgb': 'cb_rgb',
             })
 
         self.ess_selector = SpeciesSelector(
@@ -73,7 +70,7 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
         codes = self.ess_selector.selected_codes()
         # 2) call service
         svc = TreeMarkingCreateService(
-            forest_id = self.forest_id,
+            seq_id = self.seq_id,
             codes=codes,
             dendro_controller = self.dendro_controller,
             raster_controller = self.raster_controller

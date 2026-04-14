@@ -1,6 +1,7 @@
 import processing
 
-from qgis.core import QgsProject, QgsProcessing, QgsMapLayer, QgsField, QgsFeature
+from qgis.core import Qgis, QgsProject, QgsProcessing, QgsMapLayer, QgsField, QgsFeature
+from qgis.utils import iface
 from qgis.PyQt.QtCore import QVariant
 
 from ....core.layer.factory import LayerFactory
@@ -8,7 +9,7 @@ from ....core.db.manager import DatabaseManager
 
 from ....utils.layers import load_gpkg
 from ....utils.utils import fold, unfold
-
+from ....utils.variable import get_project_variable
 from ..layer_schema import TREE_MARKING_LAYERS
 
 from ..configurators.param import ParamConfigurator
@@ -20,7 +21,7 @@ class TreeMarkingCreateService:
 
     def __init__(
         self,
-        forest_id: str,
+        seq_id: str,
         codes: list,
         dendro_controller,
         raster_controller
@@ -28,7 +29,7 @@ class TreeMarkingCreateService:
 
         self.project = QgsProject.instance()
 
-        self.forest_id = forest_id
+        self.seq_id = seq_id
         self.codes = codes
         self.dendro = dendro_controller.get_values()
 
@@ -47,7 +48,7 @@ class TreeMarkingCreateService:
         lst_hauteur = layers["lst_hauteur"]
         lst_diam = layers["lst_diam"]
 
-        ParamConfigurator(param, self.forest_id).configure()
+        ParamConfigurator(param, self.seq_id).configure()
         ArbresConfigurator(arbres, param, essences, lst_hauteur, lst_diam).configure()
 
         # Make layer private
@@ -59,7 +60,18 @@ class TreeMarkingCreateService:
 
         self._save_style(layers)
 
-        self.raster_controller.load_selected_rasters()
+        try:
+            seq_dir = get_project_variable("QS2_seq_dir") or None
+            print(f"QS2_seq_dir:{seq_dir} ")
+            self.raster_controller.load_selected_rasters(seq_dir)
+
+        except Exception as e:
+            iface.messageBar().pushMessage(
+                "Erreur",
+                str(e),
+                level=Qgis.Info,
+                duration=5
+            )
 
         fold()
         unfold("INVENTAIRE")

@@ -7,16 +7,16 @@ from ...tree_marking.config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOIC
 
 class ParamConfigurator:
 
-    def __init__(self, layer, forest_id):
+    def __init__(self, layer, seq_id):
         self.layer = layer
-        self.forest_id = forest_id
+        self.seq_id = seq_id
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
 
     def configure(self):
         
         self._init_form()
-        self._configure_fields(self.forest_id)
+        self._configure_fields(self.seq_id)
 
     def _init_form(self):
 
@@ -35,7 +35,7 @@ class ParamConfigurator:
 
         self.fb.apply()
 
-    def _configure_fields(self, forest_id):
+    def _configure_fields(self, seq_id):
 
         aliases = [
             ("FOREST_ID", "Forêt"),
@@ -57,7 +57,7 @@ class ParamConfigurator:
         for field_name in reuse:
             self.fe.set_reuse_last_value(field_name)
 
-        self.fe.set_default_value("FOREST_ID", f"'{forest_id}'")
+        self.fe.set_default_value("FOREST_ID", f"'{seq_id}'")
         self.fe.set_read_only("FOREST_ID")
 
         self.fe.set_constraint("TYPE", QgsFieldConstraints.ConstraintNotNull)
