@@ -22,6 +22,7 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
 
         self.essences = DatabaseManager().load_essences("essences")
         self.seq_dir = get_project_variable("QS2_seq_dir") or None
+        self.seq_id = get_project_variable("QS2_seq_id") or None
         
         self.dendro_controller = DendroController(
             ui = self,
@@ -103,7 +104,7 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
 
             msg = "Expertise complète !"
             if self.packager.is_valid():
-                packaged_dir = self.packager.package(prefix="EXP", codes=codes_gha_tra)
+                packaged_dir = self.packager.package(prefix="EXP", seq_id=self.seq_id, codes=codes_gha_tra)
                 msg += f"\nProjet packagé dans :\n{packaged_dir}"
             QMessageBox.information(self, "Succès", msg)
 

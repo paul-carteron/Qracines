@@ -167,15 +167,14 @@ class QfieldPackager(UIBinderMixin):
         return self.package_ui.isChecked()
 
     @staticmethod
-    def construct_filename(prefix: str, codes: Optional[Iterable[str]] = None) -> str:
+    def construct_filename(prefix: str, seq_id = None, codes: Optional[Iterable[str]] = None) -> str:
         """Return a filename like `{prefix}_{forest_prefix}_{code1}_{code2}_...`, skipping any empty segments."""
-        forest_prefix = get_project_variable("QS2_seq_dir") or ""
-        parts = [prefix, forest_prefix] + list(codes or [])
+        parts = [prefix, seq_id] + list(codes or [])
         return "_".join(filter(None, parts))
 
-    def package(self, prefix: str, codes: Optional[Iterable[str]] = None) -> Optional[Path]:
+    def package(self, prefix: str, seq_id = None, codes: Optional[Iterable[str]] = None) -> Optional[Path]:
         """Package the current project for QField and return the archive path or None if disabled."""
-        filename = self.construct_filename(prefix, codes)
+        filename = self.construct_filename(prefix, seq_id, codes)
 
         # ─── 1) Show a modal “please wait” dialog with no buttons ─────────
         busy = QMessageBox(self.iface.mainWindow())

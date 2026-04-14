@@ -7,7 +7,8 @@ from .modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
 from .modules.diagnostic.load.diagnostic_load import DiagnosticLoadDialog
 
 from .modules.expertise.create.expertise_create import ExpertiseCreateDialog
-from .modules.expertise.load.expertise_load import ExpertiseLoadDialog
+from .modules.expertise.merge.expertise_merge import ExpertiseMergeDialog
+from .modules.expertise.load.expertise_load import ExpertiseLoad
 
 from .modules.forest_settings.forest_settings import ForestSettingsDialog
 
@@ -37,9 +38,9 @@ CLASSIC_BUTTONS = [
 QFIELD_BUTTONS = [
 #   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"          ),
     ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_import", None),
-    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import", None    ),
+    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import", None),
     ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
-    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_import", None   ),
+    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge", "open_expertise_load"),
 ]
 
 class ClassicButton:
@@ -104,7 +105,8 @@ class Qsequoia2Racines:
         self.tree_marking_merge = None
         self.tree_marking_load = None
         self.expertise_create = None
-        self.expertise_import = None
+        self.expertise_merge = None
+        self.expertise_load = None
 
     def initGui(self):
         # initGui() is called by QGIS when the plugin is enabled in the UI
@@ -237,13 +239,21 @@ class Qsequoia2Racines:
             self.expertise_create = ExpertiseCreateDialog()
         self.expertise_create.exec_()
         
-    def open_expertise_import(self):
-        if not self._check_forest_is_selected():
+    def open_expertise_merge(self):
+        if not self._check_seq_dir():
             return None
 
-        if not self.expertise_import:
-            self.expertise_import = ExpertiseLoadDialog()
-        self.expertise_import.exec_()
+        if not self.expertise_merge:
+            self.expertise_merge = ExpertiseMergeDialog()
+        self.expertise_merge.exec_()
+
+    def open_expertise_load(self):
+        if not self._check_seq_dir():
+            return None
+        
+        if not self.expertise_load:
+            self.expertise_load = ExpertiseLoad()
+        self.expertise_load.load()
         
     # endregion
     

@@ -88,7 +88,7 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
 
             msg = "Inventaire complet !"
             if self.packager.is_valid():
-                packaged_dir = self.packager.package(prefix="INV", codes=codes)
+                packaged_dir = self.packager.package(prefix="INV", seq_id=self.seq_id, codes=codes)
                 msg += f"\nProjet packagé dans :\n{packaged_dir}"
             QMessageBox.information(self, "Succès", msg)
 

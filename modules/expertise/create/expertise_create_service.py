@@ -46,20 +46,14 @@ class ExpertiseCreateService:
 
     def run(self):
         
-        messageLog(f"start _create_layers")
         layers = self._create_layers()
-        messageLog(f"start layer:{layers}")
         gpkg_path = self._package_layers(layers)
 
-        messageLog(f"start load_gpkg")
         layers = load_gpkg(gpkg_path, group_name="EXPERTISE")
 
-        messageLog(f"start _create_relations")
         relations = self._create_relations(layers)
 
-        messageLog(f"start _configure_layers")
         self._configure_layers(layers, relations)
-        messageLog(f"start _configure_flags")
         self._configure_flags(layers)
 
         try:
