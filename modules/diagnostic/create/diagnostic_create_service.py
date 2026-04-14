@@ -1,18 +1,15 @@
 import processing
 
-from qgis.core import (
-    QgsProject,
-    QgsProcessing,
-    QgsMapLayer,
-    QgsWkbTypes
-)
+from qgis.core import QgsProject, Qgis, QgsProcessing, QgsMapLayer, QgsWkbTypes
 from qgis.utils import iface
 
 from ....core.layer.factory import LayerFactory
 from ....core.db.manager import DatabaseManager
 
-from ....utils.layers import load_gpkg, create_relation, set_relation_label, load_vectors
+from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.utils import fold, unfold
+from ....utils.variable import get_global_variable
+from ....utils.message import messageLog
 
 from ..layer_schema import DIAGNOSTIC_LAYERS
 
@@ -26,9 +23,12 @@ from ..configurators.tse import TseConfigurator
 from ..configurators.va import VaConfigurator
 from ..configurators.reg import RegConfigurator
 
+from qsequoia2.modules.utils.seq_config import seq_read
+
 class DiagnosticCreateService:
     def __init__(
         self,
+        seq_dir,
         dendro_controller,
         grid_controller,
         raster_controller
@@ -37,6 +37,8 @@ class DiagnosticCreateService:
         self.iface = iface
         self.project = QgsProject.instance()
 
+        self.seq_dir = seq_dir
+
         self.dendro = dendro_controller.get_values()
 
         self.grid_controller = grid_controller
@@ -44,9 +46,7 @@ class DiagnosticCreateService:
 
     def run(self):
         
-        print("_create_layers")
         layers = self._create_layers()
-        print("_package_layers")
         gpkg_path = self._package_layers(layers)
 
         layers = load_gpkg(gpkg_path, group_name="DIAGNOSTIC")
@@ -54,13 +54,30 @@ class DiagnosticCreateService:
         relations = self._create_relations(layers)
         
         self._configure_layers(layers, relations)
-
-        vector_layers = load_vectors('ua_polygon', 'infra_point', 'infra_line', 'infra_polygon', 'route_line', group_name="VECTEUR")
-        self._configure_flags(layers, vector_layers)
         
-        self._save_style(layers)
+        vkeys = [
+            'v.seq.ua.poly',
+            'v.infra.point', 'v.infra.line', 'v.infra.poly',
+            'v.vege.line',
+            'v.hydro.point', 'v.hydro.line', 'v.hydro.poly',
+            'v.road.line'
+        ]
 
-        self.raster_controller.load_selected_rasters()
+        for key in vkeys:
+            try:
+                style_dir = get_global_variable("QS2_styles_directory")
+                vlayers = seq_read(key, seq_dir=self.seq_dir, add_to_project=True, style_folder=style_dir)
+            except Exception as e:
+                continue
+
+        # if vlayers:
+        #     self._configure_flags(layers, vlayers)
+
+        try:
+            self.raster_controller.load_selected_rasters(self.seq_dir)
+
+        except Exception as e:
+            iface.messageBar().pushMessage("Erreur", str(e), level=Qgis.Info, duration=5)
 
         fold()
         unfold("DIAGNOSTIC")
@@ -75,7 +92,7 @@ class DiagnosticCreateService:
         self.essences = layers["Essences"]
 
         if self.grid_controller.is_valid():
-            layers["Grid"] = self.grid_controller.create_grid()
+            layers["Grid"] = self.grid_controller.create_grid(self.seq_dir)
 
         self.project.addMapLayers(list(layers.values()), addToLegend=False)
 
@@ -160,13 +177,3 @@ class DiagnosticCreateService:
             layer.setFlags(flags)
             layer.setReadOnly(True)
 
-    def _save_style(self, layers):
-
-        for layer in layers.values():
-
-            layer.saveStyleToDatabase(
-                name="default",
-                description="default",
-                useAsDefault=True,
-                uiFileContent=""
-            )
