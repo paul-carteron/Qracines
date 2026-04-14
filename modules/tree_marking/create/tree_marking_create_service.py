@@ -22,6 +22,7 @@ class TreeMarkingCreateService:
     def __init__(
         self,
         seq_id: str,
+        seq_dir,
         codes: list,
         dendro_controller,
         raster_controller
@@ -30,6 +31,7 @@ class TreeMarkingCreateService:
         self.project = QgsProject.instance()
 
         self.seq_id = seq_id
+        self.seq_dir = seq_dir
         self.codes = codes
         self.dendro = dendro_controller.get_values()
 
@@ -61,10 +63,7 @@ class TreeMarkingCreateService:
         self._save_style(layers)
 
         try:
-            seq_dir = get_project_variable("QS2_seq_dir") or None
-            print(f"QS2_seq_dir:{seq_dir} ")
-            self.raster_controller.load_selected_rasters(seq_dir)
-
+            self.raster_controller.load_selected_rasters(self.seq_dir)
         except Exception as e:
             iface.messageBar().pushMessage(
                 "Erreur",

@@ -1,17 +1,21 @@
 import processing
 
 from qgis.utils import iface
-from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
+from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject, QgsMapLayer
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from qgis.PyQt import uic
 
 # Import from utils folder
-from ....utils.layers import get_path, load_gpkg
+from ....utils.layers import load_gpkg
 from ....utils.processing import calculate_essence_id, merge_with_ess, save_as_xlsx
 from ....utils.ui import GpkgLoader
-from ....utils.config import get_new_to_old
+from ....utils.config import get_new_to_old, get_qfield_path
+from ....utils.message import messageLog
+from ....utils.variable import get_project_variable
 
 from ..config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
+from ..configurators.param import ParamConfigurator
+from ..configurators.arbres import  ArbresConfigurator
 from ..layer_schema import TREE_MARKING_LAYERS
 
 from pathlib import Path
@@ -233,21 +237,36 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
             self.arbres = merged_layers["Arbres"]
             self.param = merged_layers["Param"]
 
+            # Make layer private
             formated_arbres = self.format_arbres()
             formated_param = self.format_param()
-
             ess_summary = self.compute_ess_summary()
+
             merged_layers[ess_summary.name()] = ess_summary
 
-            gpkg_path = get_path("inventaire")
-            merged_result = processing.run("native:package", {
+            gpkg_path = get_qfield_path("inventaire")
+            processing.run("native:package", {
                 'LAYERS':      list(merged_layers.values()),
                 'OUTPUT':      str(gpkg_path),
                 'OVERWRITE':   True,
                 'SAVE_STYLES': True
             })
             
-            load_gpkg(merged_result['OUTPUT'], group_name="INVENTAIRE")
+            layers = load_gpkg(gpkg_path, group_name="INVENTAIRE")
+
+            seq_id = get_project_variable("QS2_seq_id") or None
+            ParamConfigurator(layers["Param"], seq_id=seq_id).configure()
+            ArbresConfigurator(
+                layers["Arbres"],
+                layers["Param"],
+                layers["Essences"],
+                layers["lst_hauteur"],
+                layers["lst_diam"]
+            ).configure()
+            layers["lst_hauteur"].setFlags(layers["lst_hauteur"].flags() | QgsMapLayer.Private)
+            layers["lst_diam"].setFlags(layers["lst_diam"].flags() | QgsMapLayer.Private)
+
+            self._save_style(layers)
 
             unique_ess = processing.run("qgis:listuniquevalues", {
                 'INPUT': formated_arbres,
@@ -256,7 +275,7 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
             })['OUTPUT']
             unique_ess.setName("essence")
 
-            out_path = get_path("inventaire_synthese")
+            out_path = get_qfield_path("inventaire_synthese")
             save_as_xlsx(formated_param, unique_ess, formated_arbres, path = out_path)
             
             QMessageBox.information(self, "Succès",  f"Géopackage(s) compilé(s) et extrait(s) dans :\n{out_path}")
@@ -267,3 +286,14 @@ class TreeMarkingLoadDialog(QDialog, FORM_CLASS):
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {e}")
+    
+    def _save_style(self, layers):
+
+        for layer in layers.values():
+
+            layer.saveStyleToDatabase(
+                name="default",
+                description="default",
+                useAsDefault=True,
+                uiFileContent=""
+            )

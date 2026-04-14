@@ -97,7 +97,7 @@ structure:
       zps: { filename: ZPS_polygon.shp, style: ZPS_polygon.qml, display_name: "Natura 2000: Zone de protection spéciale"}
 
   other_folder:
-    path: [SIG, 3_OTHER]
+    path: [5_QFIELD ]
     files:
       parcellaire: { filename: parcellaire.csv }
       inventaire: { filename: inventaire.gpkg }

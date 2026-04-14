@@ -169,7 +169,7 @@ class QfieldPackager(UIBinderMixin):
     @staticmethod
     def construct_filename(prefix: str, codes: Optional[Iterable[str]] = None) -> str:
         """Return a filename like `{prefix}_{forest_prefix}_{code1}_{code2}_...`, skipping any empty segments."""
-        forest_prefix = get_project_variable("forest_prefix") or ""
+        forest_prefix = get_project_variable("QS2_seq_dir") or ""
         parts = [prefix, forest_prefix] + list(codes or [])
         return "_".join(filter(None, parts))
 

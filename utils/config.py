@@ -94,6 +94,31 @@ def get_path(logical_key, forest=None, base_dir=None):
 
     return folder / filename
 
+def get_qfield_path(key):
+    entry, path = _find_entry(key)
+    seq_id = get_project_variable("QS2_seq_id") or None
+    seq_dir = get_project_variable("QS2_seq_dir") or None
+    if not seq_id or not seq_dir:
+        QMessageBox.critical(None, "Configuration Error", "Veuillez sélectionner une forêt dans 'project_settings'.")
+        return None
+    
+    if not entry:
+        return(Path(seq_dir).joinpath(*path))
+
+    filename = entry.get("filename")
+    if not filename:
+        raise KeyError(f"Entry for '{key}' missing 'filename'")
+
+    # ensure dir exists
+    folder = Path(seq_dir).joinpath(*path)
+    folder.mkdir(parents=True, exist_ok=True)
+
+    # prefix if needed
+    if not filename.startswith(seq_id):
+        filename = f"{seq_id}_{filename}"
+
+    return folder / filename
+
 def get_style(logical_key, styles_dir=None):
     entry, _ = _find_entry(logical_key)
     style_name = entry.get("style")
