@@ -14,10 +14,13 @@ from ..layer_schema import TREE_MARKING_LAYERS
 from ..configurators.param import ParamConfigurator
 from ..configurators.arbres import ArbresConfigurator
 
+_SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}
+
 class TreeMarkingCreateService:
 
     def __init__(
         self,
+        forest_id: str,
         codes: list,
         dendro_controller,
         raster_controller
@@ -25,6 +28,7 @@ class TreeMarkingCreateService:
 
         self.project = QgsProject.instance()
 
+        self.forest_id = forest_id
         self.codes = codes
         self.dendro = dendro_controller.get_values()
 
@@ -43,8 +47,8 @@ class TreeMarkingCreateService:
         lst_hauteur = layers["lst_hauteur"]
         lst_diam = layers["lst_diam"]
 
-        ParamConfigurator(param).configure()
-        ArbresConfigurator(arbres, param, self.dendro, essences, lst_hauteur, lst_diam).configure()
+        ParamConfigurator(param, self.forest_id).configure()
+        ArbresConfigurator(arbres, param, essences, lst_hauteur, lst_diam).configure()
 
         # Make layer private
         lst_hauteur.setFlags(lst_hauteur.flags() | QgsMapLayer.Private)
@@ -88,10 +92,12 @@ class TreeMarkingCreateService:
             layer.startEditing()
 
         selected_idx = layer.fields().indexOf("selected")
-
-        # défaut = False
         for f in layer.getFeatures():
-            layer.changeAttributeValue(f.id(), selected_idx, False)
+            if f['variation'] in _SKIP_VARIATIONS:
+                continue
+
+            value = f['code'] in self.codes
+            layer.changeAttributeValue(f.id(), selected_idx, value)
 
         layer.commitChanges()
 

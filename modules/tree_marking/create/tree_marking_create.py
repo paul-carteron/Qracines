@@ -8,6 +8,7 @@ from ....core.db.manager import DatabaseManager
 from ....utils.config import get_racines_path
 from ....utils.ui import RasterController, SpeciesSelector, QfieldPackager, DendroController
 from ....utils.utils import clear_project
+from ....utils.variable import get_project_variable
 
 from pathlib import Path
 FORM_CLASS, _ = uic.loadUiType(
@@ -19,6 +20,11 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+
+        self.forest_id = get_project_variable("forest_prefix") or None
+        if not self.forest_id:
+            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt.")
+            return
 
         self.essences = DatabaseManager().load_essences("Essences")
         
@@ -67,6 +73,7 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
         codes = self.ess_selector.selected_codes()
         # 2) call service
         svc = TreeMarkingCreateService(
+            forest_id = self.forest_id,
             codes=codes,
             dendro_controller = self.dendro_controller,
             raster_controller = self.raster_controller
@@ -75,7 +82,7 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
         try:
             svc.run()
 
-            msg = "Inventaire complète !"
+            msg = "Inventaire complet !"
             if self.packager.is_valid():
                 packaged_dir = self.packager.package(prefix="INV", codes=codes)
                 msg += f"\nProjet packagé dans :\n{packaged_dir}"

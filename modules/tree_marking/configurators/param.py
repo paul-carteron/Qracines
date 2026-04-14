@@ -7,20 +7,21 @@ from ...tree_marking.config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOIC
 
 class ParamConfigurator:
 
-    def __init__(self, layer):
+    def __init__(self, layer, forest_id):
         self.layer = layer
+        self.forest_id = forest_id
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
 
     def configure(self):
         
         self._init_form()
-        self._configure_fields()
+        self._configure_fields(self.forest_id)
 
     def _init_form(self):
 
         self.fb.init_form() 
-        self.fb.new_add_fields(["TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"])
+        self.fb.new_add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"])
         self.fb.apply()
 
         self.fb.init_form()
@@ -28,15 +29,16 @@ class ParamConfigurator:
         tab1 = self.fb.create_tab("Parcelle")
         tab2 = self.fb.create_tab("Marquage")
         tab3 = self.fb.create_tab("Dendro")
-        self.fb.new_add_fields(["TYPE", "LOT", "PARCELLE", "SURFACE"], parent = tab1)
+        self.fb.new_add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE"], parent = tab1)
         self.fb.new_add_fields(["MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"], parent = tab2)
         self.fb.new_add_fields(["HMIN", "HMAX", "DMIN", "DMAX"], parent = tab3)
 
         self.fb.apply()
 
-    def _configure_fields(self):
+    def _configure_fields(self, forest_id):
 
         aliases = [
+            ("FOREST_ID", "Forêt"),
             ("TYPE", "Type"),
             ("LOT", "Lot"),
             ("PARCELLE", "Parcelle"),
@@ -51,9 +53,12 @@ class ParamConfigurator:
         for field, alias in aliases:
             self.fe.set_alias(field, alias)
 
-        reuse = ["TYPE", "LOT", "MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI", "HMIN", "HMAX", "DMIN", "DMAX"]
+        reuse = ["FOREST_ID", "TYPE", "LOT", "MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI", "HMIN", "HMAX", "DMIN", "DMAX"]
         for field_name in reuse:
             self.fe.set_reuse_last_value(field_name)
+
+        self.fe.set_default_value("FOREST_ID", f"'{forest_id}'")
+        self.fe.set_read_only("FOREST_ID")
 
         self.fe.set_constraint("TYPE", QgsFieldConstraints.ConstraintNotNull)
         self.fe.set_constraint("LOT", QgsFieldConstraints.ConstraintNotNull)
@@ -73,7 +78,14 @@ class ParamConfigurator:
 
         self.fe.add_value_map("MARQUE", {'map': [{v: k} for k, v in MARTEAU_CHOICES.items()]})
 
+        self.fe.add_range("HMIN", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
         self.fe.set_default_value("HMIN", "3")
+                
+        self.fe.add_range("HMAX", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
         self.fe.set_default_value("HMAX", "15")
+
+        self.fe.add_range("DMIN", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
         self.fe.set_default_value("DMIN", "30")
+
+        self.fe.add_range("DMAX", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
         self.fe.set_default_value("DMAX", "100")

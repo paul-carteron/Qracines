@@ -4,6 +4,7 @@ TREE_MARKING_LAYERS = {
 
     "Param": {
         "fields": [
+        ("FOREST_ID", QVariant.String),
         ("TYPE", QVariant.String),
         ("LOT", QVariant.String),
         ("PARCELLE", QVariant.String),

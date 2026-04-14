@@ -163,10 +163,10 @@
      <item row="0" column="2">
       <widget class="QSpinBox" name="sp_dmin">
        <property name="minimum">
-        <number>15</number>
+        <number>30</number>
        </property>
        <property name="maximum">
-        <number>120</number>
+        <number>200</number>
        </property>
        <property name="singleStep">
         <number>5</number>
@@ -186,13 +186,13 @@
         <number>15</number>
        </property>
        <property name="maximum">
-        <number>120</number>
+        <number>200</number>
        </property>
        <property name="singleStep">
         <number>5</number>
        </property>
        <property name="value">
-        <number>110</number>
+        <number>100</number>
        </property>
       </widget>
      </item>
@@ -209,7 +209,7 @@
         <number>3</number>
        </property>
        <property name="maximum">
-        <number>40</number>
+        <number>50</number>
        </property>
       </widget>
      </item>
@@ -226,10 +226,10 @@
         <number>3</number>
        </property>
        <property name="maximum">
-        <number>40</number>
+        <number>50</number>
        </property>
        <property name="value">
-        <number>30</number>
+        <number>15</number>
        </property>
       </widget>
      </item>

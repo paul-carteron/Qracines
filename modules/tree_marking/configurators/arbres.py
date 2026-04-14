@@ -10,10 +10,9 @@ from ....core.layer import FormBuilder, FieldEditor
 
 class ArbresConfigurator:
 
-    def __init__(self, layer, param, dendro, essences, lst_hauteur, lst_diam):
+    def __init__(self, layer, param, essences, lst_hauteur, lst_diam):
         self.layer = layer
         self.param = param
-        self.dendro = dendro
         self.essences = essences
         self.lst_hauteur = lst_hauteur
         self.lst_diam = lst_diam
