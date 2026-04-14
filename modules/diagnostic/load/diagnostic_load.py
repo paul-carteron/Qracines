@@ -1,93 +1,77 @@
 import processing
 
-from qgis.utils import iface
-from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject
-from qgis.PyQt import uic
-from PyQt5.QtWidgets import QMessageBox, QDialog
+from qgis.core import QgsWkbTypes, QgsMapLayer
 
-from ....utils.layers import get_path, load_gpkg
-from ....utils.ui import GpkgLoader
+# Import from utils folder
+from ....utils.layers import load_gpkg, create_relation, set_relation_label
+from ....utils.config import get_qfield_path
 
-from ....core.layer.factory import LayerFactory
+# configurators
+from ..configurators.placette import PlacetteConfigurator
+from ..configurators.transect import TransectConfigurator
+from ..configurators.limite import LimiteConfigurator
+from ..configurators.picto import PictoConfigurator
+from ..configurators.gha import GhaConfigurator
+from ..configurators.tse import TseConfigurator
+from ..configurators.va import VaConfigurator
+from ..configurators.reg import RegConfigurator
 
-from ..layer_schema import DIAGNOSTIC_LAYERS
-
-from pathlib import Path
-FORM_CLASS, _ = uic.loadUiType(
-    Path(__file__).parent / "diagnostic_load.ui")
-
-class DiagnosticLoadDialog(QDialog, FORM_CLASS):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setupUi(self)
-        self.project = QgsProject.instance()
-        self.iface = iface
-        
-        self.gpkg_loader = GpkgLoader(ui = self, add = 'pb_import_files', selected = 'lw_selected_files')
-
-    def merge_files(self):
-        if self.gpkg_loader.is_valid():
-            gpkgs = self.gpkg_loader.selected_files
-
-        out_path = get_path("diag")
-        layers = list(DIAGNOSTIC_LAYERS.keys())
-
-        ess_layer_name = "Essences"
-        ess_layer = QgsVectorLayer(f"{gpkgs[0]}|layername={ess_layer_name}", ess_layer_name, "ogr")
-
-        merged_layers = []
-        for layer in layers:
-            all_layer = []
-            for gpkg in gpkgs:
-                vl = QgsVectorLayer(f"{gpkg}|layername={layer}", layer, "ogr")
-                if vl.isValid():
-                    all_layer.append(vl)
-            
-            if not all_layer:
-                print(f"Skipping '{layer}': no valid sources")
-                continue
-            
-            merge_layer = processing.run("native:mergevectorlayers", {
-                'LAYERS': all_layer,   # ← just reuse the list
-                'CRS':    'PROJECT',
-                'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
-            })['OUTPUT']
- 
-            # When merging, fid is reinitialized which mean duplicated fid that will cause geopackage creation to fail (processing.run("native:package"))
-            merge_layer = processing.run("qgis:deletecolumn", {
-                'INPUT':  merge_layer,
-                'COLUMN': ['fid'],
-                'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
-            })['OUTPUT']
-
-            merge_layer.setName(layer)
-            merged_layers.append(merge_layer)
-
-        
-        merged_layers.append(ess_layer)
-        merged_result = processing.run("native:package", {
-            'LAYERS':      merged_layers,
-            'OUTPUT':      str(out_path),
-            'OVERWRITE':   True,
-            'SAVE_STYLES': False
-        })
-
-        self.outpath = merged_result['OUTPUT']
-        
-        return None
+class DiagnosticLoad:
+    def __init__(self):
+        self.gpkg_path = get_qfield_path("diag")
     
     def load(self):
 
-        load_gpkg(self.outpath, group_name="DIAGNOSTIC")
+        layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        relations = self._create_relations(layers)
+        self._configure_layers(layers, relations)
 
-    def accept(self):
-        try:
-            self.merge_files()
-            self.load()
-            
-            QMessageBox.information(self, "Succès",  f"Géopackage(s) compilé(s) et extrait(s) dans :\n{self.outpath}")
-            super().accept()
-            return
+        return layers
+    def _create_relations(self, layers):
+        
+        relations = {
+            "Gha": create_relation(layers["Placette"], layers["Gha"], "UUID", "UUID"),
+            "Tse": create_relation(layers["Placette"], layers["Tse"], "UUID", "UUID"),
+            "Va":  create_relation(layers["Placette"], layers["Va"], "UUID", "UUID"),
+            "Reg": create_relation(layers["Placette"], layers["Reg"], "UUID", "UUID"),
+        }
 
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
+        return relations
+    
+    def _configure_layers(self, layers, relations):
+        essences = layers["Essences"]
+        placette = layers["Placette"]
+        transect = layers["Transect"]
+        limite = layers["Limite"]
+        picto = layers["Picto"]
+        gha = layers["Gha"]
+        tse = layers["Tse"]
+        va = layers["Va"]
+        reg = layers["Reg"]
+
+        dendro = {
+          "dmin": 0,
+          "dmax": 200,
+          "hmin": 0,
+          "hmax": 50,
+        }
+
+        PlacetteConfigurator(placette, relations).configure()
+        TransectConfigurator(transect, dendro, essences).configure()
+        LimiteConfigurator(limite).configure()
+        PictoConfigurator(picto).configure()
+        GhaConfigurator(gha, essences).configure()
+        TseConfigurator(tse, essences).configure()
+        VaConfigurator(va, essences).configure()
+        RegConfigurator(reg, essences).configure()
+
+        relation_labels = {
+            "Gha": "Surface terrière",
+            "Tse": "Essence taillis",
+            "Va": "Valeur avenir",
+            "Reg": "Régénération",
+        }
+
+        for name, label in relation_labels.items():
+            set_relation_label(placette, relations[name], label)
+

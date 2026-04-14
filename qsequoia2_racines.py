@@ -4,7 +4,8 @@ from qgis.PyQt.QtGui import QIcon
 from .modules.add_data.add_data import AddDataDialog
 
 from .modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
-from .modules.diagnostic.load.diagnostic_load import DiagnosticLoadDialog
+from .modules.diagnostic.merge.diagnostic_merge import DiagnosticMergeDialog
+from .modules.diagnostic.load.diagnostic_load import DiagnosticLoad
 
 from .modules.expertise.create.expertise_create import ExpertiseCreateDialog
 from .modules.expertise.merge.expertise_merge import ExpertiseMergeDialog
@@ -37,7 +38,7 @@ CLASSIC_BUTTONS = [
 
 QFIELD_BUTTONS = [
 #   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"          ),
-    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_import", None),
+    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create", "open_diagnostic_merge", "open_diagnostic_load"),
     ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import", None),
     ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
     ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge", "open_expertise_load"),
@@ -98,7 +99,8 @@ class Qsequoia2Racines:
 
         # QField dialogs
         self.diagnostic_create = None
-        self.diagnostic_import = None
+        self.diagnostic_merge = None
+        self.diagnostic_load = None
         self.pedology_create = None
         self.pedology_import = None
         self.tree_marking_create = None
@@ -185,17 +187,28 @@ class Qsequoia2Racines:
 
     # region DIAGNOSTIC
     def open_diagnostic_create(self):
+        if not self._check_seq_dir():
+            return None
+        
         if not self.diagnostic_create:
             self.diagnostic_create = DiagnosticCreateDialog()
         self.diagnostic_create.exec_()
 
-    def open_diagnostic_import(self):
-        if not self._check_forest_is_selected():
+    def open_diagnostic_merge(self):
+        if not self._check_seq_dir():
             return None
 
-        if not self.diagnostic_import:
-            self.diagnostic_import = DiagnosticLoadDialog()
-        self.diagnostic_import.exec_()
+        if not self.diagnostic_merge:
+            self.diagnostic_merge = DiagnosticMergeDialog()
+        self.diagnostic_merge.exec_()
+
+    def open_diagnostic_load(self):
+        if not self._check_seq_dir():
+            return None
+
+        if not self.diagnostic_load:
+            self.diagnostic_load = DiagnosticLoad()
+        self.diagnostic_load.load()
         
     # endregion
         
