@@ -18,7 +18,8 @@ from .modules.pedology.pedology_create import PedologyCreateDialog
 from .modules.project_settings.project_settings import ProjectSettingsDialog
 
 from .modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDialog
-from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoadDialog
+from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialog
+from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
 
 # import utils
 from .utils.variable import get_project_variable, get_global_variable
@@ -34,11 +35,11 @@ CLASSIC_BUTTONS = [
 ]
 
 QFIELD_BUTTONS = [
-#   ("icon-file",        "tooltip",    "create_handler",           "import_handler"          ),
-    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_import"  ),
-    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import"    ),
-    ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_import"),
-    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_import"   ),
+#   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"          ),
+    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_import", None),
+    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import", None    ),
+    ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
+    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_import", None   ),
 ]
 
 class ClassicButton:
@@ -100,7 +101,8 @@ class Qsequoia2Racines:
         self.pedology_create = None
         self.pedology_import = None
         self.tree_marking_create = None
-        self.tree_marking_import = None
+        self.tree_marking_merge = None
+        self.tree_marking_load = None
         self.expertise_create = None
         self.expertise_import = None
 
@@ -122,15 +124,25 @@ class Qsequoia2Racines:
             )
             self.buttons.append(btn)
 
-        for icon, tooltip, create_handler, import_handler in QFIELD_BUTTONS:
+        for icon, tooltip, create_handler, merge_handler, load_handler in QFIELD_BUTTONS:
+
+            menu_items = []
+
+            if create_handler and hasattr(self, create_handler):
+                menu_items.append(("Créer", getattr(self, create_handler)))
+
+            if merge_handler and hasattr(self, merge_handler):
+                menu_items.append(("Combiner", getattr(self, merge_handler)))
+
+            if load_handler and hasattr(self, load_handler):
+                menu_items.append(("Charger", getattr(self, load_handler)))
+
             btn = QfieldButton(
-                icon = self.plugin_dir / "icons" / icon,
-                tooltip = tooltip,
-                menu_items = [
-                    ("Créer",    getattr(self, create_handler)),
-                    ("Importer", getattr(self, import_handler)),
-                ]
+                icon=self.plugin_dir / "icons" / icon,
+                tooltip=tooltip,
+                menu_items=menu_items
             )
+
             self.buttons.append(btn)
 
         for btn in self.buttons:
@@ -205,11 +217,15 @@ class Qsequoia2Racines:
             self.tree_marking_create = TreeMarkingCreateDialog()
         self.tree_marking_create.exec_()
 
-    def open_tree_marking_import(self):
-        if not self.tree_marking_import:
-            self.tree_marking_import = TreeMarkingLoadDialog()
-        self.tree_marking_import.exec_()
+    def open_tree_marking_merge(self):
+        if not self.tree_marking_merge:
+            self.tree_marking_merge = TreeMarkingMergeDialog()
+        self.tree_marking_merge.exec_()
 
+    def open_tree_marking_load(self):
+        if not self.tree_marking_load:
+            self.tree_marking_load = TreeMarkingLoad()
+        self.tree_marking_load.load()
     # endregion
 
     # region EXPERTISE

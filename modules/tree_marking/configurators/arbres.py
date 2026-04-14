@@ -2,9 +2,10 @@ from qgis.core import (
     QgsFieldConstraints,
     QgsPalLayerSettings,
     QgsTextFormat,
-    QgsVectorLayerSimpleLabeling
+    QgsVectorLayerSimpleLabeling,
+    QgsTextBufferSettings,
 )
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QColor
 
 from ....core.layer import FormBuilder, FieldEditor
 
@@ -84,7 +85,7 @@ class ArbresConfigurator:
             'Key': 'fid',
             'Layer': self.essences.id(),
             'Value': 'essence_variation',
-            'AllowNull': False,
+            'AllowNull': True,
             'FilterExpression': '"selected" = true'
         }
 
@@ -94,7 +95,7 @@ class ArbresConfigurator:
             'Key': 'fid',
             'Layer': self.essences.id(),
             'Value': 'essence_variation',
-            'AllowNull': False,
+            'AllowNull': True,
             'FilterExpression': '"selected" = false OR "selected" IS NULL'
         }
 
@@ -213,12 +214,21 @@ class ArbresConfigurator:
     def _style(self):
         label_settings = QgsPalLayerSettings()
         label_settings.fieldName = "COMPTEUR"
+
         text_format = QgsTextFormat()
         text_format.setFont(QFont("Arial", 12))
         text_format.setSize(12)
+
+        buffer = QgsTextBufferSettings()
+        buffer.setEnabled(True)
+        buffer.setSize(1.5)  # thickness
+        buffer.setColor(QColor("white"))
+
+        text_format.setBuffer(buffer)   
+
         label_settings.setFormat(text_format)
+
         labeling = QgsVectorLayerSimpleLabeling(label_settings)
         self.layer.setLabeling(labeling)
         self.layer.setLabelsEnabled(True)
         self.layer.triggerRepaint()
-

@@ -60,8 +60,6 @@ class TreeMarkingCreateService:
         essences.setDisplayExpression('''CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation"''')
         param.setDisplayExpression('"PARCELLE" || "SURFACE"')
 
-        self._save_style(layers)
-
         try:
             self.raster_controller.load_selected_rasters(self.seq_dir)
         except Exception as e:
@@ -149,14 +147,3 @@ class TreeMarkingCreateService:
             self.project.removeMapLayer(layer.id())
 
         return gpkg_path
-
-    def _save_style(self, layers):
-
-        for layer in layers.values():
-
-            layer.saveStyleToDatabase(
-                name="default",
-                description="default",
-                useAsDefault=True,
-                uiFileContent=""
-            )
