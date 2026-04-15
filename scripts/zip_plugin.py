@@ -1,7 +1,7 @@
 import os
 import zipfile
 
-ZIP_NAME = "Qsequoia2.zip"
+ZIP_NAME = "Qracines.zip"
 
 # Folders to exclude
 EXCLUDE_FOLDER = {"__pycache__", ".git", ".vscode", "venv", "env", "tests", "docs"}

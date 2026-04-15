@@ -1,7 +1,3 @@
-import processing
-
-from qgis.core import QgsWkbTypes, QgsMapLayer
-
 # Import from utils folder
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.config import get_qfield_path

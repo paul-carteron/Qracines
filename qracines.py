@@ -21,11 +21,11 @@ from .utils.variable import get_project_variable
 from pathlib import Path
 
 QFIELD_BUTTONS = [
-#   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"          ),
-    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create", "open_diagnostic_merge", "open_diagnostic_load"),
-    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import", None),
+#   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"",          "load_handler"          ),
+    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_merge",   "open_diagnostic_load"  ),
+    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import",    None                    ),
     ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
-    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge", "open_expertise_load"),
+    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge",    "open_expertise_load"   ),
 ]
 
 class QfieldButton:

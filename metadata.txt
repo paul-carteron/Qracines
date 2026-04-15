@@ -1,14 +1,14 @@
 [general]
-name=Qsequoia2 – Racines
-plugin_id=qsequoia2_racines
+name=Qracines
+plugin_id=qracines
 version=0.1.0
-mainFile=qsequoia2_racines.py
+mainFile=qracines.py
 qgisMinimumVersion=3.28
 
 description=Extensions Racines pour Qsequoia2
 about=Fonctionnalités spécifiques au cabinet Racines reposant sur l’API de Qsequoia2.
 
-author=Paul Carteron - Matthieu Chevereau
+author=Paul Carteron
 email=p.carteron@racines.com
 
 icon=icons/icon.svg
