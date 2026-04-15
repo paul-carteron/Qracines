@@ -16,7 +16,7 @@ from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialo
 from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
 
 # import utils
-from .utils.variable import get_project_variable
+from .utils.variable import get_project_variable, get_global_variable
 
 from pathlib import Path
 
@@ -207,7 +207,7 @@ class Qsequoia2Racines:
         return True
     
     def _check_seq_style_dir(self):
-        style_dir = get_project_variable("QS2_styles_directory")
+        style_dir = get_global_variable("QS2_styles_directory")
         if not style_dir:
             QMessageBox.warning(
                 self.iface.mainWindow(),
