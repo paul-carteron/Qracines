@@ -1,7 +1,5 @@
-from qgis.PyQt.QtWidgets import QMessageBox, QAction, QToolButton, QMenu
+from qgis.PyQt.QtWidgets import QMessageBox, QToolButton, QMenu
 from qgis.PyQt.QtGui import QIcon
-
-from .modules.add_data.add_data import AddDataDialog
 
 from .modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
 from .modules.diagnostic.merge.diagnostic_merge import DiagnosticMergeDialog
@@ -11,30 +9,16 @@ from .modules.expertise.create.expertise_create import ExpertiseCreateDialog
 from .modules.expertise.merge.expertise_merge import ExpertiseMergeDialog
 from .modules.expertise.load.expertise_load import ExpertiseLoad
 
-from .modules.forest_settings.forest_settings import ForestSettingsDialog
-
-from .modules.global_settings.global_settings import GlobalSettingsDialog
-
 from .modules.pedology.pedology_create import PedologyCreateDialog
-
-from .modules.project_settings.project_settings import ProjectSettingsDialog
 
 from .modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDialog
 from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialog
 from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
 
 # import utils
-from .utils.variable import get_project_variable, get_global_variable
+from .utils.variable import get_project_variable
 
 from pathlib import Path
-
-CLASSIC_BUTTONS = [
-#   ("icon-file",            "tooltip",              "handler"              ),
-    ("global_settings.svg",  "Global Settings",      "open_global_settings" ),
-    ("forest_settings.svg",  "Forest Settings",      "open_forest_settings" ),
-    ("project_settings.svg", "Project Settings",     "open_project_settings"),
-    ("add_data.svg",         "Ajouter des couches",  "open_add_data"        ),
-]
 
 QFIELD_BUTTONS = [
 #   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"          ),
@@ -43,22 +27,6 @@ QFIELD_BUTTONS = [
     ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
     ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge", "open_expertise_load"),
 ]
-
-class ClassicButton:
-    def __init__(self, icon: Path, tooltip: str, slot: callable, iface, plugin_name: str):
-        self.plugin_name = plugin_name
-        self.iface = iface
-        self.action = QAction(QIcon(str(icon)), tooltip, iface.mainWindow())
-        self.action.triggered.connect(slot)
-
-    def add_to_toolbar(self, toolbar):
-        toolbar.addAction(self.action)
-        self.iface.addPluginToMenu(self.plugin_name, self.action)
-
-    def unload(self, toolbar):
-        self.iface.removePluginMenu(self.plugin_name, self.action)
-        toolbar.removeAction(self.action)
-        self.action.deleteLater() 
 
 class QfieldButton:
     def __init__(self, icon: Path, tooltip: str, menu_items: list[tuple[str, callable]]):
@@ -91,12 +59,6 @@ class Qsequoia2Racines:
         self.toolbar = None
         self.buttons = []
 
-        # Classic dialogs
-        self.global_dialog = None
-        self.forest_dialog = None
-        self.project_dialog = None
-        self.add_data_dialog = None
-
         # QField dialogs
         self.diagnostic_create = None
         self.diagnostic_merge = None
@@ -117,16 +79,6 @@ class Qsequoia2Racines:
         # Toolbar
         self.toolbar = self.iface.addToolBar(self.plugin_name)
         self.toolbar.setObjectName("Qsequoia2RacinesToolbar")
-
-        for icon, tooltip, handler in CLASSIC_BUTTONS:
-            btn = ClassicButton(
-                icon = self.plugin_dir / "icons" / icon,
-                tooltip = tooltip,
-                slot = getattr(self, handler),
-                iface = self.iface,
-                plugin_name = self.plugin_name
-            )
-            self.buttons.append(btn)
 
         for icon, tooltip, create_handler, merge_handler, load_handler in QFIELD_BUTTONS:
 
@@ -151,44 +103,13 @@ class Qsequoia2Racines:
 
         for btn in self.buttons:
             btn.add_to_toolbar(self.toolbar)
-            
-    # region HANDLERS
-    def open_global_settings(self):
-        if not self.global_dialog:
-            self.global_dialog = GlobalSettingsDialog()
-        self.global_dialog.exec_()
-        
-    def open_forest_settings(self):
-        if not self.forest_dialog:
-            self.forest_dialog = ForestSettingsDialog(self.iface)
-        self.forest_dialog.exec_()
-
-    def open_project_settings(self):
-        forest = get_project_variable("forest_prefix")
-        if not forest:
-            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt avant de lancer un projet de carte.")
-            return
-          
-        if not self.project_dialog:
-            self.project_dialog = ProjectSettingsDialog(self.iface)
-        self.project_dialog.exec_()
-    
-    def open_add_data(self):
-        if not self._check_style_dir_is_selected():
-            return None
-        if not self._check_forest_is_selected():
-            return None
-        
-        if not self.add_data_dialog:
-            self.add_data_dialog = AddDataDialog(self.iface)
-        self.add_data_dialog.exec_()
-
-    # endregion
 
     # region DIAGNOSTIC
     def open_diagnostic_create(self):
         if not self._check_seq_dir():
             return None
+        
+        self._check_seq_style_dir()
         
         if not self.diagnostic_create:
             self.diagnostic_create = DiagnosticCreateDialog()
@@ -212,22 +133,24 @@ class Qsequoia2Racines:
         
     # endregion
         
-    # region PEDOLOGY
-    def open_pedology_create(self):
-        if not self._check_forest_is_selected():
-            return None
+    # # region PEDOLOGY
+    # def open_pedology_create(self):
+    #     if not self._check_forest_is_selected():
+    #         return None
         
-        if not self.pedology_create:
-            self.pedology_create = PedologyCreateDialog(self.iface)
-        self.pedology_create.exec_()
+    #     if not self.pedology_create:
+    #         self.pedology_create = PedologyCreateDialog(self.iface)
+    #     self.pedology_create.exec_()
 
-    def open_pedology_import(self):
-        return
+    # def open_pedology_import(self):
+    #     return
     
-    # endregion
+    # # endregion
     
     # region TREE MARKING
     def open_tree_marking_create(self):
+        self._check_seq_style_dir()
+        
         if not self.tree_marking_create:
             self.tree_marking_create = TreeMarkingCreateDialog()
         self.tree_marking_create.exec_()
@@ -248,6 +171,8 @@ class Qsequoia2Racines:
         if not self._check_seq_dir():
             return None
         
+        self._check_seq_style_dir()
+
         if not self.expertise_create:
             self.expertise_create = ExpertiseCreateDialog()
         self.expertise_create.exec_()
@@ -273,53 +198,24 @@ class Qsequoia2Racines:
     def _check_seq_dir(self):
         seq_dir = get_project_variable("QS2_seq_dir")
         if not seq_dir:
-            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée", "Veuillez sélectionner une forêt.")
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                "Forêt non sélectionnée",
+                "Veuillez sélectionner une forêt avec le plugin Qsequoia2"
+                )
             return False
         return True
     
-    def _check_forest_is_selected(self):
-        forest = get_project_variable("forest_prefix")
-        if not forest:
-            QMessageBox.warning(self.iface.mainWindow(), "Forêt non sélectionnée","Veuillez sélectionner une forêt.")
-            return False
-        return True
-
-    def _check_style_dir_is_selected(self):
-        style_dir = get_global_variable("styles_directory")
-
-        # 1. Global variable not set
+    def _check_seq_style_dir(self):
+        style_dir = get_project_variable("QS2_styles_directory")
         if not style_dir:
             QMessageBox.warning(
-                self.iface.mainWindow(), 
-                "Bibliothèque de styles non sélectionnée",
-                "Veuillez sélectionner un dossier 'Bibliothèque de styles' dans les paramètres globaux."
-            )
-            return False
-
-        # Convert to Path
-        style_path = Path(style_dir)
-
-        # 2. Directory does not exist
-        if not style_path.exists() or not style_path.is_dir():
-            QMessageBox.warning(
                 self.iface.mainWindow(),
-                "Dossier introuvable",
-                f"Le dossier indiqué n’existe pas :\n{style_dir}"
-            )
+                "Styles non sélectionnés.",
+                "Pas de dossier de styles sélectionné avec le plugin Qsequoia2. Les couches ne seront pas stylisées."
+                )
             return False
-
-        # 3. Check that at least one .qml file exists
-        if not any(style_path.glob("*.qml")):
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                "Aucun style trouvé",
-                f"Le dossier sélectionné ne contient aucun fichier .qml :\n{style_dir}"
-            )
-            return False
-
         return True
-
-
         
     def unload(self):
         for btn in self.buttons:
