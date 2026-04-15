@@ -1,7 +1,7 @@
 [general]
 name=Qracines
 plugin_id=qracines
-version=1.0.0
+version=1.0.1
 mainFile=qracines.py
 qgisMinimumVersion=3.28
 
