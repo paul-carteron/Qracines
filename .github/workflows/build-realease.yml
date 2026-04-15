@@ -43,12 +43,12 @@ jobs:
 
       - name: Compile resources.qrc
         run: |
-          cd qsequoia2
+          cd Qracines
           pyrcc5 -o resources.py resources.qrc
 
       - name: Update metadata.txt
         run: |
-          sed -i "s/version=.*/version=${{ steps.version.outputs.version }}/" qsequoia2/metadata.txt
+          sed -i "s/version=.*/version=${{ steps.version.outputs.version }}/" Qracines/metadata.txt
 
       - name: Update plugins.xml
         run: |
@@ -59,20 +59,20 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add qsequoia2/metadata.txt plugins.xml
+          git add Qracines/metadata.txt plugins.xml
           git commit -m "Release ${{ steps.version.outputs.version }}" || echo "No changes"
           git push
 
       - name: Create ZIP
         run: |
-          zip -r qsequoia2.zip qsequoia2 -x "qsequoia2/__pycache__/*"
+          zip -r Qracines.zip Qracines -x "Qracines/__pycache__/*"
 
       - name: Create GitHub beta Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          name: "qsequoia2-${{ steps.version.outputs.version }}"
-          files: qsequoia2.zip
+          name: "Qracines-${{ steps.version.outputs.version }}"
+          files: Qracines.zip
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
