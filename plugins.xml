@@ -1,11 +1,11 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <plugins>
-     <pyqgis_plugin version="1.0.4" name="Qracines" >
+     <pyqgis_plugin version="1.0.5" name="Qracines" >
          <description>Extensions Racines du plugin Qsequoia2</description>
          <homepage>https://github.com/paul-carteron/Qracines/</homepage>
          <file_name>Qracines.zip</file_name>
          <author_name>Paul Carteron - Racines</author_name>
-         <download_url>https://github.com/SequoiApp/Qracines/releases/download/v1.0.3/Qracines.zip</download_url>
+         <download_url>https://github.com/SequoiApp/Qracines/releases/download/v1.0.5/Qracines.zip</download_url>
          <qgis_minimum_version>3.44</qgis_minimum_version>
          <experimental>true</experimental>
       </pyqgis_plugin>
