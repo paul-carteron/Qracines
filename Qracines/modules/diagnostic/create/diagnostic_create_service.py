@@ -9,7 +9,7 @@ from ....core.db.manager import DatabaseManager
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.utils import fold, unfold
 from ....utils.variable import get_global_variable
-from ....utils.message import messageLog
+from ....utils.essence import load_essences
 
 from ..layer_schema import DIAGNOSTIC_LAYERS
 
@@ -88,7 +88,7 @@ class DiagnosticCreateService:
 
         layers = LayerFactory.create_all(DIAGNOSTIC_LAYERS)
 
-        layers["Essences"] = DatabaseManager().load_essences("Essences")
+        layers["Essences"] = load_essences(name = "Essences")
         self.essences = layers["Essences"]
 
         if self.grid_controller.is_valid():

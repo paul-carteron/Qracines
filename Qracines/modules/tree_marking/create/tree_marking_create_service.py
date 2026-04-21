@@ -9,7 +9,7 @@ from ....core.db.manager import DatabaseManager
 
 from ....utils.layers import load_gpkg
 from ....utils.utils import fold, unfold
-from ....utils.variable import get_project_variable
+from ....utils.essence import load_essences
 from ..layer_schema import TREE_MARKING_LAYERS
 
 from ..configurators.param import ParamConfigurator
@@ -74,7 +74,7 @@ class TreeMarkingCreateService:
 
         layers = LayerFactory.create_all(TREE_MARKING_LAYERS)
 
-        essences = DatabaseManager().load_essences("Essences")
+        essences = load_essences(name = "Essences")
         layers["Essences"] = essences
 
         self.project.addMapLayers(list(layers.values()), addToLegend=False)

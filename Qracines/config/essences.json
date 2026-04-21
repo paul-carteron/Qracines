@@ -1,0 +1,682 @@
+{
+  "1": {
+    "essence": "Chêne",
+    "essence_variation": "Chêne",
+    "code": "CHE",
+    "variation": "NULL",
+    "ordre": 1,
+    "type": "Chênes"
+  },
+  "3": {
+    "essence": "Chêne",
+    "essence_variation": "Chêne brogneux",
+    "code": "CHE",
+    "variation": "brogneux",
+    "ordre": 3,
+    "type": "Chênes"
+  },
+  "4": {
+    "essence": "Chêne",
+    "essence_variation": "Chêne gélif",
+    "code": "CHE",
+    "variation": "gélif",
+    "ordre": 4,
+    "type": "Chênes"
+  },
+  "5": {
+    "essence": "Chêne",
+    "essence_variation": "Chêne foudroyé",
+    "code": "CHE",
+    "variation": "foudroyé",
+    "ordre": 5,
+    "type": "Chênes"
+  },
+  "6": {
+    "essence": "Chêne",
+    "essence_variation": "Chêne sec",
+    "code": "CHE",
+    "variation": "sec",
+    "ordre": 6,
+    "type": "Chênes"
+  },
+  "7": {
+    "essence": "Hêtre",
+    "essence_variation": "Hêtre",
+    "code": "HET",
+    "variation": "NULL",
+    "ordre": 7,
+    "type": "Hêtres"
+  },
+  "9": {
+    "essence": "Hêtre",
+    "essence_variation": "Hêtre branchu",
+    "code": "HET",
+    "variation": "branchu",
+    "ordre": 9,
+    "type": "Hêtres"
+  },
+  "10": {
+    "essence": "Hêtre",
+    "essence_variation": "Hêtre dépérissant",
+    "code": "HET",
+    "variation": "dépérissant",
+    "ordre": 10,
+    "type": "Hêtres"
+  },
+  "11": {
+    "essence": "Hêtre",
+    "essence_variation": "Hêtre sec",
+    "code": "HET",
+    "variation": "sec",
+    "ordre": 11,
+    "type": "Hêtres"
+  },
+  "12": {
+    "essence": "Douglas",
+    "essence_variation": "Douglas",
+    "code": "DOU",
+    "variation": "NULL",
+    "ordre": 12,
+    "type": "Douglas"
+  },
+  "14": {
+    "essence": "Douglas",
+    "essence_variation": "Douglas branchu",
+    "code": "DOU",
+    "variation": "branchu",
+    "ordre": 14,
+    "type": "Douglas"
+  },
+  "15": {
+    "essence": "Douglas",
+    "essence_variation": "Douglas nécrosé",
+    "code": "DOU",
+    "variation": "nécrosé",
+    "ordre": 15,
+    "type": "Douglas"
+  },
+  "16": {
+    "essence": "Douglas",
+    "essence_variation": "Douglas sec",
+    "code": "DOU",
+    "variation": "sec",
+    "ordre": 16,
+    "type": "Douglas"
+  },
+  "17": {
+    "essence": "Epicéa commun",
+    "essence_variation": "Epicéa commun",
+    "code": "EPC",
+    "variation": "NULL",
+    "ordre": 17,
+    "type": "Epicéas"
+  },
+  "19": {
+    "essence": "Epicéa commun",
+    "essence_variation": "Epicéa commun dépérissant",
+    "code": "EPC",
+    "variation": "dépérissant",
+    "ordre": 19,
+    "type": "Epicéas"
+  },
+  "20": {
+    "essence": "Epicéa commun",
+    "essence_variation": "Epicéa commun sec",
+    "code": "EPC",
+    "variation": "sec",
+    "ordre": 20,
+    "type": "Epicéas"
+  },
+  "21": {
+    "essence": "Epicéa de Sitka",
+    "essence_variation": "Epicéa de Sitka",
+    "code": "EPS",
+    "variation": "NULL",
+    "ordre": 21,
+    "type": "Epicéas"
+  },
+  "23": {
+    "essence": "Epicéa de Sitka",
+    "essence_variation": "Epicéa de Sitka dépérissant",
+    "code": "EPS",
+    "variation": "dépérissant",
+    "ordre": 23,
+    "type": "Epicéas"
+  },
+  "24": {
+    "essence": "Epicéa de Sitka",
+    "essence_variation": "Epicéa de Sitka sec",
+    "code": "EPS",
+    "variation": "sec",
+    "ordre": 24,
+    "type": "Epicéas"
+  },
+  "25": {
+    "essence": "Sapin pectiné",
+    "essence_variation": "Sapin pectiné",
+    "code": "SPE",
+    "variation": "NULL",
+    "ordre": 25,
+    "type": "Sapins"
+  },
+  "27": {
+    "essence": "Sapin pectiné",
+    "essence_variation": "Sapin pectiné dépérissant",
+    "code": "SPE",
+    "variation": "dépérissant",
+    "ordre": 27,
+    "type": "Sapins"
+  },
+  "28": {
+    "essence": "Sapin pectiné",
+    "essence_variation": "Sapin pectiné sec",
+    "code": "SPE",
+    "variation": "sec",
+    "ordre": 28,
+    "type": "Sapins"
+  },
+  "29": {
+    "essence": "Alisier blanc",
+    "essence_variation": "Alisier blanc",
+    "code": "ALB",
+    "variation": "NULL",
+    "ordre": 29,
+    "type": "Feuillus"
+  },
+  "30": {
+    "essence": "Alisier torminal",
+    "essence_variation": "Alisier torminal",
+    "code": "ALT",
+    "variation": "NULL",
+    "ordre": 30,
+    "type": "Feuillus"
+  },
+  "31": {
+    "essence": "Aulne glutineux",
+    "essence_variation": "Aulne glutineux",
+    "code": "ALG",
+    "variation": "NULL",
+    "ordre": 31,
+    "type": "Feuillus"
+  },
+  "32": {
+    "essence": "Bouleau",
+    "essence_variation": "Bouleau",
+    "code": "BOU",
+    "variation": "NULL",
+    "ordre": 32,
+    "type": "Feuillus"
+  },
+  "33": {
+    "essence": "Charme",
+    "essence_variation": "Charme",
+    "code": "CHA",
+    "variation": "NULL",
+    "ordre": 33,
+    "type": "Feuillus"
+  },
+  "34": {
+    "essence": "Châtaignier",
+    "essence_variation": "Châtaignier",
+    "code": "CSA",
+    "variation": "NULL",
+    "ordre": 34,
+    "type": "Feuillus"
+  },
+  "35": {
+    "essence": "Chêne chevelu",
+    "essence_variation": "Chêne chevelu",
+    "code": "CHC",
+    "variation": "NULL",
+    "ordre": 35,
+    "type": "Feuillus"
+  },
+  "36": {
+    "essence": "Chêne des marais",
+    "essence_variation": "Chêne des marais",
+    "code": "CHM",
+    "variation": "NULL",
+    "ordre": 36,
+    "type": "Feuillus"
+  },
+  "37": {
+    "essence": "Chêne liège",
+    "essence_variation": "Chêne liège",
+    "code": "CHL",
+    "variation": "NULL",
+    "ordre": 37,
+    "type": "Feuillus"
+  },
+  "38": {
+    "essence": "Chêne pubescent",
+    "essence_variation": "Chêne pubescent",
+    "code": "CHP",
+    "variation": "NULL",
+    "ordre": 38,
+    "type": "Feuillus"
+  },
+  "39": {
+    "essence": "Chêne rouge d'Amérique",
+    "essence_variation": "Chêne rouge d'Amérique",
+    "code": "CHR",
+    "variation": "NULL",
+    "ordre": 39,
+    "type": "Feuillus"
+  },
+  "40": {
+    "essence": "Chêne tauzin",
+    "essence_variation": "Chêne tauzin",
+    "code": "CHT",
+    "variation": "NULL",
+    "ordre": 40,
+    "type": "Feuillus"
+  },
+  "41": {
+    "essence": "Chêne vert",
+    "essence_variation": "Chêne vert",
+    "code": "CHV",
+    "variation": "NULL",
+    "ordre": 41,
+    "type": "Feuillus"
+  },
+  "42": {
+    "essence": "Cormier",
+    "essence_variation": "Cormier",
+    "code": "COR",
+    "variation": "NULL",
+    "ordre": 42,
+    "type": "Feuillus"
+  },
+  "43": {
+    "essence": "Erable champêtre",
+    "essence_variation": "Erable champêtre",
+    "code": "ERC",
+    "variation": "NULL",
+    "ordre": 43,
+    "type": "Feuillus"
+  },
+  "44": {
+    "essence": "Erable plane",
+    "essence_variation": "Erable plane",
+    "code": "ERP",
+    "variation": "NULL",
+    "ordre": 44,
+    "type": "Feuillus"
+  },
+  "45": {
+    "essence": "Erable sycomore",
+    "essence_variation": "Erable sycomore",
+    "code": "ERS",
+    "variation": "NULL",
+    "ordre": 45,
+    "type": "Feuillus"
+  },
+  "46": {
+    "essence": "Eucaplyptus",
+    "essence_variation": "Eucaplyptus",
+    "code": "EUC",
+    "variation": "NULL",
+    "ordre": 46,
+    "type": "Feuillus"
+  },
+  "47": {
+    "essence": "Frêne",
+    "essence_variation": "Frêne",
+    "code": "FRE",
+    "variation": "NULL",
+    "ordre": 47,
+    "type": "Feuillus"
+  },
+  "48": {
+    "essence": "Fruitier",
+    "essence_variation": "Fruitier",
+    "code": "FRU",
+    "variation": "NULL",
+    "ordre": 48,
+    "type": "Feuillus"
+  },
+  "49": {
+    "essence": "Marronnier",
+    "essence_variation": "Marronnier",
+    "code": "MAR",
+    "variation": "NULL",
+    "ordre": 49,
+    "type": "Feuillus"
+  },
+  "50": {
+    "essence": "Merisier",
+    "essence_variation": "Merisier",
+    "code": "MER",
+    "variation": "NULL",
+    "ordre": 50,
+    "type": "Feuillus"
+  },
+  "51": {
+    "essence": "Noisetier",
+    "essence_variation": "Noisetier",
+    "code": "NOI",
+    "variation": "NULL",
+    "ordre": 51,
+    "type": "Feuillus"
+  },
+  "52": {
+    "essence": "Noyer commun",
+    "essence_variation": "Noyer commun",
+    "code": "NOC",
+    "variation": "NULL",
+    "ordre": 52,
+    "type": "Feuillus"
+  },
+  "53": {
+    "essence": "Noyer hybride",
+    "essence_variation": "Noyer hybride",
+    "code": "NOH",
+    "variation": "NULL",
+    "ordre": 53,
+    "type": "Feuillus"
+  },
+  "54": {
+    "essence": "Noyer noir",
+    "essence_variation": "Noyer noir",
+    "code": "NON",
+    "variation": "NULL",
+    "ordre": 54,
+    "type": "Feuillus"
+  },
+  "55": {
+    "essence": "Orme",
+    "essence_variation": "Orme",
+    "code": "ORM",
+    "variation": "NULL",
+    "ordre": 55,
+    "type": "Feuillus"
+  },
+  "56": {
+    "essence": "Peuplier clonal",
+    "essence_variation": "Peuplier clonal",
+    "code": "PEC",
+    "variation": "NULL",
+    "ordre": 56,
+    "type": "Feuillus"
+  },
+  "57": {
+    "essence": "Peuplier naturel",
+    "essence_variation": "Peuplier naturel",
+    "code": "PEU",
+    "variation": "NULL",
+    "ordre": 57,
+    "type": "Feuillus"
+  },
+  "58": {
+    "essence": "Robinier",
+    "essence_variation": "Robinier",
+    "code": "ROB",
+    "variation": "NULL",
+    "ordre": 58,
+    "type": "Feuillus"
+  },
+  "59": {
+    "essence": "Saule",
+    "essence_variation": "Saule",
+    "code": "SAU",
+    "variation": "NULL",
+    "ordre": 59,
+    "type": "Feuillus"
+  },
+  "60": {
+    "essence": "Tilleul",
+    "essence_variation": "Tilleul",
+    "code": "TIL",
+    "variation": "NULL",
+    "ordre": 60,
+    "type": "Feuillus"
+  },
+  "61": {
+    "essence": "Tremble",
+    "essence_variation": "Tremble",
+    "code": "TRE",
+    "variation": "NULL",
+    "ordre": 61,
+    "type": "Feuillus"
+  },
+  "62": {
+    "essence": "Tulipier de Virginie",
+    "essence_variation": "Tulipier de Virginie",
+    "code": "TUL",
+    "variation": "NULL",
+    "ordre": 62,
+    "type": "Feuillus"
+  },
+  "63": {
+    "essence": "Cèdre",
+    "essence_variation": "Cèdre",
+    "code": "CED",
+    "variation": "NULL",
+    "ordre": 63,
+    "type": "Résineux"
+  },
+  "64": {
+    "essence": "Crytoméria",
+    "essence_variation": "Crytoméria",
+    "code": "CRY",
+    "variation": "NULL",
+    "ordre": 64,
+    "type": "Résineux"
+  },
+  "65": {
+    "essence": "Cyprès",
+    "essence_variation": "Cyprès",
+    "code": "CYP",
+    "variation": "NULL",
+    "ordre": 65,
+    "type": "Résineux"
+  },
+  "66": {
+    "essence": "Mélèze",
+    "essence_variation": "Mélèze",
+    "code": "MEL",
+    "variation": "NULL",
+    "ordre": 66,
+    "type": "Résineux"
+  },
+  "67": {
+    "essence": "Métaséquoia",
+    "essence_variation": "Métaséquoia",
+    "code": "MSE",
+    "variation": "NULL",
+    "ordre": 67,
+    "type": "Résineux"
+  },
+  "68": {
+    "essence": "Pin à crochets",
+    "essence_variation": "Pin à crochets",
+    "code": "PCR",
+    "variation": "NULL",
+    "ordre": 68,
+    "type": "Résineux"
+  },
+  "69": {
+    "essence": "Pin à l'encens (taeda)",
+    "essence_variation": "Pin à l'encens (taeda)",
+    "code": "PTA",
+    "variation": "NULL",
+    "ordre": 69,
+    "type": "Résineux"
+  },
+  "70": {
+    "essence": "Pin brutia",
+    "essence_variation": "Pin brutia",
+    "code": "PBR",
+    "variation": "NULL",
+    "ordre": 70,
+    "type": "Résineux"
+  },
+  "71": {
+    "essence": "Pin cembro",
+    "essence_variation": "Pin cembro",
+    "code": "PCE",
+    "variation": "NULL",
+    "ordre": 71,
+    "type": "Résineux"
+  },
+  "72": {
+    "essence": "Pin d'Alep",
+    "essence_variation": "Pin d'Alep",
+    "code": "PAL",
+    "variation": "NULL",
+    "ordre": 72,
+    "type": "Résineux"
+  },
+  "73": {
+    "essence": "Pin de Monterey",
+    "essence_variation": "Pin de Monterey",
+    "code": "PMO",
+    "variation": "NULL",
+    "ordre": 73,
+    "type": "Résineux"
+  },
+  "74": {
+    "essence": "Pin de Salzmann",
+    "essence_variation": "Pin de Salzmann",
+    "code": "PSA",
+    "variation": "NULL",
+    "ordre": 74,
+    "type": "Résineux"
+  },
+  "75": {
+    "essence": "Pin laricio",
+    "essence_variation": "Pin laricio",
+    "code": "PLA",
+    "variation": "NULL",
+    "ordre": 75,
+    "type": "Résineux"
+  },
+  "76": {
+    "essence": "Pin maritime",
+    "essence_variation": "Pin maritime",
+    "code": "PMA",
+    "variation": "NULL",
+    "ordre": 76,
+    "type": "Résineux"
+  },
+  "77": {
+    "essence": "Pin noir d'Autriche",
+    "essence_variation": "Pin noir d'Autriche",
+    "code": "PNA",
+    "variation": "NULL",
+    "ordre": 77,
+    "type": "Résineux"
+  },
+  "78": {
+    "essence": "Pin sylvestre",
+    "essence_variation": "Pin sylvestre",
+    "code": "PSY",
+    "variation": "NULL",
+    "ordre": 78,
+    "type": "Résineux"
+  },
+  "79": {
+    "essence": "Pin Weymouth",
+    "essence_variation": "Pin Weymouth",
+    "code": "PWE",
+    "variation": "NULL",
+    "ordre": 79,
+    "type": "Résineux"
+  },
+  "80": {
+    "essence": "Sapin de Vancouver",
+    "essence_variation": "Sapin de Vancouver",
+    "code": "SVA",
+    "variation": "NULL",
+    "ordre": 80,
+    "type": "Résineux"
+  },
+  "81": {
+    "essence": "Sapin du Caucase (Nordmann)",
+    "essence_variation": "Sapin du Caucase (Nordmann)",
+    "code": "SCA",
+    "variation": "NULL",
+    "ordre": 81,
+    "type": "Résineux"
+  },
+  "82": {
+    "essence": "Séquoia géant",
+    "essence_variation": "Séquoia géant",
+    "code": "SGE",
+    "variation": "NULL",
+    "ordre": 82,
+    "type": "Résineux"
+  },
+  "83": {
+    "essence": "Séquoia toujours vert",
+    "essence_variation": "Séquoia toujours vert",
+    "code": "STV",
+    "variation": "NULL",
+    "ordre": 83,
+    "type": "Résineux"
+  },
+  "84": {
+    "essence": "Thuya",
+    "essence_variation": "Thuya",
+    "code": "THU",
+    "variation": "NULL",
+    "ordre": 84,
+    "type": "Résineux"
+  },
+  "85": {
+    "essence": "Tsuga hétérophylle",
+    "essence_variation": "Tsuga hétérophylle",
+    "code": "TSU",
+    "variation": "NULL",
+    "ordre": 85,
+    "type": "Résineux"
+  },
+  "86": {
+    "essence": "Trituration feuillue",
+    "essence_variation": "Trituration feuillue",
+    "code": "TRF",
+    "variation": "NULL",
+    "ordre": 86,
+    "type": "Feuillus"
+  },
+  "87": {
+    "essence": "Trituration résineuse",
+    "essence_variation": "Trituration résineuse",
+    "code": "TRR",
+    "variation": "NULL",
+    "ordre": 87,
+    "type": "Résineux"
+  },
+  "88": {
+    "essence": "Divers feuillus",
+    "essence_variation": "Divers feuillus",
+    "code": "DIF",
+    "variation": "NULL",
+    "ordre": 88,
+    "type": "Feuillus"
+  },
+  "89": {
+    "essence": "Divers résineux",
+    "essence_variation": "Divers résineux",
+    "code": "DIR",
+    "variation": "NULL",
+    "ordre": 89,
+    "type": "Résineux"
+  },
+  "90": {
+    "essence": "Sapin de Turquie (Bornmuller)",
+    "essence_variation": "Sapin de Turquie (Bornmuller)",
+    "code": "STU",
+    "variation": "NULL",
+    "ordre": 90,
+    "type": "Sapins"
+  },
+  "91": {
+    "essence": "Houx",
+    "essence_variation": "Houx",
+    "code": "HOU",
+    "variation": "NULL",
+    "ordre": 91,
+    "type": "Feuillus"
+  }
+}

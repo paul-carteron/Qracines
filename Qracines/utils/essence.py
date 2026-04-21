@@ -1,8 +1,78 @@
-from qgis.core import QgsFieldConstraints
+from qgis.core import (
+    QgsFieldConstraints,
+    QgsVectorLayer,
+    QgsField,
+    QgsFeature,
+    QgsFields
+)
+from qgis.PyQt.QtCore import QVariant
+from pathlib import Path
+import json
 from ..core.layer import FieldEditor
-
+from .config import get_config_path
 
 _SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}
+
+
+def load_essences(json_path = get_config_path("essences.json"), name="Essences"):
+
+    json_path = Path(json_path)
+
+    if not json_path.exists():
+        raise FileNotFoundError(f"JSON not found: {json_path}")
+
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # --- define fields (same schema as query) ---
+    fields = QgsFields()
+    fields.append(QgsField("fid", QVariant.Int))
+    fields.append(QgsField("essence", QVariant.String))
+    fields.append(QgsField("essence_variation", QVariant.String))
+    fields.append(QgsField("code", QVariant.String))
+    fields.append(QgsField("variation", QVariant.String))
+    fields.append(QgsField("ordre", QVariant.Int))
+    fields.append(QgsField("type", QVariant.String))
+
+    # --- create memory layer (no geometry) ---
+    layer = QgsVectorLayer("None", name, "memory")
+    provider = layer.dataProvider()
+    provider.addAttributes(fields)
+    layer.updateFields()
+
+    def _to_qgis_null(value):
+        if value in ("NULL", "", "None"):
+            return None
+        return value
+
+    features = []
+
+    for fid_str, attrs in data.items():
+        f = QgsFeature()
+        f.setFields(fields)
+
+        # convert fid safely
+        try:
+            fid = int(fid_str)
+        except:
+            fid = None
+
+        f["fid"] = _to_qgis_null(fid)
+        f["essence"] = _to_qgis_null(attrs.get("essence"))
+        f["essence_variation"] = _to_qgis_null(attrs.get("essence_variation"))
+        f["code"] = _to_qgis_null(attrs.get("code"))
+        f["variation"] = _to_qgis_null(attrs.get("variation"))
+        f["ordre"] = _to_qgis_null(attrs.get("ordre"))
+        f["type"] = _to_qgis_null(attrs.get("type"))
+
+        features.append(f)
+
+    provider.addFeatures(features)
+
+    if not layer.isValid():
+        raise RuntimeError("Failed to create essences layer from JSON")
+
+    return layer
 
 def configure_essence_field(
     layer,

@@ -8,7 +8,7 @@ from ....core.db.manager import DatabaseManager
 
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.utils import fold, unfold
-from ....utils.message import messageLog
+from ....utils.essence import load_essences
 from ..layer_schema import EXPERTISE_LAYERS
 
 # configurators
@@ -70,7 +70,7 @@ class ExpertiseCreateService:
 
         layers = LayerFactory.create_all(EXPERTISE_LAYERS)
 
-        layers["essences"] = DatabaseManager().load_essences("essences")
+        layers["essences"] = load_essences(name = "essences")
 
         if self.grid_controller.is_valid():
             layers["Grid"] = self.grid_controller.create_grid(self.seq_dir)

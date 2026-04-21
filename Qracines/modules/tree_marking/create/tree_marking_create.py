@@ -11,6 +11,7 @@ from ....core.db.manager import DatabaseManager
 from ....utils.config import get_racines_path
 from ....utils.ui import RasterController, SpeciesSelector, QfieldPackager, DendroController
 from ....utils.variable import get_project_variable
+from ....utils.essence import load_essences
 
 from pathlib import Path
 FORM_CLASS, _ = uic.loadUiType(
@@ -27,7 +28,7 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
         self.seq_id = get_project_variable("QS2_seq_id") or None
         self.seq_dir = get_project_variable("QS2_seq_dir") or None
         
-        self.essences = DatabaseManager().load_essences("Essences")
+        self.essences = load_essences(name = "Essences")
         
         self.dendro_controller = DendroController(
             self,
