@@ -109,7 +109,7 @@ class ArbresConfigurator:
         # region DIAMETRE
         field_name = "DIAMETRE"
         config = {
-            'Key': 'fid',
+            'Key': 'VALEUR',
             'Layer': self.lst_diam.id(),
             'Value': 'VALEUR',
             'AllowNull': False,
@@ -132,7 +132,7 @@ class ArbresConfigurator:
 
         # region HAUTEUR
         config = {
-            'Key': 'fid',
+            'Key': 'VALEUR',
             'Layer': self.lst_hauteur.id(),
             'Value': 'VALEUR',
             'AllowNull': False,

@@ -131,7 +131,7 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
             formated_arbres = processing.run("qgis:refactorfields", {
                 'INPUT': arbres_with_ess,
                 'FIELDS_MAPPING': [
-                    {'expression': '"fid"',         'name': 'ID',         'type': 10, 'length': 50, 'precision': 0},
+                    {'expression': '"fid"',         'name': 'ID',          'type': 10, 'length': 50, 'precision': 0},
                     {'expression': '"PARCELLE"',    'name': 'PARCELLE',    'type': 10, 'length': 50, 'precision': 0},
                     {'expression': ess_expr,        'name': 'ESSENCE',     'type': 10, 'length': 50, 'precision': 0},
                     {'expression': '"DIAMETRE"',    'name': 'DIAMETRE',    'type': 2,  'length': 10, 'precision': 3},
@@ -241,15 +241,13 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
             merged_layers[ess_summary.name()] = ess_summary
 
             gpkg_path = get_qfield_path("inventaire")
-            merged_result = processing.run("native:package", {
+            processing.run("native:package", {
                 'LAYERS':      list(merged_layers.values()),
                 'OUTPUT':      str(gpkg_path),
                 'OVERWRITE':   True,
                 'SAVE_STYLES': True
             })
             
-            load_gpkg(merged_result['OUTPUT'], group_name="INVENTAIRE")
-
             unique_ess = processing.run("qgis:listuniquevalues", {
                 'INPUT': formated_arbres,
                 'FIELDS':['ESSENCE'],

@@ -8,6 +8,7 @@ from .expertise_create_service import ExpertiseCreateService
 from ....core.db.manager import DatabaseManager
 
 from ....utils.config import get_racines_path
+from ....utils.essence import load_essences
 from ....utils.variable import get_project_variable
 from ....utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController, DendroController
 
@@ -20,7 +21,7 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.essences = DatabaseManager().load_essences("essences")
+        self.essences = load_essences(name = "essences")
         self.seq_dir = get_project_variable("QS2_seq_dir") or None
         self.seq_id = get_project_variable("QS2_seq_id") or None
         
