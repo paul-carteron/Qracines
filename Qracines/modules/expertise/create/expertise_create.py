@@ -39,9 +39,8 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
             ui=self,
             raster_checkbox={
                 #   'key':     'checkbox_name',
-                'r.seq.mnh': 'cb_plt',
+                'r.seq.plt': 'cb_plt',
                 'r.alt.mnh': 'cb_mnh',
-                'r.scan.25': 'cb_scan25',
                 'r.ortho.irc': 'cb_irc',
                 'r.ortho.rgb': 'cb_rgb',
             })

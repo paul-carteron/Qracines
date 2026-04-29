@@ -79,7 +79,7 @@
         <number>15</number>
        </property>
        <property name="maximum">
-        <number>120</number>
+        <number>200</number>
        </property>
        <property name="singleStep">
         <number>5</number>
@@ -99,13 +99,13 @@
         <number>15</number>
        </property>
        <property name="maximum">
-        <number>120</number>
+        <number>200</number>
        </property>
        <property name="singleStep">
         <number>5</number>
        </property>
        <property name="value">
-        <number>110</number>
+        <number>100</number>
        </property>
       </widget>
      </item>
@@ -119,10 +119,10 @@
      <item row="1" column="2">
       <widget class="QSpinBox" name="sp_hmin">
        <property name="minimum">
-        <number>3</number>
+        <number>1</number>
        </property>
        <property name="maximum">
-        <number>40</number>
+        <number>50</number>
        </property>
       </widget>
      </item>
@@ -136,13 +136,13 @@
      <item row="1" column="4">
       <widget class="QSpinBox" name="sp_hmax">
        <property name="minimum">
-        <number>3</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>50</number>
        </property>
        <property name="value">
-        <number>30</number>
+        <number>15</number>
        </property>
       </widget>
      </item>
@@ -273,38 +273,6 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_plt_anc">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>PLT_ANC</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-         <property name="tristate">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -364,35 +332,6 @@
        </item>
        <item>
         <spacer name="horizontalSpacer_6">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_scan25">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>SCAN25</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_7">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

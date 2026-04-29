@@ -6,11 +6,10 @@ from qgis.gui import QgsFileWidget
 from qgis.utils import iface
 
 from .variable import get_project_variable
-from .layers import load_rasters
 from .qfield import package_for_qfield
-from .utils import zoom_on, fold
+from .utils import fold
 from .processing import create_grid
-from .config import get_path, get_display_name
+from .message import messageLog
 
 import unicodedata
 from pathlib import Path
@@ -70,7 +69,7 @@ class RasterController(UIBinderMixin):
             raise RuntimeError("Pas de forêt sélectionnée, impossible de charger des rasters")
     
         asked_keys = [k for k, cb in self.cbs.items() if cb.isChecked()]
-        print(f"asked_keys: {asked_keys}")
+        messageLog(f"[RASTER CONTROLLER] asked_keys: {asked_keys}")
         if not asked_keys:
             return
         
@@ -78,7 +77,7 @@ class RasterController(UIBinderMixin):
         if not group:
             group = QgsProject.instance().layerTreeRoot().addGroup(group_name)
 
-        print(f"group: {group}")
+        messageLog(f"[RASTER CONTROLLER] group: {group}")
         for key in asked_keys:
             try:
                 loaded = seq_read(key, seq_dir=seq_dir, add_to_project=True, group=group)
