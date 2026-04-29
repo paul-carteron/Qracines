@@ -43,12 +43,10 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
             ui=self,
             raster_checkbox={
                 #   'key':     'checkbox_name',
-                'plt':     'cb_plt',
-                'plt_anc': 'cb_plt_anc',
-                'mnh':     'cb_mnh',
-                'mnt':     'cb_mnt',
-                'scan25':  'cb_scan25',
-                'irc':     'cb_irc'
+                'r.seq.plt': 'cb_plt',
+                'r.alt.mnh': 'cb_mnh',
+                'r.ortho.irc': 'cb_irc',
+                'r.ortho.rgb': 'cb_rgb',
             })
         
         self.packager = QfieldPackager(
