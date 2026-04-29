@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
+from Qracines.utils.message import messageLog
 from qgis.PyQt import uic
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem
 from qgis.utils import iface
@@ -44,9 +45,8 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
             ui=self,
             raster_checkbox={
                 #   'key':     'checkbox_name',
-                'r.seq.mnh': 'cb_plt',
+                'r.seq.plt': 'cb_plt',
                 'r.alt.mnh': 'cb_mnh',
-                'r.scan.25': 'cb_scan25',
                 'r.ortho.irc': 'cb_irc',
                 'r.ortho.rgb': 'cb_rgb',
             })

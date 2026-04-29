@@ -79,7 +79,7 @@
         <number>15</number>
        </property>
        <property name="maximum">
-        <number>120</number>
+        <number>200</number>
        </property>
        <property name="singleStep">
         <number>5</number>
@@ -99,13 +99,13 @@
         <number>15</number>
        </property>
        <property name="maximum">
-        <number>120</number>
+        <number>200</number>
        </property>
        <property name="singleStep">
         <number>5</number>
        </property>
        <property name="value">
-        <number>110</number>
+        <number>100</number>
        </property>
       </widget>
      </item>
@@ -119,10 +119,10 @@
      <item row="1" column="2">
       <widget class="QSpinBox" name="sp_hmin">
        <property name="minimum">
-        <number>3</number>
+        <number>1</number>
        </property>
        <property name="maximum">
-        <number>40</number>
+        <number>50</number>
        </property>
       </widget>
      </item>
@@ -136,13 +136,13 @@
      <item row="1" column="4">
       <widget class="QSpinBox" name="sp_hmax">
        <property name="minimum">
-        <number>3</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>50</number>
        </property>
        <property name="value">
-        <number>30</number>
+        <number>15</number>
        </property>
       </widget>
      </item>
