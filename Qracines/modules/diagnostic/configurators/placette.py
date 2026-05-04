@@ -273,7 +273,11 @@ class PlacetteConfigurator:
             'peu_dense': 'Peu dense',
             'absent': 'Absent',
         }
-        self.fe.add_value_map('TSE_DENS', {'map': [{str(name): str(code)} for code, name in densite.items()]})
+        self.fe.add_value_map(
+            'TSE_DENS',
+            {'map': [{str(name): str(code)} for code, name in densite.items()]},
+            allow_null=True
+        )
 
         # TSE_VOL
         tse_vol = {
@@ -289,14 +293,23 @@ class PlacetteConfigurator:
             "350": "350",
             "400": "400",
         }
-        self.fe.add_value_map('TSE_VOL', {'map': [{str(name): str(code)} for code, name in tse_vol.items()]})
+        self.fe.add_value_map(
+            'TSE_VOL',
+            {'map': [{str(name): str(code)} for code, name in tse_vol.items()]},
+            allow_null=True
+        )
 
         # TSE_NATURE
         nature = {
             "BI_BE" : "BI/BE", 
             "BC" : "BC"
         }
-        self.fe.add_value_map('TSE_NATURE', {'map': [{str(name): str(code)} for code, name in nature.items()]})
+        self.fe.add_value_map(
+            'TSE_NATURE',
+            {'map': [{str(name): str(code)} for code, name in nature.items()]},
+            allow_null=True
+        )
+        
         # endregion
         return None
     
