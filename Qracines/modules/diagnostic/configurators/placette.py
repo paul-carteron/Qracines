@@ -1,6 +1,22 @@
 from qgis.core import QgsFieldConstraints
 from ....core.layer import FormBuilder, FieldEditor
 from ....utils.config import get_peuplements
+from ..config import (
+  STADE_CHOICES,
+  RICHESSE_CHOICES, 
+  STRUCTURE_CHOICES, 
+  TX_TROUEE_CHOICES, 
+  VEG_CON_CHOICES, 
+  TX_DEG_CHOICES, 
+  PROTECT_CHOICES, 
+  ELAGAGE_CHOICES,
+  SANITAIRE_CHOICES, 
+  CLOISO_CHOICES, 
+  MECANISABLE_CHOICES, 
+  DENSITE_CHOICES, 
+  TSE_VOL_CHOICES,
+  TSE_NATURE_CHOICES
+)
 
 class PlacetteConfigurator:
 
@@ -30,18 +46,16 @@ class PlacetteConfigurator:
 
         # GENERAL
         general_tab = self.fb.create_tab("Général")
-        group = self.fb.create_group("", parent = general_tab, columns=2)
-        self.fb.new_add_fields(["COMPTEUR", "PLT_PARCELLE"], parent = group)
-        self.fb.new_add_fields(["PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
+        self.fb.new_add_fields(["COMPTEUR", "PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
 
         # PEUPLEMENT
         tab_peupl = self.fb.create_tab("Peuplement")
         self.fb.new_add_relation(self.relations["Gha"], tab_peupl, visibility_expression=forest_ve)
-        self.fb.new_add_fields(["PLT_RICH", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
+        self.fb.new_add_fields(["PLT_RICH", "PLT_STRUCTURE", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
         group = self.fb.create_group("", parent = tab_peupl, columns=2)
         self.fb.new_add_fields(["PLT_SINISTRE", "PLT_ACCESS"], parent = group)
 
-        # # TAILLIS
+        # TAILLIS
         tab_taillis = self.fb.create_tab("Taillis")
         self.fb.new_add_relation(self.relations["Tse"], tab_taillis, visibility_expression=both)
         self.fb.new_add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
@@ -64,7 +78,6 @@ class PlacetteConfigurator:
         # ALIASES
         aliases = [
             ("COMPTEUR", "Placette n°"),
-            ("PLT_PARCELLE", "PRF/SPRF"),
             ("PLT_TYPE", "Type de peuplement"),
             ("PLT_STADE", "Stade"),
             ("PLT_AME", "Aménagement"), 
@@ -72,6 +85,7 @@ class PlacetteConfigurator:
             ("PLT_PHOTO", "Photo"),
             # PEUPLEMENT
             ("PLT_RICH", "Richesse"),
+            ("PLT_STRUCTURE", "Structure"),
             ("PLT_DMOY", "Diamètre Moyen (cm)"),
             ("PLT_ELAG", "Élagage"), 
             ("PLT_SANIT", "Sanitaire"), 
@@ -111,9 +125,6 @@ class PlacetteConfigurator:
         self.fe.set_read_only(field_name)
         self.fe.set_default_value(field_name, 'count("fid") + 1')
 
-        # PLT_PARCELLE
-        self.fe.set_constraint("PLT_PARCELLE", QgsFieldConstraints.ConstraintNotNull)
-
         # PLT_TYPE
         field_name = "PLT_TYPE"
         peuplements = get_peuplements()
@@ -122,18 +133,7 @@ class PlacetteConfigurator:
 
         # PLT_STADE
         field_name = 'PLT_STADE'
-        stade = {
-            'RSF': 'En régé. Semis / Fourré',
-            'RGP': 'En régé. Gaulis / Perchis',
-            'JEU': 'Jeune',
-            'ADU': 'Adulte',
-            'MAT': 'Mature',
-            'SFO': 'Semis / Fourré',
-            'GPE': 'Gaulis / Perchis',
-            'EXP': 'Exploitable',
-            'NEX': 'Non exploitable'
-        }
-        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in stade.items()]})
+        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in STADE_CHOICES.items()]})
         c_exp = f'''
         ("PLT_TYPE" IN {tuple(get_peuplements("non_forestier"))} AND ("{field_name}" IS NULL OR "{field_name}" = ''))
         OR
@@ -154,14 +154,7 @@ class PlacetteConfigurator:
         # region PEUPLEMENT
         # PLT_RICH
         field_name = 'PLT_RICH'
-        richesse = {
-            'TRI': 'Très riche',
-            'RRI': 'Riche',
-            'MRI': 'Moy. riche',
-            'PPA': 'Pauvre',
-            'TPA': 'Ruiné'
-        }
-        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in richesse.items()]})
+        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in RICHESSE_CHOICES.items()]})
         c_exp = f'''
         ("PLT_TYPE" NOT IN {tuple(get_peuplements("futaie", "taillis"))})
         OR
@@ -169,45 +162,23 @@ class PlacetteConfigurator:
         '''
         self.fe.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} doit être rempli pour les futaies ou taillis.")
 
+        # PLT_STRUCTURE
+        self.fe.add_value_map('PLT_STRUCTURE', {'map': [{str(name): str(code)} for code, name in STRUCTURE_CHOICES.items()]}, allow_null=True)
+
         # PLT_DMOY
         self.fe.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(10, 150 + 1, 5)]})
 
         # PLT_ELAG
-        elagage = {'2m':'2m', '4m': '4m', '6m': '6m'}
-        self.fe.add_value_map('PLT_ELAG', {'map': [{str(name): str(code)} for code, name in elagage.items()]})
+        self.fe.add_value_map('PLT_ELAG', {'map': [{str(name): str(code)} for code, name in ELAGAGE_CHOICES.items()]})
 
         # PLT_SANIT
-        sanitaire = {
-            'AFF_EPARS': 'Affaiblissements épars',
-            'AFF_GEN': 'Affaiblissements généralisés',
-            'DEP_EPARS': 'Dépérissements épars',
-            'DEP_GEN': 'Dépérissements généralisés'
-        }
-        self.fe.add_value_map('PLT_SANIT', {'map': [{str(name): str(code)} for code, name in sanitaire.items()]})
+        self.fe.add_value_map('PLT_SANIT', {'map': [{str(name): str(code)} for code, name in SANITAIRE_CHOICES.items()]})
 
         # PLT_CLOISO
-        cloiso = {
-            'Irrégulier': 'Irrégulier',
-            '7m': '7m',
-            '12m': '12m',
-            '15m': '15m',
-            '20m': '20m',
-            '25m': '25m',
-            '30m': '30m',
-        }
-        self.fe.add_value_map('PLT_CLOISO', {'map': [{str(name): str(code)} for code, name in cloiso.items()]})
+        self.fe.add_value_map('PLT_CLOISO', {'map': [{str(name): str(code)} for code, name in CLOISO_CHOICES.items()]})
 
         # PLT_MECA
-        mecanisable = {
-            'M': 'Mécanisable',
-            'M_SEMI': 'Semi-mécanisable',
-            'M_PARTIE': 'Mécanisable en partie',
-            'M_TREUIL': 'Mécanisable - Treuil',
-            'NM_PENTE': 'Non mécanisable - Pente',
-            'NM_ROCHE': 'Non mécanisable - Roches',
-            'NM_HUMIDE': 'Non mécanisable - Humide'
-        }
-        self.fe.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
+        self.fe.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in MECANISABLE_CHOICES.items()]})
 
         # PLT_SINISTRE 
         self.fe.set_default_value("PLT_SINISTRE", "FALSE")
@@ -222,91 +193,37 @@ class PlacetteConfigurator:
         self.fe.add_value_map('VA_HT', {'map': [{str(h): str(h)} for h in [0.5, 1, 1.5, 2, 2.5] + list(range(3, 15 + 1))]})
 
         # VA_TX_TROUEE
-        tx_trouee = {         
-            '0': '<10% (1/10)',
-            '10': '10% (1/10)',
-            '20': '20% (1/5)',
-            '25': '25% (1/4)',
-            '33': '33% (1/3)',
-            '50': '50% (1/2)',
-            '66': '66% (2/3)',
-            '100': '+ de 66% (2/3)',
-        }
-        self.fe.add_value_map('VA_TX_TROUEE', {'map': [{str(name): str(code)} for code, name in tx_trouee.items()]})
+        self.fe.add_value_map('VA_TX_TROUEE', {'map': [{str(name): str(code)} for code, name in TX_TROUEE_CHOICES.items()]})
 
         # VA_VEG_CON
-        veg_con = {
-            '2': 'Dense / Nettoyage urgent',
-            '1': 'Moyenne / Nettoyage à programmer',
-            '0': 'Maitrisée / Pas de nettoyage',
-        }
-        self.fe.add_value_map('VA_VEG_CON', {'map': [{str(name): str(code)} for code, name in veg_con.items()]})
+        self.fe.add_value_map('VA_VEG_CON', {'map': [{str(name): str(code)} for code, name in VEG_CON_CHOICES.items()]})
 
         # VA_TX_DEG
-        tx_deg = {         
-            '0': '<10% (1/10)',
-            '10': '10% (1/10)',
-            '20': '20% (1/5)',
-            '25': '25% (1/4)',
-            '33': '33% (1/3)',
-            '50': '50% (1/2)',
-            '66': '66% (2/3)',
-            '100': '+ de 66% (2/3)',
-        }
-        self.fe.add_value_map('VA_TX_DEG', {'map': [{str(name): str(code)} for code, name in tx_deg.items()]})
+        self.fe.add_value_map('VA_TX_DEG', {'map': [{str(name): str(code)} for code, name in TX_DEG_CHOICES.items()]})
 
         # VA_PROTECT
-        protect = {
-            'CLOTURE': 'Clôture',
-            'INDIV_MECA': 'Individuelle méca',
-            'INDIV_CHIMIQUE': 'Individuelle chimique',
-        }
-        self.fe.add_value_map('VA_PROTECT', {'map': [{str(name): str(code)} for code, name in protect.items()]})
+        self.fe.add_value_map('VA_PROTECT', {'map': [{str(name): str(code)} for code, name in PROTECT_CHOICES.items()]})
         # endregion
 
         # region TAILLIS
         # TSE_DENS
-        densite = {
-            'tres_dense': 'Très dense',
-            'dense': 'Dense',
-            'moyennement_dense': 'Moyennement dense',
-            'peu_dense': 'Peu dense',
-            'absent': 'Absent',
-        }
         self.fe.add_value_map(
             'TSE_DENS',
-            {'map': [{str(name): str(code)} for code, name in densite.items()]},
+            {'map': [{str(name): str(code)} for code, name in DENSITE_CHOICES.items()]},
             allow_null=True
         )
 
         # TSE_VOL
-        tse_vol = {
-            "25": "25",
-            "50": "50",
-            "75": "75",
-            "100": "100",
-            "125": "125",
-            "150": "150",
-            "200": "200",
-            "250": "250",
-            "300": "300",
-            "350": "350",
-            "400": "400",
-        }
         self.fe.add_value_map(
             'TSE_VOL',
-            {'map': [{str(name): str(code)} for code, name in tse_vol.items()]},
+            {'map': [{str(name): str(code)} for code, name in TSE_VOL_CHOICES.items()]},
             allow_null=True
         )
 
         # TSE_NATURE
-        nature = {
-            "BI_BE" : "BI/BE", 
-            "BC" : "BC"
-        }
         self.fe.add_value_map(
             'TSE_NATURE',
-            {'map': [{str(name): str(code)} for code, name in nature.items()]},
+            {'map': [{str(name): str(code)} for code, name in TSE_NATURE_CHOICES.items()]},
             allow_null=True
         )
         
