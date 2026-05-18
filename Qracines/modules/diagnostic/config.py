@@ -1,4 +1,4 @@
-stade = {
+STADE_CHOICES = {
     'RSF': 'En régé. Semis / Fourré',
     'RGP': 'En régé. Gaulis / Perchis',
     'JEU': 'Jeune',
@@ -10,7 +10,7 @@ stade = {
     'NEX': 'Non exploitable'
 }
 
-richesse = {
+RICHESSE_CHOICES = {
     'TRI': 'Très riche',
     'RRI': 'Riche',
     'MRI': 'Moy. riche',
@@ -18,7 +18,7 @@ richesse = {
     'TPA': 'Ruiné'
 }
 
-structure = {
+STRUCTURE_CHOICES = {
     "PB": "Petits Bois",
     "BM": "Bois Moyens",  
     "GB": "Gros Bois",
@@ -29,14 +29,20 @@ structure = {
     "IRR": "Irrégulière"
 }
 
-sanitaire = {
+ELAGAGE_CHOICES = {
+  '2m':'2m',
+  '4m': '4m',
+  '6m': '6m'
+}
+
+SANITAIRE_CHOICES = {
     'AFF_EPARS': 'Affaiblissements épars',
     'AFF_GEN': 'Affaiblissements généralisés',
     'DEP_EPARS': 'Dépérissements épars',
     'DEP_GEN': 'Dépérissements généralisés'
 }
 
-cloiso = {
+CLOISO_CHOICES = {
     'Irrégulier': 'Irrégulier',
     '7m': '7m',
     '12m': '12m',
@@ -46,7 +52,7 @@ cloiso = {
     '30m': '30m',
 }
 
-mecanisable = {
+MECANISABLE_CHOICES = {
     'M': 'Mécanisable',
     'M_SEMI': 'Semi-mécanisable',
     'M_PARTIE': 'Mécanisable en partie',
@@ -56,7 +62,7 @@ mecanisable = {
     'NM_HUMIDE': 'Non mécanisable - Humide'
 }
 
-tx_trouee = {         
+TX_TROUEE_CHOICES = {         
     '0': '<10% (1/10)',
     '10': '10% (1/10)',
     '20': '20% (1/5)',
@@ -67,13 +73,13 @@ tx_trouee = {
     '100': '+ de 66% (2/3)',
 }
 
-veg_con = {
+VEG_CON_CHOICES = {
     '2': 'Dense / Nettoyage urgent',
     '1': 'Moyenne / Nettoyage à programmer',
     '0': 'Maitrisée / Pas de nettoyage',
 }
 
-tx_deg = {         
+TX_DEG_CHOICES = {         
     '0': '<10% (1/10)',
     '10': '10% (1/10)',
     '20': '20% (1/5)',
@@ -84,13 +90,13 @@ tx_deg = {
     '100': '+ de 66% (2/3)',
 }
 
-protect = {
+PROTECT_CHOICES = {
     'CLOTURE': 'Clôture',
     'INDIV_MECA': 'Individuelle méca',
     'INDIV_CHIMIQUE': 'Individuelle chimique',
 }
 
-densite = {
+DENSITE_CHOICES = {
     'tres_dense': 'Très dense',
     'dense': 'Dense',
     'moyennement_dense': 'Moyennement dense',
@@ -98,7 +104,7 @@ densite = {
     'absent': 'Absent',
 }
 
-tse_vol = {
+TSE_VOL_CHOICES = {
     "25": "25",
     "50": "50",
     "75": "75",
@@ -110,4 +116,9 @@ tse_vol = {
     "300": "300",
     "350": "350",
     "400": "400",
+}
+
+TSE_NATURE_CHOICES = {
+    "BI_BE": "BI/BE",
+    "BC": "BC"
 }

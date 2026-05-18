@@ -1,7 +1,22 @@
 from qgis.core import QgsFieldConstraints
 from ....core.layer import FormBuilder, FieldEditor
 from ....utils.config import get_peuplements
-from config import stade, richesse, structure, tx_trouee, veg_con, tx_deg, protect, sanitaire, cloiso, mecanisable, densite, tse_vol
+from ..config import (
+  STADE_CHOICES,
+  RICHESSE_CHOICES, 
+  STRUCTURE_CHOICES, 
+  TX_TROUEE_CHOICES, 
+  VEG_CON_CHOICES, 
+  TX_DEG_CHOICES, 
+  PROTECT_CHOICES, 
+  ELAGAGE_CHOICES,
+  SANITAIRE_CHOICES, 
+  CLOISO_CHOICES, 
+  MECANISABLE_CHOICES, 
+  DENSITE_CHOICES, 
+  TSE_VOL_CHOICES,
+  TSE_NATURE_CHOICES
+)
 
 class PlacetteConfigurator:
 
@@ -118,7 +133,7 @@ class PlacetteConfigurator:
 
         # PLT_STADE
         field_name = 'PLT_STADE'
-        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in stade.items()]})
+        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in STADE_CHOICES.items()]})
         c_exp = f'''
         ("PLT_TYPE" IN {tuple(get_peuplements("non_forestier"))} AND ("{field_name}" IS NULL OR "{field_name}" = ''))
         OR
@@ -139,7 +154,7 @@ class PlacetteConfigurator:
         # region PEUPLEMENT
         # PLT_RICH
         field_name = 'PLT_RICH'
-        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in richesse.items()]})
+        self.fe.add_value_map(field_name, {'map': [{str(name): str(code)} for code, name in RICHESSE_CHOICES.items()]})
         c_exp = f'''
         ("PLT_TYPE" NOT IN {tuple(get_peuplements("futaie", "taillis"))})
         OR
@@ -148,23 +163,22 @@ class PlacetteConfigurator:
         self.fe.set_constraint_expression(field_name, c_exp, f"Le champ {field_name} doit être rempli pour les futaies ou taillis.")
 
         # PLT_STRUCTURE
-        self.fe.add_value_map('PLT_STRUCTURE', {'map': [{str(name): str(code)} for code, name in structure.items()]}, allow_null=True)
+        self.fe.add_value_map('PLT_STRUCTURE', {'map': [{str(name): str(code)} for code, name in STRUCTURE_CHOICES.items()]}, allow_null=True)
 
         # PLT_DMOY
         self.fe.add_value_map('PLT_DMOY', {'map': [{str(d): str(d)} for d in range(10, 150 + 1, 5)]})
 
         # PLT_ELAG
-        elagage = {'2m':'2m', '4m': '4m', '6m': '6m'}
-        self.fe.add_value_map('PLT_ELAG', {'map': [{str(name): str(code)} for code, name in elagage.items()]})
+        self.fe.add_value_map('PLT_ELAG', {'map': [{str(name): str(code)} for code, name in ELAGAGE_CHOICES.items()]})
 
         # PLT_SANIT
-        self.fe.add_value_map('PLT_SANIT', {'map': [{str(name): str(code)} for code, name in sanitaire.items()]})
+        self.fe.add_value_map('PLT_SANIT', {'map': [{str(name): str(code)} for code, name in SANITAIRE_CHOICES.items()]})
 
         # PLT_CLOISO
-        self.fe.add_value_map('PLT_CLOISO', {'map': [{str(name): str(code)} for code, name in cloiso.items()]})
+        self.fe.add_value_map('PLT_CLOISO', {'map': [{str(name): str(code)} for code, name in CLOISO_CHOICES.items()]})
 
         # PLT_MECA
-        self.fe.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in mecanisable.items()]})
+        self.fe.add_value_map('PLT_MECA', {'map': [{str(name): str(code)} for code, name in MECANISABLE_CHOICES.items()]})
 
         # PLT_SINISTRE 
         self.fe.set_default_value("PLT_SINISTRE", "FALSE")
@@ -179,41 +193,37 @@ class PlacetteConfigurator:
         self.fe.add_value_map('VA_HT', {'map': [{str(h): str(h)} for h in [0.5, 1, 1.5, 2, 2.5] + list(range(3, 15 + 1))]})
 
         # VA_TX_TROUEE
-        self.fe.add_value_map('VA_TX_TROUEE', {'map': [{str(name): str(code)} for code, name in tx_trouee.items()]})
+        self.fe.add_value_map('VA_TX_TROUEE', {'map': [{str(name): str(code)} for code, name in TX_TROUEE_CHOICES.items()]})
 
         # VA_VEG_CON
-        self.fe.add_value_map('VA_VEG_CON', {'map': [{str(name): str(code)} for code, name in veg_con.items()]})
+        self.fe.add_value_map('VA_VEG_CON', {'map': [{str(name): str(code)} for code, name in VEG_CON_CHOICES.items()]})
 
         # VA_TX_DEG
-        self.fe.add_value_map('VA_TX_DEG', {'map': [{str(name): str(code)} for code, name in tx_deg.items()]})
+        self.fe.add_value_map('VA_TX_DEG', {'map': [{str(name): str(code)} for code, name in TX_DEG_CHOICES.items()]})
 
         # VA_PROTECT
-        self.fe.add_value_map('VA_PROTECT', {'map': [{str(name): str(code)} for code, name in protect.items()]})
+        self.fe.add_value_map('VA_PROTECT', {'map': [{str(name): str(code)} for code, name in PROTECT_CHOICES.items()]})
         # endregion
 
         # region TAILLIS
         # TSE_DENS
         self.fe.add_value_map(
             'TSE_DENS',
-            {'map': [{str(name): str(code)} for code, name in densite.items()]},
+            {'map': [{str(name): str(code)} for code, name in DENSITE_CHOICES.items()]},
             allow_null=True
         )
 
         # TSE_VOL
         self.fe.add_value_map(
             'TSE_VOL',
-            {'map': [{str(name): str(code)} for code, name in tse_vol.items()]},
+            {'map': [{str(name): str(code)} for code, name in TSE_VOL_CHOICES.items()]},
             allow_null=True
         )
 
         # TSE_NATURE
-        nature = {
-            "BI_BE" : "BI/BE", 
-            "BC" : "BC"
-        }
         self.fe.add_value_map(
             'TSE_NATURE',
-            {'map': [{str(name): str(code)} for code, name in nature.items()]},
+            {'map': [{str(name): str(code)} for code, name in TSE_NATURE_CHOICES.items()]},
             allow_null=True
         )
         
