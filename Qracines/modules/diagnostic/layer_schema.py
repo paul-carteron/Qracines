@@ -10,7 +10,6 @@ DIAGNOSTIC_LAYERS = {
             ("fid", QVariant.Int),
             ("UUID", QVariant.String),
             ("COMPTEUR", QVariant.LongLong),
-            ("PLT_PARCELLE", QVariant.String),
             ("PLT_TYPE", QVariant.String),
             ("PLT_STADE", QVariant.String),
             ("PLT_AME", QVariant.String), 

@@ -31,9 +31,7 @@ class PlacetteConfigurator:
 
         # GENERAL
         general_tab = self.fb.create_tab("Général")
-        group = self.fb.create_group("", parent = general_tab, columns=2)
-        self.fb.new_add_fields(["COMPTEUR", "PLT_PARCELLE"], parent = group)
-        self.fb.new_add_fields(["PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
+        self.fb.new_add_fields(["COMPTEUR", "PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
 
         # PEUPLEMENT
         tab_peupl = self.fb.create_tab("Peuplement")
@@ -65,7 +63,6 @@ class PlacetteConfigurator:
         # ALIASES
         aliases = [
             ("COMPTEUR", "Placette n°"),
-            ("PLT_PARCELLE", "PRF/SPRF"),
             ("PLT_TYPE", "Type de peuplement"),
             ("PLT_STADE", "Stade"),
             ("PLT_AME", "Aménagement"), 
@@ -112,9 +109,6 @@ class PlacetteConfigurator:
         field_name = "COMPTEUR"
         self.fe.set_read_only(field_name)
         self.fe.set_default_value(field_name, 'count("fid") + 1')
-
-        # PLT_PARCELLE
-        self.fe.set_constraint("PLT_PARCELLE", QgsFieldConstraints.ConstraintNotNull)
 
         # PLT_TYPE
         field_name = "PLT_TYPE"
