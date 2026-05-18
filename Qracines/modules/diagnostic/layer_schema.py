@@ -6,24 +6,26 @@ DIAGNOSTIC_LAYERS = {
     "Placette": {
         "geometry": "Point",
         "fields": [
-            # placette
+            # Général
             ("fid", QVariant.Int),
             ("UUID", QVariant.String),
             ("COMPTEUR", QVariant.LongLong),
             ("PLT_PARCELLE", QVariant.String),
             ("PLT_TYPE", QVariant.String),
-            ("PLT_RICH", QVariant.String),
-            ("PLT_SINISTRE", QVariant.Bool),
-            ("PLT_ACCESS", QVariant.Bool),
             ("PLT_STADE", QVariant.String),
-            ("PLT_DMOY", QVariant.String),
-            ("PLT_ELAG", QVariant.String), 
-            ("PLT_SANIT", QVariant.String), 
-            ("PLT_CLOISO", QVariant.String), 
-            ("PLT_MECA", QVariant.String),
             ("PLT_AME", QVariant.String), 
             ("PLT_RMQ", QVariant.String), 
             ("PLT_PHOTO", QVariant.String),
+            # Peuplement
+            ("PLT_RICH", QVariant.String),
+            ("PLT_STRUCTURE", QVariant.String),
+            ("PLT_DMOY", QVariant.String),
+            ("PLT_CLOISO", QVariant.String), 
+            ("PLT_ELAG", QVariant.String), 
+            ("PLT_SANIT", QVariant.String), 
+            ("PLT_MECA", QVariant.String),
+            ("PLT_SINISTRE", QVariant.Bool),
+            ("PLT_ACCESS", QVariant.Bool),
             # Taillis
             ("TSE_DENS", QVariant.String),
             ("TSE_VOL", QVariant.String),
