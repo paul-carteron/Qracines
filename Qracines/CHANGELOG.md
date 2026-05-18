@@ -7,7 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased] - 2026-05-04
 
-#### Diagnostic
+### General
+
+- Les fichiers sélectionnés lors de la combinaison de GeoPackages sont désormais réinitialisés à chaque ouverture de l’outil
+
+### Diagnostic
 
 - Les attributs du taillis `TSE_DENS` (Densité), `TSE_VOL` (Volume) et `TSE_NATURE` (Ecplpoitabilité) acceptent maintenant une valeur <NULL> ;
 - L'attribut `PLT_PARCELLE` (Parcelle) a été supprimé, c'est le SIG qui fait foi ;
