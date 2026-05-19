@@ -2,6 +2,7 @@ import yaml
 from pathlib import Path
 from dataclasses import dataclass
 
+from Qracines.utils.message import messageLog
 from qgis.PyQt.QtWidgets import QMessageBox
 
 from .variable import get_project_variable, get_global_variable
@@ -98,6 +99,8 @@ def get_qfield_path(key):
     entry, path = _find_entry(key)
     seq_id = get_project_variable("QS2_seq_id") or None
     seq_dir = get_project_variable("QS2_seq_dir") or None
+    messageLog(f"get_qfield_path: key={key}, entry={entry}, path={path}, seq_id={seq_id}, seq_dir={seq_dir}")
+    
     if not seq_id or not seq_dir:
         QMessageBox.critical(None, "Configuration Error", "Veuillez sélectionner une forêt dans 'project_settings'.")
         return None
