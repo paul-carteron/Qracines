@@ -16,3 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Les attributs du taillis `TSE_DENS` (Densité), `TSE_VOL` (Volume) et `TSE_NATURE` (Ecplpoitabilité) acceptent maintenant une valeur <NULL> ;
 - L'attribut `PLT_PARCELLE` (Parcelle) a été supprimé, c'est le SIG qui fait foi ;
 - Ajout de l'attribut `PLT_STRUCTURE` (Structure) pour les peuplements boisés (PB, BM, GB, TGB, PB/BM, ...)
+
+### Martelage
+
+- Correction d'un bug : mise à jour du dossier sequoia lors du chargement des .gpkg
