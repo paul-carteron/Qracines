@@ -11,9 +11,9 @@ from ....core.layer import FormBuilder, FieldEditor
 
 class ArbresConfigurator:
 
-    def __init__(self, layer, param, essences, lst_hauteur, lst_diam):
+    def __init__(self, layer, lot, essences, lst_hauteur, lst_diam):
         self.layer = layer
-        self.param = param
+        self.lot = lot
         self.essences = essences
         self.lst_hauteur = lst_hauteur
         self.lst_diam = lst_diam
@@ -35,14 +35,13 @@ class ArbresConfigurator:
         tab = self.fb.create_tab("")
         group1 = self.fb.create_group("", columns=2, parent=tab)
         self.fb.new_add_fields(["COMPTEUR", "PARCELLE"], parent = group1)
-        self.fb.new_add_fields(["ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "FAVORI", "OBSERVATION", "ID_CODE"], parent = tab)
+        self.fb.new_add_fields(["ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "FAVORI", "OBSERVATION"], parent = tab)
 
         self.fb.apply()
 
     def _configure_fields(self):
 
         aliases = [
-            ("ID_CODE", "CODE"),
             ("ESSENCE_ID", "ESSENCE"),
             ("ESSENCE_SECONDAIRE_ID", "ESSENCE SECONDAIRE"),
             ("FAVORI", "⭐"),
@@ -62,7 +61,7 @@ class ArbresConfigurator:
         # region COMPTEUR
         field_name = "COMPTEUR"
         self.fe.set_read_only(field_name)
-        self.fe.set_default_value(field_name, 'count("fid") + 1')
+        self.fe.set_default_value(field_name, 'count("fid") + 1', apply_on_update=True)
         # endregion
 
         # region PARCELLE
@@ -71,7 +70,7 @@ class ArbresConfigurator:
         self.fe.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
         config = {
             'Key': 'PARCELLE',
-            'Layer': self.param.id(),
+            'Layer': self.lot.id(),
             'Value': 'PARCELLE',
             'AllowNull': False,
             'Group': 'LOT',
@@ -166,48 +165,9 @@ class ArbresConfigurator:
         self.fe.set_default_value("FAVORI", "FALSE")
         # endregion
 
-        # region ID_CODE
-        field_name = "ID_CODE"
-        self.fe.set_read_only(field_name)
-        self.fe.set_default_value(
-            field_name,
-            """
-            WITH_VARIABLE(
-                'ess',
-                get_feature(
-                    'essences',
-                    'fid',
-                    coalesce(NULLIF("ESSENCE_ID", ''), "ESSENCE_SECONDAIRE_ID")
-                ),
-                concat(
-                    "COMPTEUR",
-                    ': ',
-                    attribute(@ess, 'code'),
-                    CASE
-                        WHEN attribute(@ess, 'variation') IS NOT NULL
-                        THEN concat(' ', attribute(@ess, 'variation'))
-                        ELSE ''
-                    END,
-                    ' D', "DIAMETRE",
-                    CASE
-                        WHEN "HAUTEUR" IS NOT NULL AND "HAUTEUR" != ''
-                        THEN concat(' H', "HAUTEUR")
-                        ELSE ''
-                    END,
-                    CASE
-                        WHEN "EFFECTIF" IS NOT NULL
-                        THEN concat(' N', "EFFECTIF")
-                        ELSE ''
-                    END
-                )
-            )
-            """
-        )
-    # endregion
-
     def _set_qfield_properties(self):
 
-        threshold = 30
+        threshold = 80
 
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",

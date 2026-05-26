@@ -19,5 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Martelage
 
-- Correction d'un bug : mise à jour du dossier sequoia lors du chargement des .gpkg
-- Regroupement des parcelles par lot dans la liste déroulante 
+- Correction d'un bug : mise à jour du dossier sequoia lors du chargement des .gpkg ;
+- Regroupement des parcelles par lot dans la liste déroulante ;
+- Ajout du type de marque "Corps" uniquement ;
+- Ajout d'une couche "Lot" dédiée à la création des lots

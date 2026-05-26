@@ -3,89 +3,47 @@ from qgis.core import QgsFieldConstraints
 
 from ....core.layer import FormBuilder, FieldEditor
 
-from ...tree_marking.config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
-
 class ParamConfigurator:
 
-    def __init__(self, layer, seq_id):
+    def __init__(self, layer):
         self.layer = layer
-        self.seq_id = seq_id
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
 
     def configure(self):
         
         self._init_form()
-        self._configure_fields(self.seq_id)
+        self._configure_fields()
 
     def _init_form(self):
 
-        self.fb.init_form() 
-        self.fb.new_add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"])
-        self.fb.apply()
-
         self.fb.init_form()
-  
-        tab1 = self.fb.create_tab("Parcelle")
-        tab2 = self.fb.create_tab("Marquage")
-        tab3 = self.fb.create_tab("Dendro")
-        self.fb.new_add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE"], parent = tab1)
-        self.fb.new_add_fields(["MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"], parent = tab2)
-        self.fb.new_add_fields(["HMIN", "HMAX", "DMIN", "DMAX"], parent = tab3)
-
+        self.fb.new_add_fields(["HMIN", "HMAX", "DMIN", "DMAX"])
         self.fb.apply()
 
-    def _configure_fields(self, seq_id):
+    def _configure_fields(self):
 
         aliases = [
-            ("FOREST_ID", "Forêt"),
-            ("TYPE", "Type"),
-            ("LOT", "Lot"),
-            ("PARCELLE", "Parcelle"),
-            ("SURFACE", "Surface [ha]"),
-            ("MARQUAGE_BO", "Marquage BO"),
-            ("COULEUR_BO", "Couleur BO"),
-            ("MARQUAGE_BI", "Marquage BI"),
-            ("COULEUR_BI", "Couleur BI"),
-            ("MARQUE", "Marque"),
+            ("HMIN", "Hauteur minimale [m]"),
+            ("HMAX", "Hauteur maximale [m]"),
+            ("DMIN", "Diamètre minimal [cm]"),
+            ("DMAX", "Diamètre maximal [cm]"),
         ]
-        
+
         for field, alias in aliases:
             self.fe.set_alias(field, alias)
 
-        reuse = ["FOREST_ID", "TYPE", "LOT", "MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI", "HMIN", "HMAX", "DMIN", "DMAX"]
-        for field_name in reuse:
-            self.fe.set_reuse_last_value(field_name)
+        h_config = {'AllowNull': False, 'Max': 40, 'Min': 1, 'Precision': 0, 'Step': 1, 'Style': 'Slider'}
+        d_config = {'AllowNull': False, 'Max': 200, 'Min': 5, 'Precision': 0, 'Step': 5, 'Style': 'Slider'}
 
-        self.fe.set_default_value("FOREST_ID", f"'{seq_id}'")
-        self.fe.set_read_only("FOREST_ID")
-
-        self.fe.set_constraint("TYPE", QgsFieldConstraints.ConstraintNotNull)
-        self.fe.set_constraint("LOT", QgsFieldConstraints.ConstraintNotNull)
-        self.fe.set_constraint("PARCELLE", QgsFieldConstraints.ConstraintNotNull)
-
-        self.fe.set_constraint("SURFACE", QgsFieldConstraints.ConstraintNotNull)
-        self.fe.add_range("SURFACE", {'AllowNull': False, 'Max': 1000, 'Min': 0, 'Precision': 2, 'Step': 0.01})
-        self.fe.set_constraint_expression("SURFACE", f' SURFACE > 0', "La surface doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
-
-        self.fe.add_value_map("TYPE", {'map': [{v: k} for k, v in TYPE_CHOICES.items()]})
-
-        for field_name in ["MARQUAGE_BO", "MARQUAGE_BI"]:
-            self.fe.add_value_map(field_name, {'map': [{v: k} for k, v in MARQUAGE_CHOICES.items()]})
-
-        for field_name in ["COULEUR_BO", "COULEUR_BI"]:
-            self.fe.add_value_map(field_name, {'map': [{v: k} for k, v in COULEUR_CHOICES.items()]})
-
-        self.fe.add_value_map("MARQUE", {'map': [{v: k} for k, v in MARTEAU_CHOICES.items()]})
-
-        self.fe.add_range("HMIN", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
+        self.fe.add_range("HMIN", h_config)
         self.fe.set_default_value("HMIN", "3")
                 
-        self.fe.add_range("HMAX", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
+        self.fe.add_range("HMAX", h_config)
         self.fe.set_default_value("HMAX", "15")
 
-        self.fe.add_range("DMIN", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
+        self.fe.add_range("DMIN", d_config)
         self.fe.set_default_value("DMIN", "30")
 
-        self.fe.add_range("DMAX", {'AllowNull': False, 'Max': 200, 'Min': 0, 'Precision': 0, 'Step': 5})
+        self.fe.add_range("DMAX", d_config)
         self.fe.set_default_value("DMAX", "100")

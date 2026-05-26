@@ -65,7 +65,7 @@ class PlacetteConfigurator:
         # COMPTEUR
         field_name = "COMPTEUR"
         self.fe.set_read_only(field_name)
-        self.fe.set_default_value(field_name, 'count("fid") + 1')
+        self.fe.set_default_value(field_name, 'count("fid") + 1', apply_on_update=True)
 
         # PLTM_PARCELLE & PLTM_STRATE
         expression = '"PLTM_PARCELLE" is not NULL OR "PLTM_STRATE" is not NULL'

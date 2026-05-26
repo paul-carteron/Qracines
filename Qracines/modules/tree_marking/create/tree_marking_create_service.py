@@ -5,15 +5,15 @@ from qgis.utils import iface
 from qgis.PyQt.QtCore import QVariant
 
 from ....core.layer.factory import LayerFactory
-from ....core.db.manager import DatabaseManager
 
 from ....utils.layers import load_gpkg
 from ....utils.utils import fold, unfold
 from ....utils.essence import load_essences
 from ..layer_schema import TREE_MARKING_LAYERS
 
-from ..configurators.param import ParamConfigurator
+from ..configurators.lot import LotConfigurator
 from ..configurators.arbres import ArbresConfigurator
+from ..configurators.param import ParamConfigurator
 
 _SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}
 
@@ -45,20 +45,56 @@ class TreeMarkingCreateService:
         layers = load_gpkg(gpkg_path, group_name="INVENTAIRE")
 
         param = layers["Param"]
+        lot = layers["Lot"]
         arbres = layers["Arbres"]
         essences = layers["Essences"]
         lst_hauteur = layers["lst_hauteur"]
         lst_diam = layers["lst_diam"]
 
-        ParamConfigurator(param, self.seq_id).configure()
-        ArbresConfigurator(arbres, param, essences, lst_hauteur, lst_diam).configure()
+        ParamConfigurator(param).configure()
+        LotConfigurator(lot, seq_id=self.seq_id).configure()
+        ArbresConfigurator(arbres, lot, essences, lst_hauteur, lst_diam).configure()
 
         # Make layer private
         lst_hauteur.setFlags(lst_hauteur.flags() | QgsMapLayer.Private)
         lst_diam.setFlags(lst_diam.flags() | QgsMapLayer.Private)
 
-        essences.setDisplayExpression('''CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation"''')
-        param.setDisplayExpression('"PARCELLE" || "SURFACE"')
+        essences.setDisplayExpression(''' CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation" ''')
+        lot.setDisplayExpression(''' 'LOT' || "LOT" || ' - ' || 'PRF' || "PARCELLE" ||  ': '  || "SURFACE" || ' ha' ''')
+        param.setDisplayExpression(''' 'H' || "HMIN" || '-' || "HMAX" || 'D' || "DMIN" || '-' || "DMAX" ''')
+        arbres.setDisplayExpression(
+            """
+            WITH_VARIABLE(
+                'ess',
+                get_feature(
+                    'essences',
+                    'fid',
+                    coalesce(NULLIF("ESSENCE_ID", ''), "ESSENCE_SECONDAIRE_ID")
+                ),
+                concat(
+                    "COMPTEUR",
+                    ': ',
+                    attribute(@ess, 'code'),
+                    CASE
+                        WHEN attribute(@ess, 'variation') IS NOT NULL
+                        THEN concat(' ', attribute(@ess, 'variation'))
+                        ELSE ''
+                    END,
+                    ' D', "DIAMETRE",
+                    CASE
+                        WHEN "HAUTEUR" IS NOT NULL AND "HAUTEUR" != ''
+                        THEN concat(' H', "HAUTEUR")
+                        ELSE ''
+                    END,
+                    CASE
+                        WHEN "EFFECTIF" IS NOT NULL
+                        THEN concat(' N', "EFFECTIF")
+                        ELSE ''
+                    END
+                )
+            )
+            """
+        )
 
         try:
             self.raster_controller.load_selected_rasters(self.seq_dir)
@@ -80,6 +116,7 @@ class TreeMarkingCreateService:
         self.project.addMapLayers(list(layers.values()), addToLegend=False)
 
         self._init_essences(essences)
+        self._init_param(layers["Param"])
         self._init_range_layer(layers["lst_hauteur"], 0, 50)
         self._init_range_layer(layers["lst_diam"], 5, 150, 5)
 
@@ -122,6 +159,23 @@ class TreeMarkingCreateService:
         provider.addFeatures(feats)
         layer.commitChanges()
 
+    def _init_param(self, param):
+        if not param.isEditable():
+            param.startEditing()
+
+        provider = param.dataProvider()
+
+        provider.deleteFeatures([f.id() for f in param.getFeatures()])
+
+        f = QgsFeature(param.fields())
+        f["DMIN"] = self.dendro['dmin']
+        f["DMAX"] = self.dendro['dmax']
+        f["HMIN"] = self.dendro['hmin']
+        f["HMAX"] = self.dendro['hmax']
+
+        provider.addFeature(f)
+        param.commitChanges()
+
     def _package_layers(self, layers, outpath=QgsProcessing.TEMPORARY_OUTPUT):
 
         result = processing.run(
@@ -142,3 +196,4 @@ class TreeMarkingCreateService:
             self.project.removeMapLayer(layer.id())
 
         return gpkg_path
+    

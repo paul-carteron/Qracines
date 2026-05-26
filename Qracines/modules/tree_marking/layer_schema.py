@@ -2,7 +2,7 @@ from qgis.PyQt.QtCore import QMetaType
 
 TREE_MARKING_LAYERS = {
 
-    "Param": {
+    "Lot": {
         "fields": [
             ("FOREST_ID", QMetaType.Type.QString),
             ("TYPE", QMetaType.Type.QString),
@@ -14,6 +14,11 @@ TREE_MARKING_LAYERS = {
             ("MARQUAGE_BI", QMetaType.Type.QString),
             ("COULEUR_BI", QMetaType.Type.QString),
             ("MARQUE", QMetaType.Type.QString),
+        ],
+    },
+
+    "Param": {
+        "fields": [
             ("HMIN", QMetaType.Type.Int),
             ("HMAX", QMetaType.Type.Int),
             ("DMIN", QMetaType.Type.Int),
@@ -24,7 +29,6 @@ TREE_MARKING_LAYERS = {
     "Arbres": {
         "geometry": "Point",
         "fields": [
-            ("ID_CODE", QMetaType.Type.QString),
             ("UUID", QMetaType.Type.QString),
             ("PARCELLE", QMetaType.Type.QString),
             ("ESSENCE_ID", QMetaType.Type.QString),
