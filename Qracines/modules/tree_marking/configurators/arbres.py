@@ -73,7 +73,10 @@ class ArbresConfigurator:
             'Key': 'PARCELLE',
             'Layer': self.param.id(),
             'Value': 'PARCELLE',
-            'AllowNull': False
+            'AllowNull': False,
+            'Group': 'LOT',
+            'DisplayGroupName': True
+
         }
         self.fe.add_value_relation(field_name, config)
         # endregion

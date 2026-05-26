@@ -1,53 +1,52 @@
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QMetaType
 
 TREE_MARKING_LAYERS = {
 
     "Param": {
         "fields": [
-        ("FOREST_ID", QVariant.String),
-        ("TYPE", QVariant.String),
-        ("LOT", QVariant.String),
-        ("PARCELLE", QVariant.String),
-        ("SURFACE", QVariant.Double),
-        ("MARQUAGE_BO", QVariant.String),
-        ("COULEUR_BO", QVariant.String),
-        ("MARQUAGE_BI", QVariant.String),
-        ("COULEUR_BI", QVariant.String),
-        ("MARQUE", QVariant.String),
-        ("HMIN", QVariant.Int),
-        ("HMAX", QVariant.Int),
-        ("DMIN", QVariant.Int),
-        ("DMAX", QVariant.Int),
+            ("FOREST_ID", QMetaType.Type.QString),
+            ("TYPE", QMetaType.Type.QString),
+            ("LOT", QMetaType.Type.QString),
+            ("PARCELLE", QMetaType.Type.QString),
+            ("SURFACE", QMetaType.Type.Double),
+            ("MARQUAGE_BO", QMetaType.Type.QString),
+            ("COULEUR_BO", QMetaType.Type.QString),
+            ("MARQUAGE_BI", QMetaType.Type.QString),
+            ("COULEUR_BI", QMetaType.Type.QString),
+            ("MARQUE", QMetaType.Type.QString),
+            ("HMIN", QMetaType.Type.Int),
+            ("HMAX", QMetaType.Type.Int),
+            ("DMIN", QMetaType.Type.Int),
+            ("DMAX", QMetaType.Type.Int),
         ],
     },
 
     "Arbres": {
         "geometry": "Point",
         "fields": [
-        ("ID_CODE", QVariant.String),
-        ("UUID", QVariant.String),
-        ("PARCELLE", QVariant.String),
-        ("ESSENCE_ID", QVariant.String),
-        ("ESSENCE_SECONDAIRE_ID", QVariant.String),
-        ("DIAMETRE", QVariant.Int),
-        ("EFFECTIF", QVariant.LongLong),
-        ("HAUTEUR", QVariant.Int),
-        ("FAVORI", QVariant.Bool),
-        ("OBSERVATION", QVariant.String),
-        ("COMPTEUR", QVariant.LongLong),
+            ("ID_CODE", QMetaType.Type.QString),
+            ("UUID", QMetaType.Type.QString),
+            ("PARCELLE", QMetaType.Type.QString),
+            ("ESSENCE_ID", QMetaType.Type.QString),
+            ("ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
+            ("DIAMETRE", QMetaType.Type.Int),
+            ("EFFECTIF", QMetaType.Type.LongLong),
+            ("HAUTEUR", QMetaType.Type.Int),
+            ("FAVORI", QMetaType.Type.Bool),
+            ("OBSERVATION", QMetaType.Type.QString),
+            ("COMPTEUR", QMetaType.Type.LongLong),
         ],
     },
 
     "lst_hauteur": {
         "fields": [
-        ("VALEUR", QVariant.Int),
+            ("VALEUR", QMetaType.Type.Int),
         ],
     },
 
     "lst_diam": {
         "fields": [
-        ("VALEUR", QVariant.Int),
+            ("VALEUR", QMetaType.Type.Int),
         ],
     },
 }
-       
