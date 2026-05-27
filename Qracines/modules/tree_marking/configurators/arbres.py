@@ -167,7 +167,7 @@ class ArbresConfigurator:
 
     def _set_qfield_properties(self):
 
-        threshold = 80
+        threshold = 70
 
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",
