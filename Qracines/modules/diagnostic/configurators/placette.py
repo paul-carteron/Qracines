@@ -123,7 +123,7 @@ class PlacetteConfigurator:
         # COMPTEUR
         field_name = "COMPTEUR"
         self.fe.set_read_only(field_name)
-        self.fe.set_default_value(field_name, 'count("fid") + 1')
+        self.fe.set_default_value(field_name, 'count("fid") + 1', apply_on_update=True)
 
         # PLT_TYPE
         field_name = "PLT_TYPE"

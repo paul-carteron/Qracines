@@ -34,7 +34,7 @@ class FieldEditor:
             self.layer.updateFeature(feature)
         self.layer.commitChanges()
 
-    def set_default_value(self, field_name, default_value, apply_on_update=True):
+    def set_default_value(self, field_name, default_value, apply_on_update=False):
         index = self._get_field_index(field_name)
         self.layer.setDefaultValueDefinition(index, QgsDefaultValue(default_value, apply_on_update))
 

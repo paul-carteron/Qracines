@@ -6,11 +6,9 @@ from PyQt5.QtWidgets import QMessageBox, QDialog
 from qgis.PyQt import uic
 
 # Import from utils folder
-from ....utils.layers import load_gpkg
 from ....utils.processing import calculate_essence_id, merge_with_ess, save_as_xlsx
 from ....utils.ui import GpkgLoader
 from ....utils.config import get_new_to_old, get_qfield_path
-from ....utils.message import messageLog
 
 from ..config import TYPE_CHOICES, MARQUAGE_CHOICES, COULEUR_CHOICES, MARTEAU_CHOICES
 from ..layer_schema import TREE_MARKING_LAYERS
@@ -77,7 +75,7 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
             )
         return f"coalesce(map({items})[\"{field}\"], \"{field}\")"
 
-    def format_param(self):
+    def format_lot(self):
 
         type_expr = self.build_qgis_map_expr("TYPE", TYPE_CHOICES)
         marquage_bo_expr = self.build_qgis_map_expr("MARQUAGE_BO", MARQUAGE_CHOICES)
@@ -86,8 +84,8 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
         couleur_bi_expr = self.build_qgis_map_expr("COULEUR_BI", COULEUR_CHOICES)
         marteau_expr = self.build_qgis_map_expr("MARTEAU", MARTEAU_CHOICES)
 
-        formated_param = processing.run("qgis:refactorfields", {
-                'INPUT': self.param,
+        formated_lot = processing.run("qgis:refactorfields", {
+                'INPUT': self.lot,
                 'FIELDS_MAPPING': [
                     {'expression': '"PARCELLE"',    'name': 'PARCELLE',    'type': 10, 'length': 50, 'precision': 0},
                     {'expression': '"SURFACE"',     'name': 'SURFACE',     'type': 2,  'length': 10, 'precision': 4},
@@ -102,9 +100,9 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
                 'OUTPUT': 'memory:'
             })['OUTPUT']
 
-        formated_param.setName("parcelles")
+        formated_lot.setName("parcelles")
 
-        return formated_param
+        return formated_lot
 
     def format_arbres(self, for_invpap = True):
 
@@ -232,10 +230,10 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
 
             self.ess = merged_layers["Essences"]
             self.arbres = merged_layers["Arbres"]
-            self.param = merged_layers["Param"]
+            self.lot = merged_layers["lot"]
 
             formated_arbres = self.format_arbres()
-            formated_param = self.format_param()
+            formated_lot = self.format_lot()
             ess_summary = self.compute_ess_summary()
 
             merged_layers[ess_summary.name()] = ess_summary
@@ -256,7 +254,7 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
             unique_ess.setName("essence")
 
             out_path = get_qfield_path("inventaire_synthese")
-            save_as_xlsx(formated_param, unique_ess, formated_arbres, path = out_path)
+            save_as_xlsx(formated_lot, unique_ess, formated_arbres, path = out_path)
             
             QMessageBox.information(self, "Succès",  f"Géopackage(s) compilé(s) et extrait(s) dans :\n{out_path}")
             

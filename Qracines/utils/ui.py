@@ -5,7 +5,7 @@ from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsMarkerSymbol, QgsV
 from qgis.gui import QgsFileWidget
 from qgis.utils import iface
 
-from .variable import get_project_variable
+from .variable import get_project_variable, get_global_variable
 from .qfield import package_for_qfield
 from .utils import fold
 from .processing import create_grid
@@ -67,7 +67,7 @@ class RasterController(UIBinderMixin):
 
         if not seq_dir:
             raise RuntimeError("Pas de forêt sélectionnée, impossible de charger des rasters")
-    
+
         asked_keys = [k for k, cb in self.cbs.items() if cb.isChecked()]
         messageLog(f"[RASTER CONTROLLER] asked_keys: {asked_keys}")
         if not asked_keys:
@@ -78,9 +78,16 @@ class RasterController(UIBinderMixin):
             group = QgsProject.instance().layerTreeRoot().addGroup(group_name)
 
         messageLog(f"[RASTER CONTROLLER] group: {group}")
+        style_folder = get_global_variable("QS2_styles_directory")
         for key in asked_keys:
             try:
-                loaded = seq_read(key, seq_dir=seq_dir, add_to_project=True, group=group)
+                loaded = seq_read(
+                    key,
+                    seq_dir=seq_dir,
+                    add_to_project=True,
+                    group=group,
+                    style_folder=style_folder
+                )
             except Exception as e:
                 continue
 

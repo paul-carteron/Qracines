@@ -1,81 +1,80 @@
-
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QMetaType
 
 EXPERTISE_LAYERS = {
   
     "placette": {
         "geometry": "Point",
         "fields": [
-            ("UUID", QVariant.String),
-            ("COMPTEUR", QVariant.LongLong),
-            ("PLA_RMQ", QVariant.String),
+            ("UUID", QMetaType.Type.QString),
+            ("COMPTEUR", QMetaType.Type.LongLong),
+            ("PLA_RMQ", QMetaType.Type.QString),
             # Peuplement
-            ("PLTM_PARCELLE", QVariant.String),
-            ("PLTM_STRATE", QVariant.String),
-            ("PLTM_TYPE", QVariant.String),
+            ("PLTM_PARCELLE", QMetaType.Type.QString),
+            ("PLTM_STRATE", QMetaType.Type.QString),
+            ("PLTM_TYPE", QMetaType.Type.QString),
             # Taillis
-            ("TSE_STERE_HA", QVariant.String),
+            ("TSE_STERE_HA", QMetaType.Type.QString),
         ],
     },
 
     "transect": {
         "geometry": "Point",
         "fields": [
-            ("UUID", QVariant.String),
-            ("TR_PARCELLE", QVariant.String),
-            ("TR_STRATE", QVariant.String),
-            ("TR_ESSENCE_ID", QVariant.String),
-            ("TR_ESSENCE_SECONDAIRE_ID", QVariant.String),
-            ("TR_DIAMETRE", QVariant.String),
-            ("TR_EFFECTIF", QVariant.LongLong),
-            ("TR_HAUTEUR", QVariant.String),
+            ("UUID", QMetaType.Type.QString),
+            ("TR_PARCELLE", QMetaType.Type.QString),
+            ("TR_STRATE", QMetaType.Type.QString),
+            ("TR_ESSENCE_ID", QMetaType.Type.QString),
+            ("TR_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
+            ("TR_DIAMETRE", QMetaType.Type.QString),
+            ("TR_EFFECTIF", QMetaType.Type.LongLong),
+            ("TR_HAUTEUR", QMetaType.Type.QString),
         ],
     },
 
     "limite": {
         "geometry": "LineString",
         "fields": [
-            ("LIMITE_TYPE", QVariant.String), 
-            ("LIMITE_RMQ", QVariant.String)
+            ("LIMITE_TYPE", QMetaType.Type.QString), 
+            ("LIMITE_RMQ", QMetaType.Type.QString),
         ],
     },
 
     "gha": {
         "fields": [
-            ("UUID", QVariant.String),
-            ("GHA_ESSENCE_ID", QVariant.String),
-            ("GHA_ESSENCE_SECONDAIRE_ID", QVariant.String),
-            ("GHA_G", QVariant.Int),
+            ("UUID", QMetaType.Type.QString),
+            ("GHA_ESSENCE_ID", QMetaType.Type.QString),
+            ("GHA_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
+            ("GHA_G", QMetaType.Type.Int),
         ],
     },
 
     "tse": {
         "fields": [
-            ("UUID", QVariant.String),
-            ("TSE_ESSENCE_ID", QVariant.String),
-            ("TSE_ESSENCE_SECONDAIRE_ID", QVariant.String),
+            ("UUID", QMetaType.Type.QString),
+            ("TSE_ESSENCE_ID", QMetaType.Type.QString),
+            ("TSE_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
         ],
     },
 
     "va": {
         "fields": [
-            ("UUID", QVariant.String),
-            ("VA_ESSENCE_ID", QVariant.String),
-            ("VA_ESSENCE_SECONDAIRE_ID", QVariant.String),
-            ("VA_AGE_APP", QVariant.LongLong),
-            ("VA_TX_TROUEE", QVariant.LongLong),
-            ("VA_TX_HA", QVariant.Double),
-            ("CUMUL_TX_VA", QVariant.Double)
+            ("UUID", QMetaType.Type.QString),
+            ("VA_ESSENCE_ID", QMetaType.Type.QString),
+            ("VA_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
+            ("VA_AGE_APP", QMetaType.Type.LongLong),
+            ("VA_TX_TROUEE", QMetaType.Type.LongLong),
+            ("VA_TX_HA", QMetaType.Type.Double),
+            ("CUMUL_TX_VA", QMetaType.Type.Double),
         ],
     },
 
     "reg": {
         "fields": [
-            ("UUID", QVariant.String),
-            ("REG_ESSENCE_ID", QVariant.String),
-            ("REG_ESSENCE_SECONDAIRE_ID", QVariant.String),
-            ("REG_STADE", QVariant.String),
-            ("REG_ETAT", QVariant.String),
+            ("UUID", QMetaType.Type.QString),
+            ("REG_ESSENCE_ID", QMetaType.Type.QString),
+            ("REG_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
+            ("REG_STADE", QMetaType.Type.QString),
+            ("REG_ETAT", QMetaType.Type.QString),
         ],
     },
 }

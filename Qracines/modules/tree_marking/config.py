@@ -31,7 +31,8 @@ COULEUR_CHOICES = {
 }
 
 MARTEAU_CHOICES = {
-    "MART_COR_PIED": "Corps et pied",
+    "MART_COR": "Corps",
     "MART_PIE": "Pied",
-    "MART_COR": "Aucune"
+    "MART_COR_PIED": "Corps et pied",
+    "NO_MART": "Aucune"
 }

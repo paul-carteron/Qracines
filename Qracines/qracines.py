@@ -126,9 +126,8 @@ class Qsequoia2Racines:
         if not self._check_seq_dir():
             return None
 
-        if not self.diagnostic_load:
-            self.diagnostic_load = DiagnosticLoad()
-        self.diagnostic_load.load()
+        dialog = DiagnosticLoad()
+        dialog.load()
         
     # endregion
         
@@ -159,9 +158,9 @@ class Qsequoia2Racines:
         dialog.exec_()
 
     def open_tree_marking_load(self):
-        if not self.tree_marking_load:
-            self.tree_marking_load = TreeMarkingLoad()
-        self.tree_marking_load.load()
+        dialog = TreeMarkingLoad()
+        dialog.load()
+
     # endregion
 
     # region EXPERTISE
@@ -186,9 +185,8 @@ class Qsequoia2Racines:
         if not self._check_seq_dir():
             return None
         
-        if not self.expertise_load:
-            self.expertise_load = ExpertiseLoad()
-        self.expertise_load.load()
+        dialog = ExpertiseLoad()
+        dialog.load()
         
     # endregion
     

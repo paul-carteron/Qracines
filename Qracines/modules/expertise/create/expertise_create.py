@@ -40,7 +40,7 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
             raster_checkbox={
                 #   'key':     'checkbox_name',
                 'r.seq.plt': 'cb_plt',
-                'r.alt.mnh': 'cb_mnh',
+                'r.alt.mnh.lidar': 'cb_mnh',
                 'r.ortho.irc': 'cb_irc',
                 'r.ortho.rgb': 'cb_rgb',
             })
