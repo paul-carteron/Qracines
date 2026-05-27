@@ -14,6 +14,7 @@ from ..layer_schema import TREE_MARKING_LAYERS
 from ..configurators.lot import LotConfigurator
 from ..configurators.arbres import ArbresConfigurator
 from ..configurators.param import ParamConfigurator
+from ..configurators.essences import EssencesConfigurator
 
 _SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}
 
@@ -54,6 +55,7 @@ class TreeMarkingCreateService:
         ParamConfigurator(param).configure()
         LotConfigurator(lot, seq_id=self.seq_id).configure()
         ArbresConfigurator(arbres, lot, essences, lst_hauteur, lst_diam).configure()
+        EssencesConfigurator(essences).configure()
 
         # Make layer private
         lst_hauteur.setFlags(lst_hauteur.flags() | QgsMapLayer.Private)
