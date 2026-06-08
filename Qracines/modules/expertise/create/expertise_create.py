@@ -37,13 +37,16 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
 
         self.raster_controller = RasterController(
             ui=self,
-            raster_checkbox={
+             raster_checkbox={
                 #   'key':     'checkbox_name',
                 'r.seq.plt': 'cb_plt',
-                'r.alt.mnh.lidar': 'cb_mnh',
-                'r.alt.ombrage.mnh': 'cb_ombrage',
                 'r.ortho.irc': 'cb_irc',
                 'r.ortho.rgb': 'cb_rgb',
+                'r.alt.mnh.lidar': 'cb_mnh_lidar',
+                'r.alt.mnh.rge': 'cb_mnh_rge',
+                'r.alt.ombrage.mnh': 'cb_ombrage_mnh',
+                'r.alt.mnh.lidar': 'cb_mnh_lidar',
+                'r.alt.mnt.rge': 'cb_mnt_rge',
             })
         
 

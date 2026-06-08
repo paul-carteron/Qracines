@@ -44,9 +44,13 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
             raster_checkbox={
                 #   'key':     'checkbox_name',
                 'r.seq.plt': 'cb_plt',
-                'r.alt.mnh': 'cb_mnh',
                 'r.ortho.irc': 'cb_irc',
                 'r.ortho.rgb': 'cb_rgb',
+                'r.alt.mnh.lidar': 'cb_mnh_lidar',
+                'r.alt.mnh.rge': 'cb_mnh_rge',
+                'r.alt.ombrage.mnh': 'cb_ombrage_mnh',
+                'r.alt.mnh.lidar': 'cb_mnh_lidar',
+                'r.alt.mnt.rge': 'cb_mnt_rge',
             })
         
         self.packager = QfieldPackager(
@@ -74,7 +78,7 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
         try:
             svc.run()
 
-            msg = "Diagnodtic complète !"
+            msg = "Diagnostic complète !"
             if self.packager.is_valid():
                 packaged_dir = self.packager.package(prefix="DIAG", seq_id=self.seq_id)
                 msg += f"\nProjet packagé dans :\n{packaged_dir}"
