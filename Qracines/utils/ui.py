@@ -89,6 +89,7 @@ class RasterController(UIBinderMixin):
                     style_folder=style_folder
                 )
             except Exception as e:
+                messageLog(f"[RASTER CONTROLLER] Error occurred while loading {key}: {e}")
                 continue
 
         if group:

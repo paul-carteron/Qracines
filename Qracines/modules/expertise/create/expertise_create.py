@@ -45,7 +45,7 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
                 'r.alt.mnh.lidar': 'cb_mnh_lidar',
                 'r.alt.mnh.rge': 'cb_mnh_rge',
                 'r.alt.ombrage.mnh': 'cb_ombrage_mnh',
-                'r.alt.mnh.lidar': 'cb_mnh_lidar',
+                'r.alt.mnt.lidar': 'cb_mnt_lidar',
                 'r.alt.mnt.rge': 'cb_mnt_rge',
             })
         
