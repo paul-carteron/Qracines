@@ -230,7 +230,7 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
 
             self.ess = merged_layers["Essences"]
             self.arbres = merged_layers["Arbres"]
-            self.lot = merged_layers["lot"]
+            self.lot = merged_layers["Lot"]
 
             formated_arbres = self.format_arbres()
             formated_lot = self.format_lot()
