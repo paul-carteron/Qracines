@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-## [V1.0.10 - Unreleased] - 2026-06-08
+## [V1.0.10] - 2026-06-08
 
 - Ajout de la couche ombrage dans expertise
 - Ajout de la couche ombrage dans tree_marking
+- Fix bug lors de la combinaison des inventaire
 
 ## [V1.0.9] - 2026-05-04
 
