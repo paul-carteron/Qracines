@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-## [V1.0.10] - 2026-06-08
+## [V1.0.13] - 2026-06-08
+
+- Automatisation de la symbology lors de l'import des données de martelage
+
+## [V1.0.12] - 2026-06-08
 
 - Ajout de la couche ombrage dans expertise
 - Ajout de la couche ombrage dans tree_marking
