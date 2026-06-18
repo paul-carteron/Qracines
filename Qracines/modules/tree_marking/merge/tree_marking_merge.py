@@ -165,65 +165,6 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
 
         return formated_arbres
 
-    def compute_ess_summary(self):
-
-        ess_id = 'coalesce(nullif("ESSENCE_ID", \'\'), nullif("ESSENCE_SECONDAIRE_ID", \'\'))'
-
-        ess_summary = processing.run(
-            "native:aggregate",
-            {
-                'INPUT': self.arbres,
-                'GROUP_BY': ess_id,
-                'AGGREGATES': [
-                    {
-                        'aggregate': 'first_value',
-                        'input': ess_id,
-                        'name': 'ESSENCE_ID',
-                        'type': 4,
-                        'length': 0,
-                        'precision': 0
-                    },
-                    {
-                        'aggregate': 'sum',
-                        'input': '"EFFECTIF"',
-                        'name': 'NB',
-                        'type': 4,
-                        'length': 0,
-                        'precision': 0
-                    },
-                    {
-                        'aggregate': 'minimum',
-                        'input': 'to_int("DIAMETRE")',
-                        'name': 'MIN',
-                        'type': 4,
-                        'length': 0,
-                        'precision': 0
-                    },
-                    {
-                        'aggregate': 'maximum',
-                        'input': 'to_int("DIAMETRE")',
-                        'name': 'MAX',
-                        'type': 4,
-                        'length': 0,
-                        'precision': 0
-                    },
-                ],
-                'OUTPUT': 'TEMPORARY_OUTPUT'
-            }
-        )['OUTPUT']
-
-        ess_summary = processing.run(
-            "native:dropgeometries",
-            {
-                'INPUT': ess_summary,
-                'OUTPUT': 'TEMPORARY_OUTPUT'
-            }
-        )['OUTPUT']
-
-        ess_summary.setName("ess_summary")
-
-        return ess_summary
-
     def accept(self):
         try:
             merged_layers = self.merge_files()
@@ -234,9 +175,6 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
 
             formated_arbres = self.format_arbres()
             formated_lot = self.format_lot()
-            ess_summary = self.compute_ess_summary()
-
-            merged_layers[ess_summary.name()] = ess_summary
 
             gpkg_path = get_qfield_path("inventaire")
             processing.run("native:package", {
