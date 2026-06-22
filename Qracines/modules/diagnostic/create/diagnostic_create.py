@@ -6,9 +6,8 @@ from qgis.utils import iface
 
 from .diagnostic_create_service import DiagnosticCreateService
 from ....utils.config import get_racines_path
-from ....utils.utils import clear_project
-from ....utils.ui import RasterController, QfieldPackager, GridController, DendroController
-from ....utils.variable import get_project_variable
+from ....utils.ui import SeqLayerSelector, QfieldPackager, GridController, DendroController
+from ....utils.variable import get_project_variable, get_global_variable
 
 from pathlib import Path
 FORM_CLASS, _ = uic.loadUiType(
@@ -22,6 +21,7 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
 
         self.seq_dir = get_project_variable("QS2_seq_dir") or None
         self.seq_id = get_project_variable("QS2_seq_id") or None
+        self.style_dir = get_global_variable("QS2_styles_directory") or None
 
         self.dendro_controller = DendroController(
             self,
@@ -39,19 +39,35 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
             points_per_ha_ui = 'dsp_points_per_ha'
         )
 
-        self.raster_controller = RasterController(
-            ui=self,
-            raster_checkbox={
-                #   'key':     'checkbox_name',
-                'r.seq.plt': 'cb_plt',
-                'r.ortho.irc': 'cb_irc',
-                'r.ortho.rgb': 'cb_rgb',
-                'r.alt.mnh.lidar': 'cb_mnh_lidar',
-                'r.alt.mnh.rge': 'cb_mnh_rge',
-                'r.alt.ombrage.mnh': 'cb_ombrage_mnh',
-                'r.alt.mnh.lidar': 'cb_mnh_lidar',
-                'r.alt.mnt.rge': 'cb_mnt_rge',
-            })
+        self.seq_vect_selector = SeqLayerSelector(
+            ui = self,
+            seq_dir = self.seq_dir,
+            choices="lw_seq_vect", selected="lw_selected_seq_vect",
+            add="pb_add_seq_vect", remove="pb_remove_seq_vect",
+            filter="le_filter_seq_vect",
+            type = "vect",
+            default_keys = [
+                'v.seq.ua.poly',
+                'v.infra.point', 'v.infra.line', 'v.infra.poly',
+                'v.vege.line',
+                'v.hydro.point', 'v.hydro.line', 'v.hydro.poly',
+                'v.road.line'
+            ]
+        )
+
+        self.seq_rast_selector = SeqLayerSelector(
+            ui = self,
+            seq_dir = self.seq_dir,
+            choices="lw_seq_rast", selected="lw_selected_seq_rast",
+            add="pb_add_seq_rast", remove="pb_remove_seq_rast",
+            filter="le_filter_seq_rast",
+            type = "rast",
+            default_keys = [
+                "r.seq.plt", "r.ortho.irc",
+                "r.alt.mnh.lidar", "r.alt.mnh.rge", "r.alt.ombrage.mnh",
+                "r.alt.mnt.lidar", "r.alt.mnt.rge"
+            ]
+        )
         
         self.packager = QfieldPackager(
             self,
@@ -70,9 +86,11 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
 
         svc = DiagnosticCreateService(
             seq_dir = self.seq_dir,
+            style_dir = self.style_dir,
+            seq_vect_keys = self.seq_vect_selector.selected_keys(),
+            seq_rast_keys = self.seq_rast_selector.selected_keys(),
             dendro_controller = self.dendro_controller,
             grid_controller = self.grid_controller,
-            raster_controller = self.raster_controller
         )
 
         try:

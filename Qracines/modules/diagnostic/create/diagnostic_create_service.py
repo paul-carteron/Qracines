@@ -1,4 +1,5 @@
 import processing
+from Qracines.utils.message import messageLog
 
 from qgis.core import QgsProject, Qgis, QgsProcessing, QgsMapLayer, QgsWkbTypes
 from qgis.utils import iface
@@ -8,7 +9,6 @@ from ....core.db.manager import DatabaseManager
 
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.utils import fold, unfold
-from ....utils.variable import get_global_variable
 from ....utils.essence import load_essences
 
 from ..layer_schema import DIAGNOSTIC_LAYERS
@@ -29,20 +29,24 @@ class DiagnosticCreateService:
     def __init__(
         self,
         seq_dir,
+        style_dir,
         dendro_controller,
         grid_controller,
-        raster_controller
+        seq_vect_keys: list,
+        seq_rast_keys: list,
     ):
 
         self.iface = iface
         self.project = QgsProject.instance()
 
         self.seq_dir = seq_dir
+        self.style_dir = style_dir
 
         self.dendro = dendro_controller.get_values()
 
         self.grid_controller = grid_controller
-        self.raster_controller = raster_controller
+        self.seq_vect_keys = seq_vect_keys
+        self.seq_rast_keys = seq_rast_keys
 
     def run(self):
         
@@ -55,29 +59,11 @@ class DiagnosticCreateService:
         
         self._configure_layers(layers, relations)
         
-        vkeys = [
-            'v.seq.ua.poly',
-            'v.infra.point', 'v.infra.line', 'v.infra.poly',
-            'v.vege.line',
-            'v.hydro.point', 'v.hydro.line', 'v.hydro.poly',
-            'v.road.line'
-        ]
-
-        for key in vkeys:
+        for key in (self.seq_vect_keys + self.seq_rast_keys):
             try:
-                style_dir = get_global_variable("QS2_styles_directory")
-                vlayers = seq_read(key, seq_dir=self.seq_dir, add_to_project=True, style_folder=style_dir)
+                seq_read(key, self.seq_dir, add_to_project=True, style_folder=self.style_dir)
             except Exception as e:
-                continue
-
-        # if vlayers:
-        #     self._configure_flags(layers, vlayers)
-
-        try:
-            self.raster_controller.load_selected_rasters(self.seq_dir)
-
-        except Exception as e:
-            iface.messageBar().pushMessage("Erreur", str(e), level=Qgis.Info, duration=5)
+                messageLog(f"Could not load layer {key}: {e}")
 
         fold()
         unfold("DIAGNOSTIC")

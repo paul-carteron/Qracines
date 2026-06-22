@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [V1.0.13] - 2026-06-08
 
 - Automatisation de la symbology lors de l'import des données de martelage
+- Possibilité de packager les couches Sequoia2 lors de la génération des projets QField Expertise, Diagnostic et Inventaire.
 
 ## [V1.0.12] - 2026-06-08
 

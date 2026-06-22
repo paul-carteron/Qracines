@@ -15,7 +15,7 @@ import unicodedata
 from pathlib import Path
 from typing import Type, Any, List, Iterable, Optional
 
-from qsequoia2.modules.utils.seq_config import seq_read
+from qsequoia2.modules.utils.seq_config import seq_read, seq_layer, get_seq_config
 
 class UIBinderMixin:
     """
@@ -292,6 +292,100 @@ class SpeciesSelector(UIBinderMixin):
             return False
         return True
     
+class SeqLayerSelector(UIBinderMixin):
+    def __init__(
+        self,
+        *,
+        ui,
+        seq_dir: str,
+        choices: str,
+        selected: str,
+        filter: str,
+        add: str,
+        remove: str,
+        type: str = "vect",
+        default_keys: list[str] | None = None,
+    ):
+        self.ui = ui
+        self.seq_dir = seq_dir
+        self.type = type
+
+        self.choices = self._bind_widget(choices, QListWidget)
+        self.selected = self._bind_widget(selected, QListWidget)
+        self.filter = self._bind_widget(filter, QLineEdit)
+        self.add = self._bind_widget(add, QPushButton)
+        self.remove = self._bind_widget(remove, QPushButton)
+
+        self.choices.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.selected.setSelectionMode(QAbstractItemView.MultiSelection)
+
+        self.populate_vector_list()
+        self.populate_selected(default_keys or [])
+
+        self.filter.textChanged.connect(self.on_filter)
+        self.add.clicked.connect(self.on_add)
+        self.remove.clicked.connect(self.on_remove)
+
+    def is_available(self, layer: dict) -> bool:
+        if not self.seq_dir:
+            return False
+
+        filename = layer.get("filename")
+        if not filename:
+            return False
+
+        seq_dir = Path(self.seq_dir)
+        return any(seq_dir.rglob(f"*{filename}"))
+
+    def populate_vector_list(self) -> None:
+        self.lookup = {}
+
+        for key in get_seq_config("seq_layers"):
+            layer = seq_layer(key)
+
+            if layer.get("type") != self.type:
+                continue
+
+            if not self.is_available(layer):
+                continue
+
+            self.lookup[key] = layer["name"]
+
+        self.choices.clear()
+        self.choices.addItems(sorted(self.lookup.values()))
+
+    def populate_selected(self, keys: list[str]) -> None:
+        for key in keys:
+            # security to ensure asked keys are valid
+            if key in self.lookup:
+                self.selected.addItem(self.lookup[key])
+
+    def on_filter(self) -> None:
+        text = self.filter.text().lower()
+
+        self.choices.clear()
+        self.choices.addItems(
+            sorted(
+                name
+                for key, name in self.lookup.items()
+                if text in name.lower() or text in key.lower()
+            )
+        )
+
+    def on_add(self) -> None:
+        for item in self.choices.selectedItems():
+            name = item.text()
+            self.selected.addItem(name)
+            self.filter.clear()
+
+    def on_remove(self) -> None:
+        for item in self.selected.selectedItems():
+            self.selected.takeItem(self.selected.row(item))
+
+    def selected_keys(self) -> list[str]:
+        all_keys = {self.selected.item(i).text() for i in range(self.selected.count())}
+        return [key for key, name in self.lookup.items() if name in all_keys]
+
 class GpkgLoader(UIBinderMixin):
     def __init__(self, *, ui, add, selected):
         self.ui = ui

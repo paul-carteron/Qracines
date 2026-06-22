@@ -111,9 +111,8 @@ class Qsequoia2Racines:
         
         self._check_seq_style_dir()
         
-        if not self.diagnostic_create:
-            self.diagnostic_create = DiagnosticCreateDialog()
-        self.diagnostic_create.exec_()
+        dialog = DiagnosticCreateDialog()
+        dialog.exec_()
 
     def open_diagnostic_merge(self):
         if not self._check_seq_dir():
@@ -149,9 +148,8 @@ class Qsequoia2Racines:
     def open_tree_marking_create(self):
         self._check_seq_style_dir()
         
-        if not self.tree_marking_create:
-            self.tree_marking_create = TreeMarkingCreateDialog()
-        self.tree_marking_create.exec_()
+        dialog = TreeMarkingCreateDialog()
+        dialog.exec_()
 
     def open_tree_marking_merge(self):
         dialog = TreeMarkingMergeDialog()
@@ -170,9 +168,8 @@ class Qsequoia2Racines:
         
         self._check_seq_style_dir()
 
-        if not self.expertise_create:
-            self.expertise_create = ExpertiseCreateDialog()
-        self.expertise_create.exec_()
+        dialog = ExpertiseCreateDialog()
+        dialog.exec_()
         
     def open_expertise_merge(self):
         if not self._check_seq_dir():
