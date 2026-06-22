@@ -1,16 +1,16 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
+from Qracines.utils.message import messageLog
 from qgis.PyQt import uic
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem
 from PyQt5.QtCore import QTimer
 from qgis.utils import iface
 
 from .expertise_create_service import ExpertiseCreateService
-from ....core.db.manager import DatabaseManager
 
 from ....utils.config import get_racines_path
 from ....utils.essence import load_essences
-from ....utils.variable import get_project_variable
-from ....utils.ui import RasterController, QfieldPackager, SpeciesSelector, GridController, DendroController
+from ....utils.variable import get_global_variable, get_project_variable
+from ....utils.ui import QfieldPackager, SeqLayerSelector, SpeciesSelector, GridController, DendroController
 
 from pathlib import Path
 FORM_CLASS, _ = uic.loadUiType(
@@ -21,9 +21,13 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
         super().__init__(parent)
         self.setupUi(self)
 
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        
         self.essences = load_essences(name = "essences")
         self.seq_dir = get_project_variable("QS2_seq_dir") or None
         self.seq_id = get_project_variable("QS2_seq_id") or None
+        self.style_dir = get_global_variable("QS2_styles_directory") or None
         
         self.dendro_controller = DendroController(
             ui = self,
@@ -35,20 +39,25 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
             }
         )
 
-        self.raster_controller = RasterController(
-            ui=self,
-             raster_checkbox={
-                #   'key':     'checkbox_name',
-                'r.seq.plt': 'cb_plt',
-                'r.ortho.irc': 'cb_irc',
-                'r.ortho.rgb': 'cb_rgb',
-                'r.alt.mnh.lidar': 'cb_mnh_lidar',
-                'r.alt.mnh.rge': 'cb_mnh_rge',
-                'r.alt.ombrage.mnh': 'cb_ombrage_mnh',
-                'r.alt.mnt.lidar': 'cb_mnt_lidar',
-                'r.alt.mnt.rge': 'cb_mnt_rge',
-            })
-        
+        self.seq_vect_selector = SeqLayerSelector(
+            ui = self,
+            seq_dir = self.seq_dir,
+            choices="lw_seq_vect", selected="lw_selected_seq_vect",
+            add="pb_add_seq_vect", remove="pb_remove_seq_vect",
+            filter="le_filter_seq_vect",
+            type = "vect",
+            default_keys = ["v.seq.parca.poly", "v.seq.ua.poly"]
+        )
+
+        self.seq_rast_selector = SeqLayerSelector(
+            ui = self,
+            seq_dir = self.seq_dir,
+            choices="lw_seq_rast", selected="lw_selected_seq_rast",
+            add="pb_add_seq_rast", remove="pb_remove_seq_rast",
+            filter="le_filter_seq_rast",
+            type = "rast",
+            default_keys = ["r.seq.plt", "r.ortho.irc", "r.alt.mnh.lidar", "r.alt.mnh.rge", "r.alt.ombrage.mnh"]
+        )
 
         self.gha_tra_selector = SpeciesSelector(
             ui = self, layer = self.essences,
@@ -82,6 +91,8 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
 
     def accept(self):
 
+        messageLog("Creating new expertise project...")
+
         if not self.gha_tra_selector.is_valid(): return
         if not self.tse_selector.is_valid(): return
 
@@ -94,13 +105,16 @@ class ExpertiseCreateDialog(QDialog, FORM_CLASS):
         codes_gha_tra = self.gha_tra_selector.selected_codes()
         codes_taillis = self.tse_selector.selected_codes()
 
+        messageLog(f"self.seq_vect_selector.selected_keys(): {self.seq_vect_selector.selected_keys()}")
         svc = ExpertiseCreateService(
             seq_dir = self.seq_dir,
+            style_dir = self.style_dir,
             codes = codes_gha_tra,
             codes_taillis = codes_taillis,
+            seq_vect_keys = self.seq_vect_selector.selected_keys(),
+            seq_rast_keys = self.seq_rast_selector.selected_keys(),
             dendro_controller = self.dendro_controller,
-            grid_controller = self.grid_controller,
-            raster_controller = self.raster_controller,
+            grid_controller = self.grid_controller
         )
 
         try:

@@ -1,14 +1,14 @@
+from Qracines.utils.message import messageLog
 import processing
 
 from qgis.core import Qgis, QgsProject, QgsProcessing, QgsWkbTypes, QgsMapLayer
 from qgis.utils import iface
 
-from ....core.layer.factory import LayerFactory
-from ....core.db.manager import DatabaseManager
+from Qracines.core.layer.factory import LayerFactory
 
-from ....utils.layers import load_gpkg, create_relation, set_relation_label
-from ....utils.utils import fold, unfold
-from ....utils.essence import load_essences
+from Qracines.utils.layers import load_gpkg, create_relation, set_relation_label
+from Qracines.utils.utils import fold, unfold
+from Qracines.utils.essence import load_essences
 from ..layer_schema import EXPERTISE_LAYERS
 
 # configurators
@@ -20,29 +20,36 @@ from ..configurators.tse import TseConfigurator
 from ..configurators.va import VaConfigurator
 from ..configurators.reg import RegConfigurator
 
+from qsequoia2.modules.utils.seq_config import seq_read
+from qsequoia2.modules.utils.variable import get_global_variable
+
 class ExpertiseCreateService:
 
     def __init__(
         self,
         seq_dir,
+        style_dir,
         codes: list,
         codes_taillis: list,
+        seq_vect_keys: list,
+        seq_rast_keys: list,
         dendro_controller,
         grid_controller,
-        raster_controller
     ):
 
         self.iface = iface
         self.project = QgsProject.instance()
 
         self.seq_dir = seq_dir
+        self.style_dir = style_dir
 
         self.codes = codes
         self.codes_taillis = codes_taillis
+        self.seq_vect_keys = seq_vect_keys
+        self.seq_rast_keys = seq_rast_keys
         self.dendro = dendro_controller.get_values()
 
         self.grid_controller = grid_controller
-        self.raster_controller = raster_controller
 
     def run(self):
         
@@ -56,10 +63,11 @@ class ExpertiseCreateService:
         self._configure_layers(layers, relations)
         self._configure_flags(layers)
 
-        try:
-            self.raster_controller.load_selected_rasters(self.seq_dir)
-        except Exception as e:
-            iface.messageBar().pushMessage("Erreur", str(e), level=Qgis.Info, duration=5)
+        for key in (self.seq_vect_keys + self.seq_rast_keys):
+            try:
+                seq_read(key, self.seq_dir, add_to_project=True, style_folder=self.style_dir)
+            except Exception as e:
+                messageLog(f"Could not load layer {key}: {e}")
 
         fold()
         unfold("EXPERTISE")
