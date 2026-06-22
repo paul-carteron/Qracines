@@ -1,7 +1,8 @@
 import processing
 
-from qgis.core import Qgis, QgsProject, QgsProcessing, QgsMapLayer, QgsField, QgsFeature
-from qgis.utils import iface
+from Qracines.utils.message import messageLog
+
+from qgis.core import QgsProject, QgsProcessing, QgsMapLayer, QgsField, QgsFeature
 from qgis.PyQt.QtCore import QVariant
 
 from ....core.layer.factory import LayerFactory
@@ -16,6 +17,8 @@ from ..configurators.arbres import ArbresConfigurator
 from ..configurators.param import ParamConfigurator
 from ..configurators.essences import EssencesConfigurator
 
+from qsequoia2.modules.utils.seq_config import seq_read
+
 _SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}
 
 class TreeMarkingCreateService:
@@ -24,19 +27,24 @@ class TreeMarkingCreateService:
         self,
         seq_id: str,
         seq_dir,
+        style_dir,
         codes: list,
         dendro_controller,
-        raster_controller
+        seq_vect_keys: list,
+        seq_rast_keys: list,
     ):
 
         self.project = QgsProject.instance()
 
         self.seq_id = seq_id
         self.seq_dir = seq_dir
+        self.style_dir = style_dir
+
         self.codes = codes
         self.dendro = dendro_controller.get_values()
 
-        self.raster_controller = raster_controller
+        self.seq_vect_keys = seq_vect_keys
+        self.seq_rast_keys = seq_rast_keys
 
     def run(self):
 
@@ -98,10 +106,11 @@ class TreeMarkingCreateService:
             """
         )
 
-        try:
-            self.raster_controller.load_selected_rasters(self.seq_dir)
-        except Exception as e:
-            iface.messageBar().pushMessage("Erreur", str(e), level=Qgis.Info, duration=5)
+        for key in (self.seq_vect_keys + self.seq_rast_keys):
+            try:
+                seq_read(key, self.seq_dir, add_to_project=True, style_folder=self.style_dir)
+            except Exception as e:
+                messageLog(f"Could not load layer {key}: {e}")
 
         fold()
         unfold("INVENTAIRE")

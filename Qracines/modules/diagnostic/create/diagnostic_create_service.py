@@ -59,7 +59,6 @@ class DiagnosticCreateService:
         
         self._configure_layers(layers, relations)
         
-
         for key in (self.seq_vect_keys + self.seq_rast_keys):
             try:
                 seq_read(key, self.seq_dir, add_to_project=True, style_folder=self.style_dir)

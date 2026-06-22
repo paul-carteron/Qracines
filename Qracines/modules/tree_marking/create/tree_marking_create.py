@@ -10,8 +10,8 @@ from .tree_marking_create_service import TreeMarkingCreateService
 from ....core.db.manager import DatabaseManager
 
 from ....utils.config import get_racines_path
-from ....utils.ui import RasterController, SpeciesSelector, QfieldPackager, DendroController
-from ....utils.variable import get_project_variable
+from ....utils.ui import SeqLayerSelector, SpeciesSelector, QfieldPackager, DendroController
+from ....utils.variable import get_project_variable, get_global_variable
 from ....utils.essence import load_essences
 
 from pathlib import Path
@@ -28,6 +28,7 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
 
         self.seq_id = get_project_variable("QS2_seq_id") or None
         self.seq_dir = get_project_variable("QS2_seq_dir") or None
+        self.style_dir = get_global_variable("QS2_styles_directory") or None
         
         self.essences = load_essences(name = "Essences")
         
@@ -41,19 +42,26 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
             }
         )
 
-        self.raster_controller = RasterController(
-            ui=self,
-             raster_checkbox={
-                #   'key':     'checkbox_name',
-                'r.seq.plt': 'cb_plt',
-                'r.ortho.irc': 'cb_irc',
-                'r.ortho.rgb': 'cb_rgb',
-                'r.alt.mnh.lidar': 'cb_mnh_lidar',
-                'r.alt.mnh.rge': 'cb_mnh_rge',
-                'r.alt.ombrage.mnh': 'cb_ombrage_mnh',
-                'r.alt.mnt.lidar': 'cb_mnt_lidar',
-                'r.alt.mnt.rge': 'cb_mnt_rge',
-            })
+        self.seq_vect_selector = SeqLayerSelector(
+            ui = self,
+            seq_dir = self.seq_dir,
+            choices="lw_seq_vect", selected="lw_selected_seq_vect",
+            add="pb_add_seq_vect", remove="pb_remove_seq_vect",
+            filter="le_filter_seq_vect",
+            type = "vect"
+        )
+
+        self.seq_rast_selector = SeqLayerSelector(
+            ui = self,
+            seq_dir = self.seq_dir,
+            choices="lw_seq_rast", selected="lw_selected_seq_rast",
+            add="pb_add_seq_rast", remove="pb_remove_seq_rast",
+            filter="le_filter_seq_rast",
+            type = "rast",
+            default_keys = [
+                "r.seq.plt", "r.ortho.irc", "r.alt.mnh.lidar", "r.alt.mnh.rge", "r.alt.ombrage.mnh"
+            ]
+        )
 
         self.ess_selector = SpeciesSelector(
             ui = self, layer = self.essences,
@@ -83,9 +91,11 @@ class TreeMarkingCreateDialog(QDialog, FORM_CLASS):
         svc = TreeMarkingCreateService(
             seq_id = self.seq_id,
             seq_dir = self.seq_dir,
+            style_dir = self.style_dir,
+            seq_vect_keys = self.seq_vect_selector.selected_keys(),
+            seq_rast_keys = self.seq_rast_selector.selected_keys(),
             codes=codes,
-            dendro_controller = self.dendro_controller,
-            raster_controller = self.raster_controller
+            dendro_controller = self.dendro_controller
         )
 
         try:

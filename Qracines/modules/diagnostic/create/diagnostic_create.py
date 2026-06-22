@@ -63,8 +63,9 @@ class DiagnosticCreateDialog(QDialog, FORM_CLASS):
             filter="le_filter_seq_rast",
             type = "rast",
             default_keys = [
-                "r.seq.plt", "r.ortho.irc", "r.alt.mnh.lidar", "r.alt.mnh.rge", "r.alt.ombrage.mnh",
-                "r.alt.mnh.lidar", "r.alt.mnt.rge"
+                "r.seq.plt", "r.ortho.irc",
+                "r.alt.mnh.lidar", "r.alt.mnh.rge", "r.alt.ombrage.mnh",
+                "r.alt.mnt.lidar", "r.alt.mnt.rge"
             ]
         )
         
