@@ -129,7 +129,7 @@ class TreeMarkingLoad:
         if seq_dir:
             plt = seq_read("r.seq.plt", seq_dir=seq_dir, add_to_project=True)
             if plt and plt.renderer():
-                plt.renderer().setOpacity(0.7)
+                plt.renderer().setOpacity(0.6)
                 plt.triggerRepaint()
 
         return layers
