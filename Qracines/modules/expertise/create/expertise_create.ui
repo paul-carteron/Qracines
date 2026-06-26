@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>523</width>
-    <height>752</height>
+    <height>795</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -220,194 +220,6 @@
     </layout>
    </item>
    <item>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>VECTEUR</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hbox_filtre_vect">
-     <item>
-      <widget class="QLabel" name="lbl_filtre_seq_vect">
-       <property name="text">
-        <string>Filtre :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="le_filter_seq_vect">
-       <property name="placeholderText">
-        <string extracomment="CHE..."/>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout_7">
-     <item row="0" column="1">
-      <layout class="QGridLayout" name="gridLayout_8">
-       <property name="leftMargin">
-        <number>5</number>
-       </property>
-       <property name="topMargin">
-        <number>5</number>
-       </property>
-       <property name="rightMargin">
-        <number>5</number>
-       </property>
-       <property name="bottomMargin">
-        <number>5</number>
-       </property>
-       <property name="spacing">
-        <number>10</number>
-       </property>
-       <item row="2" column="0">
-        <spacer name="vs_seq_vect">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="pb_add_seq_vect">
-         <property name="text">
-          <string>Ajouter &gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="pb_remove_seq_vect">
-         <property name="text">
-          <string>&lt; Retirer</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="2">
-      <widget class="QListWidget" name="lw_selected_seq_vect"/>
-     </item>
-     <item row="0" column="0">
-      <widget class="QListWidget" name="lw_seq_vect"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="Line" name="line_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>RASTER</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hbox_filtre_rast">
-     <item>
-      <widget class="QLabel" name="lbl_filtre_seq_rast">
-       <property name="text">
-        <string>Filtre :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="le_filter_seq_rast">
-       <property name="placeholderText">
-        <string extracomment="CHE..."/>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout_11">
-     <item row="0" column="1">
-      <layout class="QGridLayout" name="gridLayout_12">
-       <property name="leftMargin">
-        <number>5</number>
-       </property>
-       <property name="topMargin">
-        <number>5</number>
-       </property>
-       <property name="rightMargin">
-        <number>5</number>
-       </property>
-       <property name="bottomMargin">
-        <number>5</number>
-       </property>
-       <property name="spacing">
-        <number>10</number>
-       </property>
-       <item row="2" column="0">
-        <spacer name="vs_seq_rast">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="pb_add_seq_rast">
-         <property name="text">
-          <string>Ajouter &gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="pb_remove_seq_rast">
-         <property name="text">
-          <string>&lt; Retirer</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="2">
-      <widget class="QListWidget" name="lw_selected_seq_rast"/>
-     </item>
-     <item row="0" column="0">
-      <widget class="QListWidget" name="lw_seq_rast"/>
-     </item>
-    </layout>
-   </item>
-   <item>
     <widget class="Line" name="line_3">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -592,6 +404,194 @@
      </item>
      <item row="0" column="0">
       <widget class="QListWidget" name="lw_species_taillis"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>VECTEUR</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hbox_filtre_vect">
+     <item>
+      <widget class="QLabel" name="lbl_filtre_seq_vect">
+       <property name="text">
+        <string>Filtre :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_filter_seq_vect">
+       <property name="placeholderText">
+        <string extracomment="CHE..."/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_7">
+     <item row="0" column="1">
+      <layout class="QGridLayout" name="gridLayout_8">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <item row="2" column="0">
+        <spacer name="vs_seq_vect">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QPushButton" name="pb_add_seq_vect">
+         <property name="text">
+          <string>Ajouter &gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="pb_remove_seq_vect">
+         <property name="text">
+          <string>&lt; Retirer</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="2">
+      <widget class="QListWidget" name="lw_selected_seq_vect"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QListWidget" name="lw_seq_vect"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>RASTER</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hbox_filtre_rast">
+     <item>
+      <widget class="QLabel" name="lbl_filtre_seq_rast">
+       <property name="text">
+        <string>Filtre :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_filter_seq_rast">
+       <property name="placeholderText">
+        <string extracomment="CHE..."/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_11">
+     <item row="0" column="1">
+      <layout class="QGridLayout" name="gridLayout_12">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <item row="2" column="0">
+        <spacer name="vs_seq_rast">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QPushButton" name="pb_add_seq_rast">
+         <property name="text">
+          <string>Ajouter &gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="pb_remove_seq_rast">
+         <property name="text">
+          <string>&lt; Retirer</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="2">
+      <widget class="QListWidget" name="lw_selected_seq_rast"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QListWidget" name="lw_seq_rast"/>
      </item>
     </layout>
    </item>
