@@ -167,6 +167,24 @@
     </widget>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="hbox_filtre_ess">
+     <item>
+      <widget class="QLabel" name="label_layers_11">
+       <property name="text">
+        <string>Filtre :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_filter_species">
+       <property name="placeholderText">
+        <string extracomment="CHE..."/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QGridLayout" name="gridLayout_6">
      <item row="1" column="1">
       <layout class="QGridLayout" name="gridLayout_5">
@@ -219,24 +237,6 @@
      </item>
      <item row="1" column="0">
       <widget class="QListWidget" name="lw_species"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="hbox_filtre_ess">
-     <item>
-      <widget class="QLabel" name="label_layers_11">
-       <property name="text">
-        <string>Filtre :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="le_filter_species">
-       <property name="placeholderText">
-        <string extracomment="CHE..."/>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
