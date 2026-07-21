@@ -76,8 +76,8 @@ class ExpertiseMergeDialog(QDialog, FORM_CLASS):
         tra_with_ess_id = calculate_essence_id(self.tra, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID")
         tra_with_ess =  merge_with_ess(tra_with_ess_id, self.ess)
 
-        tr_diametre_expr = '''CASE WHEN trim(coalesce("TR_DIAMETRE", '')) = '' THEN NULL'''
-        tr_hauteur_expr = '''CASE WHEN trim(coalesce("TR_HAUTEUR", '')) = '' THEN NULL'''
+        tr_diametre_expr = '''nullif("TR_DIAMETRE", '')'''
+        tr_hauteur_expr = '''nullif("TR_HAUTEUR", '')'''
 
         formated_tra = processing.run("qgis:refactorfields", {
             'INPUT': tra_with_ess,
