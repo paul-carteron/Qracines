@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [V1.0.17] - Unreleased
+- Essence & Dendro paramétrable dans Expertise
+
 ## [V1.0.16] - 2026-06-30
 - Modification de l'opacité par défaut de la carte des peuplement au chargement des données par tree_marking
 - Réarrangement des dialogues de création

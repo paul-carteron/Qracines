@@ -1,7 +1,8 @@
 from Qracines.utils.message import messageLog
 import processing
 
-from qgis.core import Qgis, QgsProject, QgsProcessing, QgsWkbTypes, QgsMapLayer
+from qgis.core import QgsProject, QgsProcessing, QgsMapLayer, QgsField, QgsFeature
+from qgis.PyQt.QtCore import QVariant
 from qgis.utils import iface
 
 from Qracines.core.layer.factory import LayerFactory
@@ -19,9 +20,12 @@ from ..configurators.gha import GhaConfigurator
 from ..configurators.tse import TseConfigurator
 from ..configurators.va import VaConfigurator
 from ..configurators.reg import RegConfigurator
+from ..configurators.param import ParamConfigurator
+from ..configurators.essences import EssencesConfigurator
 
 from qsequoia2.modules.utils.seq_config import seq_read
-from qsequoia2.modules.utils.variable import get_global_variable
+
+_SKIP_VARIATIONS = {"foudroyé", "nécrosé", "dépérissant"}
 
 class ExpertiseCreateService:
 
@@ -62,6 +66,7 @@ class ExpertiseCreateService:
 
         self._configure_layers(layers, relations)
         self._configure_flags(layers)
+        self._configure_display_expression(layers)
 
         for key in (self.seq_vect_keys + self.seq_rast_keys):
             try:
@@ -78,14 +83,76 @@ class ExpertiseCreateService:
 
         layers = LayerFactory.create_all(EXPERTISE_LAYERS)
 
-        layers["essences"] = load_essences(name = "essences")
+        essences = load_essences(name = "essences")
+        layers["essences"] = essences
 
         if self.grid_controller.is_valid():
             layers["Grid"] = self.grid_controller.create_grid(self.seq_dir)
 
         self.project.addMapLayers(list(layers.values()), addToLegend=False)
 
+        self._init_essences(layers["essences"])
+        self._init_param(layers["param"])
+        self._init_range_layer(layers["lst_hauteur"], 0, 50)
+        self._init_range_layer(layers["lst_diam"], 5, 150, 5)
+
         return layers
+
+    def _init_essences(self, layer):
+
+        messageLog("_init_essences")
+        # ajouter champ si absent
+        if layer.fields().indexOf("selected") == -1:
+            layer.dataProvider().addAttributes([QgsField("selected", QVariant.Bool)])
+            layer.updateFields()
+
+        if not layer.isEditable():
+            layer.startEditing()
+
+        selected_idx = layer.fields().indexOf("selected")
+        messageLog(f"selected_idx: {selected_idx}")
+        for f in layer.getFeatures():
+            if f['variation'] in _SKIP_VARIATIONS:
+                continue
+
+            value = f['code'] in self.codes
+            layer.changeAttributeValue(f.id(), selected_idx, value)
+
+        layer.commitChanges()
+
+    def _init_range_layer(self, layer, min_val, max_val, step=1):
+        if not layer.isEditable():
+            layer.startEditing()
+
+        provider = layer.dataProvider()
+
+        provider.deleteFeatures([f.id() for f in layer.getFeatures()])
+
+        feats = []
+        for v in range(min_val, max_val + 1, step):
+            f = QgsFeature(layer.fields())
+            f["VALEUR"] = v
+            feats.append(f)
+
+        provider.addFeatures(feats)
+        layer.commitChanges()
+
+    def _init_param(self, param):
+        if not param.isEditable():
+            param.startEditing()
+
+        provider = param.dataProvider()
+
+        provider.deleteFeatures([f.id() for f in param.getFeatures()])
+
+        f = QgsFeature(param.fields())
+        f["DMIN"] = self.dendro['dmin']
+        f["DMAX"] = self.dendro['dmax']
+        f["HMIN"] = self.dendro['hmin']
+        f["HMAX"] = self.dendro['hmax']
+
+        provider.addFeature(f)
+        param.commitChanges()
     
     def _package_layers(self, layers, outpath=QgsProcessing.TEMPORARY_OUTPUT):
 
@@ -121,6 +188,11 @@ class ExpertiseCreateService:
 
     def _configure_layers(self, layers, relations):
         essences = layers["essences"]
+        param = layers["param"]
+
+        ParamConfigurator(param).configure()
+        EssencesConfigurator(essences).configure()
+
         placette = layers["placette"]
         transect = layers["transect"]
         limite = layers["limite"]
@@ -128,14 +200,16 @@ class ExpertiseCreateService:
         tse = layers["tse"]
         va = layers["va"]
         reg = layers["reg"]
+        lst_hauteur = layers["lst_hauteur"]
+        lst_diam = layers["lst_diam"]
 
         PlacetteConfigurator(placette, relations).configure()
-        TransectConfigurator(transect, self.dendro, essences, self.codes).configure()
+        TransectConfigurator(transect, self.dendro, essences, lst_hauteur, lst_diam).configure()
         LimiteConfigurator(limite).configure()
-        GhaConfigurator(gha, essences, self.codes).configure()
+        GhaConfigurator(gha, essences).configure()
         TseConfigurator(tse, essences,self.codes_taillis).configure()
-        VaConfigurator(va, essences,self.codes).configure()
-        RegConfigurator(reg, essences, self.codes).configure()
+        VaConfigurator(va, essences).configure()
+        RegConfigurator(reg, essences).configure()
 
         relation_labels = {
             "gha": "Surface terrière",
@@ -150,10 +224,17 @@ class ExpertiseCreateService:
 
     def _configure_flags(self, layers):
 
-        for layer in layers.values():
+        private_layers = ["lst_hauteur", "lst_diam", "gha", "tse", "va", "reg"]
+        for layer in private_layers:
+            l = layers[layer]
+            l.setFlags(l.flags() | QgsMapLayer.Private)
 
-            if layer.geometryType() == QgsWkbTypes.NullGeometry:
 
-                flags = layer.flags()
-                flags |= QgsMapLayer.Private
-                layer.setFlags(flags)
+    def _configure_display_expression(self, layers):
+
+        essences = layers["essences"]
+        param = layers["param"]
+
+        essences.setDisplayExpression(''' CASE WHEN "selected" THEN '✅ ' ELSE '❌ ' END || "essence_variation" ''')
+        param.setDisplayExpression(''' 'H' || "HMIN" || '-' || "HMAX" || 'D' || "DMIN" || '-' || "DMAX" ''')
+

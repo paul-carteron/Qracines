@@ -1,15 +1,13 @@
 from qgis.core import QgsFieldConstraints
 
 from ....core.layer import FormBuilder, FieldEditor
-from ....utils.essence import configure_essence_field
 
 
 class VaConfigurator:
 
-    def __init__(self, layer, essences, codes):
+    def __init__(self, layer, essences):
         self.layer = layer
         self.essences = essences
-        self.codes = codes
 
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
@@ -20,7 +18,6 @@ class VaConfigurator:
 
         self._init_form()
         self._configure_fields()
-        self._configure_essence()
         self._set_qfield_properties()
 
     def _init_form(self):
@@ -29,7 +26,6 @@ class VaConfigurator:
 
         self.fb.new_add_fields([
             "VA_ESSENCE_ID",
-            "VA_ESSENCE_SECONDAIRE_ID",
             "VA_TX_TROUEE",
             "VA_AGE_APP",
             "VA_TX_HA",
@@ -43,11 +39,10 @@ class VaConfigurator:
         # ALIASES
         aliases = [
             ("VA_ESSENCE_ID", "Essence"),
-            ("VA_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("VA_AGE_APP", "Age Apparent"),
             ("VA_TX_TROUEE", "Taux trouée [%]"),
-            ("VA_TX_HA", "Recouvrement [%]"),
-            ("CUMUL_TX_VA", "Cumul des recouvrements"),
+            ("VA_TX_HA", "Proportion de l'ess [%]"),
+            ("CUMUL_TX_VA", "Cumul des proportions"),
         ]
         
         for field, alias in aliases:
@@ -61,7 +56,7 @@ class VaConfigurator:
                 get_feature(
                     '{ess_layer_name}',
                     'fid',
-                    coalesce(NULLIF("VA_ESSENCE_ID", ''), "VA_ESSENCE_SECONDAIRE_ID")
+                    "VA_ESSENCE_ID"
                 ),
                 concat(
                     attribute(@ess, 'essence_variation'),
@@ -72,6 +67,19 @@ class VaConfigurator:
             )
             """
         self.layer.setDisplayExpression(display_expression)
+
+        # region VA_ESSENCE_ID
+        field_ess = "VA_ESSENCE_ID"
+        
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': True,
+            'FilterExpression': '"variation" IS NULL'
+        }
+
+        self.fe.add_value_relation(field_ess, config)
 
         # VA_AGE_APP
         field_name = "VA_AGE_APP"
@@ -96,19 +104,9 @@ class VaConfigurator:
         self.fe.set_default_value(field_name, default_value)
         self.fe.set_read_only(field_name)
 
-    def _configure_essence(self):
-
-        configure_essence_field(
-            self.layer,
-            "VA_ESSENCE_ID",
-            "VA_ESSENCE_SECONDAIRE_ID",
-            self.essences,
-            self.codes,
-            with_variation=False
-        )
-
     def _set_qfield_properties(self):
+        theshold = 70
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",
-            len(self.codes) + 1
+            theshold
         )

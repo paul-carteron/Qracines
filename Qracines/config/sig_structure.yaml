@@ -10,7 +10,6 @@ structure:
       enjeux_patrimoniaux: { filename: ENJEUX_PATRIMONIAUX.qgz, display_name: "Enjeux patrimoniaux" }
       enjeux_sociaux: { filename: ENJEUX_SOCIAUX.qgz, display_name: "Enjeux sociaux" }
       geologie: { filename: GEOLOGIE.qgz, display_name: "Géologie" }
-      expertise: { filename: EXPERTISE.qgz, display_name: "Expertise" }
 
   raster_folder:
     path: [SIG, 1_RASTER]
@@ -97,15 +96,17 @@ structure:
       zps: { filename: ZPS_polygon.shp, style: ZPS_polygon.qml, display_name: "Natura 2000: Zone de protection spéciale"}
 
   other_folder:
-    path: [5_QFIELD ]
+    path: [5_QFIELD]
     files:
       parcellaire: { filename: parcellaire.csv }
       inventaire: { filename: inventaire.gpkg }
       inventaire_synthese: { filename: inventaire.xlsx }
+      
+      expertise: { filename: expertise.gpkg}
+      expertise_synthese: { filename: expertise.xlsx }
+
       inv_qfield: { filename: inv_qfield.zip }
       diag: { filename: diagnostic.gpkg }
       diag_qfield: { filename: diag_qfield.zip }
       diag_synthese: { filename: diag.xlsx }
       pedology_qfield: { filename: pedology.zip }
-      expertise_gpkg: { filename: expertise.gpkg}
-      expertise_synthese: { filename: expertise.xlsx }

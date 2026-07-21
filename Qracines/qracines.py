@@ -96,7 +96,7 @@ class Qsequoia2Racines:
                 menu_items.append(("Créer", getattr(self, create_handler)))
 
             if merge_handler and hasattr(self, merge_handler):
-                menu_items.append(("Combiner", getattr(self, merge_handler)))
+                menu_items.append(("Traiter", getattr(self, merge_handler)))
 
             if load_handler and hasattr(self, load_handler):
                 menu_items.append(("Charger", getattr(self, load_handler)))

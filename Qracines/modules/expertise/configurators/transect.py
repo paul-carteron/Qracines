@@ -5,12 +5,13 @@ from ....utils.essence import configure_essence_field
 
 class TransectConfigurator:
 
-    def __init__(self, layer, dendro, essences, codes):
+    def __init__(self, layer, dendro, essences, lst_hauteur, lst_diam):
 
         self.layer = layer
         self.dendro = dendro
         self.essences = essences
-        self.codes = codes
+        self.lst_hauteur = lst_hauteur
+        self.lst_diam = lst_diam
 
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
@@ -21,7 +22,6 @@ class TransectConfigurator:
 
         self._init_form()
         self._configure_fields()
-        self._configure_essence()
         self._set_qfield_properties()
 
     def _init_form(self):
@@ -71,18 +71,44 @@ class TransectConfigurator:
         self.fe.set_reuse_last_value("TR_PARCELLE")
         self.fe.set_reuse_last_value("TR_STRATE")
 
-        # TR_DIAMETRE
-        field = "TR_DIAMETRE"
-        dmin = self.dendro["dmin"]
-        dmax = self.dendro["dmax"]
+        # region TR_DIAMETRE
+        field_name = "TR_DIAMETRE"
+        config = {
+            'Key': 'VALEUR',
+            'Layer': self.lst_diam.id(),
+            'Value': 'VALEUR',
+            'AllowNull': False,
+            'FilterExpression': '''
+            "VALEUR" >= attribute(get_feature_by_id('param',1), 'DMIN') 
+            AND 
+            "VALEUR" <= attribute(get_feature_by_id('param',1), 'DMAX')
+            '''
+        }
 
-        self.fe.set_constraint(field, QgsFieldConstraints.ConstraintNotNull)
-        self.fe.add_value_map(field,{"map": [{str(d): str(d)} for d in range(dmin, dmax + 1, 5)]})
+        self.fe.add_value_relation(field_name, config)
 
-        expr = '"TR_DIAMETRE" != \'\''
-        msg = "Le champ TR_DIAMETRE ne peut pas être vide."
+        self.fe.set_constraint(field_name, QgsFieldConstraints.ConstraintNotNull)
+        self.fe.set_constraint_expression(field_name,
+            f'"{field_name}" != \'\'',
+            f"Le champ {field_name} ne peut pas être vide.", 
+            QgsFieldConstraints.ConstraintStrengthHard
+        )
+        # endregion
 
-        self.fe.set_constraint_expression(field,expr,msg,QgsFieldConstraints.ConstraintStrengthHard)
+        # region TR_HAUTEUR
+        field_name = "TR_HAUTEUR"
+        config = {
+            'Key': 'VALEUR',
+            'Layer': self.lst_hauteur.id(),
+            'Value': 'VALEUR',
+            'AllowNull': False,
+            'FilterExpression': '''
+            "VALEUR" >= attribute(get_feature_by_id('param',1), 'HMIN') 
+            AND 
+            "VALEUR" <= attribute(get_feature_by_id('param',1), 'HMAX')
+            '''
+        }
+        self.fe.add_value_relation(field_name, config)
 
         # TR_EFFECTIF
         field = "TR_EFFECTIF"
@@ -100,30 +126,37 @@ class TransectConfigurator:
 
         self.fe.set_default_value(field, "1", False)
 
-        # TR_HAUTEUR
-        field = "TR_HAUTEUR"
-        hmin = self.dendro["hmin"]
-        hmax = self.dendro["hmax"]
+        # region TR_ESSENCE_ID - TR_ESSENCE_SECONDAIRE_ID
+        field_ess = "TR_ESSENCE_ID"
+        field_ess2 = "TR_ESSENCE_SECONDAIRE_ID"
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': True,
+            'FilterExpression': '"selected" = true'
+        }
 
-        self.fe.add_value_map(field, {"map": [{str(h): str(h)} for h in range(hmin, hmax + 1)]})
+        self.fe.add_value_relation(field_ess, config)
 
-    def _configure_essence(self):
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': True,
+            'FilterExpression': '"selected" = false OR "selected" IS NULL'
+        }
 
-        configure_essence_field(
-            self.layer,
-            "TR_ESSENCE_ID",
-            "TR_ESSENCE_SECONDAIRE_ID",
-            self.essences,
-            self.codes,
-            with_variation=True
-        )
+        self.fe.add_value_relation(field_ess2, config)
+
+        expr = f'''(COALESCE("{field_ess}", '') <> '') != (COALESCE("{field_ess2}", '') <> '')'''
+        msg = "Veuillez sélectionner une valeur pour ESSENCE ou ESSENCE_SECONDAIRE (mais pas les deux)."
+        self.fe.set_constraint_expression(field_ess, expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
+        # endregion
 
     def _set_qfield_properties(self):
 
-        threshold = max(
-            self.dendro["hmax"] + 1,
-            (self.dendro["dmax"] + 1) / 5
-        )
+        threshold = 70
 
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",

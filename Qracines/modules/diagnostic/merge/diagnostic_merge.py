@@ -11,6 +11,8 @@ from ....utils.ui import GpkgLoader
 from ..layer_schema import DIAGNOSTIC_LAYERS
 
 from pathlib import Path
+from datetime import datetime
+
 FORM_CLASS, _ = uic.loadUiType(
     Path(__file__).parent / "diagnostic_merge.ui")
 

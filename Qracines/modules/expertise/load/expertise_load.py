@@ -5,6 +5,7 @@ from qgis.core import QgsWkbTypes, QgsMapLayer
 # Import from utils folder
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.config import get_qfield_path
+from ....utils.message import messageLog
 
 # configurators
 from ..configurators.placette import PlacetteConfigurator
@@ -17,12 +18,18 @@ from ..configurators.reg import RegConfigurator
 
 class ExpertiseLoad:
     def __init__(self):
-        self.gpkg_path = get_qfield_path("expertise_gpkg")
+        self.gpkg_path = get_qfield_path("expertise")
     
     def load(self):
 
+        messageLog(f"import:{self.gpkg_path}")
+
         layers = load_gpkg(self.gpkg_path, group_name="EXPERTISE")
+        messageLog(f"layers:{layers}")
+
         relations = self._create_relations(layers)
+        messageLog(f"relations:{relations}")
+
         self._configure_layers(layers, relations)
 
         return layers

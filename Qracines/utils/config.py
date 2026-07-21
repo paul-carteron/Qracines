@@ -1,4 +1,5 @@
 import yaml
+from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -119,7 +120,7 @@ def get_qfield_path(key):
     # prefix if needed
     if not filename.startswith(seq_id):
         filename = f"{seq_id}_{filename}"
-
+    
     return folder / filename
 
 def get_style(logical_key, styles_dir=None):

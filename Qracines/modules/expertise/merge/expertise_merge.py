@@ -1,11 +1,10 @@
+
 import processing
-from collections import defaultdict
 
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from qgis.utils import iface
 from qgis.core import QgsVectorLayer, QgsProcessing, QgsProject, QgsFeature
 from qgis.PyQt import uic
-from collections import defaultdict
 from qgis.core import QgsVectorLayer, QgsField, QgsFeature
 from qgis.PyQt.QtCore import QVariant
 
@@ -267,8 +266,7 @@ class ExpertiseMergeDialog(QDialog, FORM_CLASS):
 
     def format_va(self):
 
-        va_with_ess_id = calculate_essence_id(self.va, "VA_ESSENCE_ID", "VA_ESSENCE_SECONDAIRE_ID")
-        va_with_ess = merge_with_ess(va_with_ess_id, self.ess)
+        va_with_ess = merge_with_ess(self.va, self.ess, f_ess_id = "VA_ESSENCE_ID")
         
         va_with_pla = processing.run("qgis:joinattributestable", {
             'INPUT': va_with_ess,
@@ -344,8 +342,7 @@ class ExpertiseMergeDialog(QDialog, FORM_CLASS):
 
     def format_reg(self):
 
-        reg_with_ess_id = calculate_essence_id(self.reg, "REG_ESSENCE_ID", "REG_ESSENCE_SECONDAIRE_ID")
-        reg_with_ess = merge_with_ess(reg_with_ess_id, self.ess)
+        reg_with_ess = merge_with_ess(self.reg, self.ess, f_ess_id="REG_ESSENCE_ID")
         
         reg_with_pla = processing.run("qgis:joinattributestable", {
             'INPUT': reg_with_ess,
@@ -393,24 +390,36 @@ class ExpertiseMergeDialog(QDialog, FORM_CLASS):
             self.ess = merged_layers["essences"]
 
             formated_tra = self.format_tra()
+            messageLog(f"formated_tra: {formated_tra}")
+            
             formated_gha = self.format_gha()
+            messageLog(f"formated_gha: {formated_gha}") 
+
             formated_va = self.format_va()
+            messageLog(f"formated_va: {formated_va}")
+
             formated_tse = self.format_tse()
+            messageLog(f"formated_tse: {formated_tse}")
+            
             formated_reg = self.format_reg()
+            messageLog(f"formated_reg: {formated_reg}")
 
             gha_diagram = self.format_gha_diagram()
             merged_layers[gha_diagram.name()] = gha_diagram
+            messageLog(f"gha_diagram: {gha_diagram}")
 
             messageLog(f"merged_layers: {merged_layers}")
-            gpkg_path = get_qfield_path("expertise_gpkg")
+
+            gpkg_path = get_qfield_path("expertise")
             messageLog(f"gpkg_path: {gpkg_path}")
+
             processing.run("native:package", {
                 'LAYERS':      list(merged_layers.values()),
                 'OUTPUT':      str(gpkg_path),
                 'OVERWRITE':   True,
                 'SAVE_STYLES': True
             })
-            
+
             xlsx_path = get_qfield_path("expertise_synthese")
             save_as_xlsx(formated_tra, formated_gha, formated_va, formated_tse, formated_reg, path = xlsx_path)
             

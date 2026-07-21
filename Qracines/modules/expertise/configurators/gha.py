@@ -5,10 +5,9 @@ from ....utils.essence import configure_essence_field
 
 class GhaConfigurator:
 
-    def __init__(self, layer, essences, codes):
+    def __init__(self, layer, essences):
         self.layer = layer
         self.essences = essences
-        self.codes = codes
 
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
@@ -19,7 +18,6 @@ class GhaConfigurator:
 
         self._init_form()
         self._configure_fields()
-        self._configure_essence()
         self._set_qfield_properties()
 
     def _init_form(self):
@@ -45,6 +43,35 @@ class GhaConfigurator:
         self.fe.set_constraint_expression(field_name, f'"{field_name}" > 0', "La surface terrière doit être supérieur à 0", strength=QgsFieldConstraints.ConstraintStrengthHard)
         self.fe.add_range(field_name, {'AllowNull': False, 'Max': 100, 'Min': 0, 'Precision': 0, 'Step': 1})
 
+        # region GHA_ESSENCE_ID - GHA_ESSENCE_SECONDAIRE_ID
+        field_ess = "GHA_ESSENCE_ID"
+        field_ess2 = "GHA_ESSENCE_SECONDAIRE_ID"
+        
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': True,
+            'FilterExpression': '"selected" = true AND "variation" IS NULL'
+        }
+
+        self.fe.add_value_relation(field_ess, config)
+
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': True,
+            'FilterExpression': '("selected" = false OR "selected" IS NULL) AND "variation" IS NULL'
+        }
+
+        self.fe.add_value_relation(field_ess2, config)
+
+        expr = f'''(COALESCE("{field_ess}", '') <> '') != (COALESCE("{field_ess2}", '') <> '')'''
+        msg = "Veuillez sélectionner une valeur pour ESSENCE ou ESSENCE_SECONDAIRE (mais pas les deux)."
+        self.fe.set_constraint_expression(field_ess, expr, msg, QgsFieldConstraints.ConstraintStrengthHard)
+        # endregion
+
         # DISPLAY EXPRESSION
         ess_layer_name = self.essences.name()
         display_expression = f"""
@@ -63,19 +90,10 @@ class GhaConfigurator:
             """
         self.layer.setDisplayExpression(display_expression)
 
-    def _configure_essence(self):
-
-        configure_essence_field(
-            self.layer,
-            "GHA_ESSENCE_ID",
-            "GHA_ESSENCE_SECONDAIRE_ID",
-            self.essences,
-            self.codes,
-            with_variation=False
-        )
 
     def _set_qfield_properties(self):
+        treshold = 20
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",
-            len(self.codes) + 1
+            treshold
         )
