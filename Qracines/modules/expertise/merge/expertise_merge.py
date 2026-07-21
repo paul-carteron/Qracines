@@ -76,6 +76,9 @@ class ExpertiseMergeDialog(QDialog, FORM_CLASS):
         tra_with_ess_id = calculate_essence_id(self.tra, "TR_ESSENCE_ID", "TR_ESSENCE_SECONDAIRE_ID")
         tra_with_ess =  merge_with_ess(tra_with_ess_id, self.ess)
 
+        tr_diametre_expr = '''CASE WHEN trim(coalesce("TR_DIAMETRE", '')) = '' THEN NULL'''
+        tr_hauteur_expr = '''CASE WHEN trim(coalesce("TR_HAUTEUR", '')) = '' THEN NULL'''
+
         formated_tra = processing.run("qgis:refactorfields", {
             'INPUT': tra_with_ess,
             'FIELDS_MAPPING': [
@@ -85,9 +88,9 @@ class ExpertiseMergeDialog(QDialog, FORM_CLASS):
                 {'expression': '"essence"',      'name': 'ESSENCE',   'type': 10, 'length': 50, 'precision': 0},
                 {'expression': '"variation"',    'name': 'VARIATION', 'type': 10, 'length': 50, 'precision': 0},
                 {'expression': '"type"',         'name': 'TYPE',      'type': 10, 'length': 50, 'precision': 0},
-                {'expression': '"TR_DIAMETRE"',  'name': 'DIAMETRE',  'type': 2,  'length': 10, 'precision': 3},
+                {'expression': tr_diametre_expr,  'name': 'DIAMETRE',  'type': 2,  'length': 10, 'precision': 3},
                 {'expression': '"TR_EFFECTIF"',  'name': 'EFFECTIF',  'type': 2,  'length': 10, 'precision': 0},
-                {'expression': '"TR_HAUTEUR"',   'name': 'HAUTEUR',   'type': 2,  'length': 10, 'precision': 3},
+                {'expression': tr_hauteur_expr,   'name': 'HAUTEUR',   'type': 2,  'length': 10, 'precision': 3},
             ],
             'OUTPUT': 'memory:'
         })['OUTPUT']
