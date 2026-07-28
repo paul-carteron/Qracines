@@ -1,11 +1,12 @@
 import re
-
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFormLayout,
     QLineEdit,
     QMessageBox,
+    QApplication
 )
 from qgis.core import QgsProject, QgsVectorLayer
 from qgis.gui import QgsAuthConfigSelect
@@ -114,22 +115,49 @@ def add_carteaux(parent=None):
         return []
 
     authcfg, department = selection
-    layers = [
-        create_wfs_layer(config, authcfg, department)
-        for config in WFS_LAYERS
-    ]
+    valid_layers = []
+    invalid_layers = []
 
-    valid_layers = [layer for layer in layers if layer.isValid()]
-    invalid_layers = [layer.name() for layer in layers if not layer.isValid()]
+    QApplication.setOverrideCursor(Qt.WaitCursor)
+    QApplication.processEvents()
 
-    if valid_layers:
-        QgsProject.instance().addMapLayers(valid_layers)
+    try:
+        for config in WFS_LAYERS:
+            layer = create_wfs_layer(
+                config,
+                authcfg,
+                department,
+            )
+
+            if not layer.isValid():
+                invalid_layers.append(layer.name())
+                continue
+
+            valid_layers.append(layer)
+
+        if valid_layers:
+            project = QgsProject.instance()
+            root = project.layerTreeRoot()
+
+            group = root.findGroup("CARTEAUX")
+            if group is None:
+                group = root.addGroup("CARTEAUX")
+
+            # Enregistre les couches sans les placer à la racine.
+            project.addMapLayers(valid_layers, False)
+
+            for layer in valid_layers:
+                group.addLayer(layer)
+
+    finally:
+        QApplication.restoreOverrideCursor()
 
     if invalid_layers:
         QMessageBox.warning(
             parent,
             "Chargement WFS",
-            "Couches non chargées :\n" + "\n".join(invalid_layers),
+            "Couches non chargées :\n"
+            + "\n".join(invalid_layers),
         )
 
     return valid_layers
