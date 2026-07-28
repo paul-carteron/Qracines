@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [V1.0.18] - Unreleased
+- Ajout des Périmètre de protection
+
 ## [V1.0.17] - Unreleased
 - Essence & Dendro paramétrable dans Expertise
 
