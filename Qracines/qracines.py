@@ -16,6 +16,7 @@ from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialo
 from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
 
 from .modules.scan25.scan25 import add_scan25
+from .modules.carteaux.carteaux import add_carteaux
 
 
 # import utils
@@ -76,8 +77,9 @@ class Qsequoia2Racines:
         self.expertise_merge = None
         self.expertise_load = None
 
-        # scan25 action
+        # other action
         self.scan25_action = None
+        self.carteaux_action = None
 
 
     def initGui(self):
@@ -117,6 +119,13 @@ class Qsequoia2Racines:
             QIcon(str(self.plugin_dir / "icons" / "scan25.svg")),
             "Ajouter SCAN 25®",
             self.open_scan25
+        )
+
+        # carteaux
+        self.carteau_action = self.toolbar.addAction(
+            QIcon(str(self.plugin_dir / "icons" / "carteaux.svg")),
+            "Ajouter Périmètre de protection",
+            self.open_carteaux
         )
 
     # region DIAGNOSTIC
@@ -206,6 +215,9 @@ class Qsequoia2Racines:
 
     def open_scan25(self):
         add_scan25(self.iface.mainWindow())
+
+    def open_carteaux(self):
+        add_carteaux(self.iface.mainWindow())
 
     def _check_seq_dir(self):
         seq_dir = get_project_variable("QS2_seq_dir")
