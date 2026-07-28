@@ -14,6 +14,7 @@ from .message import messageLog
 import unicodedata
 from pathlib import Path
 from typing import Type, Any, List, Iterable, Optional
+from datetime import datetime
 
 from qsequoia2.modules.utils.seq_config import seq_read, seq_layer, get_seq_config
 
@@ -176,7 +177,8 @@ class QfieldPackager(UIBinderMixin):
     @staticmethod
     def construct_filename(prefix: str, seq_id = None, codes: Optional[Iterable[str]] = None) -> str:
         """Return a filename like `{prefix}_{forest_prefix}_{code1}_{code2}_...`, skipping any empty segments."""
-        parts = [prefix, seq_id] + list(codes or [])
+        date_str = datetime.today().strftime('%Y%m%d')
+        parts = [date_str,prefix, seq_id] + list(codes or [])
         return "_".join(filter(None, parts))
 
     def package(self, prefix: str, seq_id = None, codes: Optional[Iterable[str]] = None) -> Optional[Path]:

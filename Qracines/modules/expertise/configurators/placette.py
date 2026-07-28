@@ -1,4 +1,12 @@
-from qgis.core import QgsFieldConstraints
+from qgis.core import (
+    QgsFieldConstraints,
+    QgsPalLayerSettings,
+    QgsTextFormat,
+    QgsVectorLayerSimpleLabeling,
+    QgsTextBufferSettings,
+)
+from PyQt5.QtGui import QFont, QColor
+
 from ....core.layer import FormBuilder, FieldEditor
 from ....utils.config import get_peuplements
 
@@ -14,6 +22,7 @@ class PlacetteConfigurator:
         print("configure PLACETTE layer")
         self._init_form()
         self._configure_fields()
+        self._style()
         self._set_qfield_properties()
 
     def _init_form(self):
@@ -91,3 +100,25 @@ class PlacetteConfigurator:
             "QFieldSync/value_map_button_interface_threshold",
             threshold
         )
+
+    def _style(self):
+        label_settings = QgsPalLayerSettings()
+        label_settings.fieldName = "fid"
+
+        text_format = QgsTextFormat()
+        text_format.setFont(QFont("Arial", 12))
+        text_format.setSize(12)
+
+        buffer = QgsTextBufferSettings()
+        buffer.setEnabled(True)
+        buffer.setSize(1.5)  # thickness
+        buffer.setColor(QColor("white"))
+
+        text_format.setBuffer(buffer)   
+
+        label_settings.setFormat(text_format)
+
+        labeling = QgsVectorLayerSimpleLabeling(label_settings)
+        self.layer.setLabeling(labeling)
+        self.layer.setLabelsEnabled(True)
+        self.layer.triggerRepaint()

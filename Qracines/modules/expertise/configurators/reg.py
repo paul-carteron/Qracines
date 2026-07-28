@@ -4,10 +4,9 @@ from ....utils.essence import configure_essence_field
 
 class RegConfigurator:
 
-    def __init__(self, layer, essences, codes):
+    def __init__(self, layer, essences):
         self.layer = layer
         self.essences = essences
-        self.codes = codes
 
         self.fb = FormBuilder(layer)
         self.fe = FieldEditor(layer)
@@ -18,7 +17,6 @@ class RegConfigurator:
 
         self._init_form()
         self._configure_fields()
-        self._configure_essence()
         self._set_qfield_properties()
 
     def _init_form(self):
@@ -27,7 +25,6 @@ class RegConfigurator:
 
         self.fb.new_add_fields([
             "REG_ESSENCE_ID",
-            "REG_ESSENCE_SECONDAIRE_ID",
             "REG_STADE",
             "REG_ETAT"
         ])
@@ -39,13 +36,25 @@ class RegConfigurator:
         # ALIASES
         aliases = [
             ("REG_ESSENCE_ID", "Essence"),
-            ("REG_ESSENCE_SECONDAIRE_ID", "Autre essence"),
             ("REG_STADE", "Stade"),
             ("REG_ETAT", "Etat"),
         ]
         
         for field, alias in aliases:
             self.fe.set_alias(field, alias)
+
+        # region REG_ESSENCE_ID
+        field_ess = "REG_ESSENCE_ID"
+        
+        config = {
+            'Key': 'fid',
+            'Layer': self.essences.id(),
+            'Value': 'essence_variation',
+            'AllowNull': True,
+            'FilterExpression': '"variation" IS NULL'
+        }
+
+        self.fe.add_value_relation(field_ess, config)
 
         # REG_STADE
         stades = {
@@ -76,7 +85,7 @@ class RegConfigurator:
                 get_feature(
                     '{ess_layer_name}',
                     'fid',
-                    coalesce(NULLIF("REG_ESSENCE_ID", ''), "REG_ESSENCE_SECONDAIRE_ID")
+                    "REG_ESSENCE_ID"
                 ),
                 concat(
                     attribute(@ess, 'essence_variation'),
@@ -89,19 +98,9 @@ class RegConfigurator:
             """
         self.layer.setDisplayExpression(display_expression)
 
-    def _configure_essence(self):
-
-        configure_essence_field(
-            self.layer,
-            "REG_ESSENCE_ID",
-            "REG_ESSENCE_SECONDAIRE_ID",
-            self.essences,
-            self.codes,
-            with_variation=False
-        )
-
     def _set_qfield_properties(self):
+        threshold = 70
         self.layer.setCustomProperty(
             "QFieldSync/value_map_button_interface_threshold",
-            len(self.codes) + 1
+            threshold
         )

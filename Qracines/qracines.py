@@ -15,6 +15,10 @@ from .modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDi
 from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialog
 from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
 
+from .modules.scan25.scan25 import add_scan25
+from .modules.carteaux.carteaux import add_carteaux
+
+
 # import utils
 from .utils.variable import get_project_variable, get_global_variable
 
@@ -27,6 +31,7 @@ QFIELD_BUTTONS = [
     ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
     ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge",    "open_expertise_load"   ),
 ]
+
 
 class QfieldButton:
     def __init__(self, icon: Path, tooltip: str, menu_items: list[tuple[str, callable]]):
@@ -72,6 +77,11 @@ class Qsequoia2Racines:
         self.expertise_merge = None
         self.expertise_load = None
 
+        # other action
+        self.scan25_action = None
+        self.carteaux_action = None
+
+
     def initGui(self):
         # initGui() is called by QGIS when the plugin is enabled in the UI
         # initGui() is specifically meant to register GUI elements (toolbars, menus, buttons, etc.).
@@ -88,7 +98,7 @@ class Qsequoia2Racines:
                 menu_items.append(("Créer", getattr(self, create_handler)))
 
             if merge_handler and hasattr(self, merge_handler):
-                menu_items.append(("Combiner", getattr(self, merge_handler)))
+                menu_items.append(("Traiter", getattr(self, merge_handler)))
 
             if load_handler and hasattr(self, load_handler):
                 menu_items.append(("Charger", getattr(self, load_handler)))
@@ -103,6 +113,20 @@ class Qsequoia2Racines:
 
         for btn in self.buttons:
             btn.add_to_toolbar(self.toolbar)
+
+        # scan25
+        self.scan25_action = self.toolbar.addAction(
+            QIcon(str(self.plugin_dir / "icons" / "scan25.svg")),
+            "Ajouter SCAN 25®",
+            self.open_scan25
+        )
+
+        # carteaux
+        self.carteau_action = self.toolbar.addAction(
+            QIcon(str(self.plugin_dir / "icons" / "carteaux.svg")),
+            "Ajouter Périmètre de protection",
+            self.open_carteaux
+        )
 
     # region DIAGNOSTIC
     def open_diagnostic_create(self):
@@ -187,6 +211,14 @@ class Qsequoia2Racines:
         
     # endregion
     
+    # region SCAN25
+
+    def open_scan25(self):
+        add_scan25(self.iface.mainWindow())
+
+    def open_carteaux(self):
+        add_carteaux(self.iface.mainWindow())
+
     def _check_seq_dir(self):
         seq_dir = get_project_variable("QS2_seq_dir")
         if not seq_dir:
@@ -214,6 +246,10 @@ class Qsequoia2Racines:
             btn.unload(self.toolbar)
 
         self.buttons.clear()
+
+        if self.scan25_action:
+            self.toolbar.removeAction(self.scan25_action)
+            self.scan25_action = None
         
         # Remove the toolbar if it exists
         if self.toolbar:

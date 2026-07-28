@@ -39,6 +39,15 @@ EXPERTISE_LAYERS = {
         ],
     },
 
+    "param": {
+        "fields": [
+            ("HMIN", QMetaType.Type.Int),
+            ("HMAX", QMetaType.Type.Int),
+            ("DMIN", QMetaType.Type.Int),
+            ("DMAX", QMetaType.Type.Int),
+        ],
+    },
+
     "gha": {
         "fields": [
             ("UUID", QMetaType.Type.QString),
@@ -60,7 +69,6 @@ EXPERTISE_LAYERS = {
         "fields": [
             ("UUID", QMetaType.Type.QString),
             ("VA_ESSENCE_ID", QMetaType.Type.QString),
-            ("VA_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
             ("VA_AGE_APP", QMetaType.Type.LongLong),
             ("VA_TX_TROUEE", QMetaType.Type.LongLong),
             ("VA_TX_HA", QMetaType.Type.Double),
@@ -72,9 +80,20 @@ EXPERTISE_LAYERS = {
         "fields": [
             ("UUID", QMetaType.Type.QString),
             ("REG_ESSENCE_ID", QMetaType.Type.QString),
-            ("REG_ESSENCE_SECONDAIRE_ID", QMetaType.Type.QString),
             ("REG_STADE", QMetaType.Type.QString),
             ("REG_ETAT", QMetaType.Type.QString),
+        ],
+    },
+
+    "lst_hauteur": {
+        "fields": [
+            ("VALEUR", QMetaType.Type.Int),
+        ],
+    },
+
+    "lst_diam": {
+        "fields": [
+            ("VALEUR", QMetaType.Type.Int),
         ],
     },
 }
