@@ -31,18 +31,18 @@ class PlacetteConfigurator:
 
         general_tab = self.fb.create_tab("Général")
 
-        self.fb.new_add_fields(
+        self.fb.add_fields(
             ["COMPTEUR", "PLTM_PARCELLE", "PLTM_STRATE", "PLTM_TYPE", "PLA_RMQ"],
             parent=general_tab
         )
 
-        self.fb.new_add_relation(self.relations["gha"], parent=general_tab)
+        self.fb.add_relation(self.relations["gha"], parent=general_tab)
 
-        self.fb.new_add_fields(["TSE_STERE_HA"], parent=general_tab)
+        self.fb.add_fields(["TSE_STERE_HA"], parent=general_tab)
 
-        self.fb.new_add_relation(self.relations["tse"], parent=general_tab)
-        self.fb.new_add_relation(self.relations["va"], parent=general_tab)
-        self.fb.new_add_relation(self.relations["reg"], parent=general_tab)
+        self.fb.add_relation(self.relations["tse"], parent=general_tab)
+        self.fb.add_relation(self.relations["va"], parent=general_tab)
+        self.fb.add_relation(self.relations["reg"], parent=general_tab)
 
         self.fb.apply()
 

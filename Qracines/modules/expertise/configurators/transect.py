@@ -28,7 +28,7 @@ class TransectConfigurator:
 
         self.fb.init_form()
 
-        self.fb.new_add_fields([
+        self.fb.add_fields([
             "TR_PARCELLE",
             "TR_STRATE",
             "TR_ESSENCE_ID",

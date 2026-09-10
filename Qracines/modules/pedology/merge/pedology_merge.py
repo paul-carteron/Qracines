@@ -6,10 +6,9 @@ from qgis.PyQt import uic
 from qgis.core import QgsProcessing, QgsProject, QgsVectorLayer
 from qgis.utils import iface
 
-from ....utils.config import get_guides, get_qfield_path, get_stations, get_style
-from ....utils.message import messageLog
+from ....utils.config import get_guides, get_qfield_path, get_stations
 from ....utils.ui import GpkgLoader
-from ....utils.variable import get_global_variable
+from ..configurators.horizons import HorizonsConfigurator
 from ..configurators.sondage import SondageConfigurator
 from ..layer_schema import PEDOLOGY_LAYERS
 
@@ -95,21 +94,10 @@ class PedologyMergeDialog(QDialog, FORM_CLASS):
         return result["OUTPUT"]
 
     def _configure_layers(self, layers):
-        style_dir = get_global_variable("QS2_styles_directory") or None
-
-        for name, layer in layers.items():
-            try:
-                style_path = get_style(name, styles_dir=style_dir)
-                error_message, loaded = layer.loadNamedStyle(str(style_path))
-                if not loaded:
-                    messageLog(f"Could not style layer {name}: {error_message}")
-                layer.triggerRepaint()
-            except Exception as exc:
-                messageLog(f"Could not style layer {name}: {exc}")
-
         SondageConfigurator(
             layers["sondage"], self._all_stations()
         ).configure()
+        HorizonsConfigurator(layers["horizons"]).configure()
 
     def accept(self):
         if not self.gpkg_loader.is_valid():

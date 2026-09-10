@@ -25,9 +25,9 @@ class PictoConfigurator:
 
     def _init_form(self):
         self.fb.init_form()
-        self.fb.new_add_fields(["PICTO_TYPE", "PICTO_RMQ", "PICTO_PHOTO"])
-        grp_shape = self.fb.create_group(name="Symbologie", columns=2)
-        self.fb.new_add_fields(["PICTO_COLOR", "PICTO_SHAPE"], grp_shape)
+        self.fb.add_fields(["PICTO_TYPE", "PICTO_RMQ", "PICTO_PHOTO"])
+        grp_shape = self.fb.add_group(name="Symbologie", columns=2)
+        self.fb.add_fields(["PICTO_COLOR", "PICTO_SHAPE"], grp_shape)
         self.fb.apply()
 
     def _configure_fields(self):

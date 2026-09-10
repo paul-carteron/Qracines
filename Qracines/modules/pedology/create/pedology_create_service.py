@@ -3,10 +3,11 @@ import processing
 from qgis.core import QgsProcessing, QgsProject
 
 from ....core.layer.factory import LayerFactory
-from ....utils.config import get_stations, get_style
+from ....utils.config import get_stations
 from ....utils.layers import create_relation, load_gpkg
 from ....utils.message import messageLog
 from ....utils.utils import fold, unfold
+from ..configurators.horizons import HorizonsConfigurator
 from ..configurators.sondage import SondageConfigurator
 from ..layer_schema import PEDOLOGY_LAYERS
 
@@ -34,8 +35,8 @@ class PedologyCreateService:
         gpkg_path = self._package_layers(layers)
 
         layers = load_gpkg(gpkg_path, group_name="PEDOLOGY")
-        self._create_relation(layers)
-        self._configure_layers(layers)
+        relation = self._create_relation(layers)
+        self._configure_layers(layers, relation)
 
         for key in (self.seq_vect_keys + self.seq_rast_keys):
             try:
@@ -73,10 +74,13 @@ class PedologyCreateService:
     def _create_relation(self, layers):
         return create_relation(
             layers["sondage"], layers["horizons"],
-            "uuid", "sondage",
+            "UUID", "SONDAGE",
             relation_id="sondage_horizons", relation_name="sondage",
         )
 
-    def _configure_layers(self, layers):
+    def _configure_layers(self, layers, relation):
         stations = get_stations(self.guide)
-        SondageConfigurator(layers["sondage"], stations).configure()
+        SondageConfigurator(
+            layers["sondage"], stations, relation=relation
+        ).configure()
+        HorizonsConfigurator(layers["horizons"]).configure()

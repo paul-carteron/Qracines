@@ -21,7 +21,7 @@ class RegConfigurator:
       
     def _init_form(self):
         self.fb.init_form()
-        self.fb.new_add_fields(["REG_ESS", "REG_STADE", "REG_ETAT"])
+        self.fb.add_fields(["REG_ESS", "REG_STADE", "REG_ETAT"])
         self.fb.apply()
 
     def _configure_fields(self):

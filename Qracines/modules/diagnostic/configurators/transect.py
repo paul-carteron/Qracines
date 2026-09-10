@@ -25,14 +25,14 @@ class TransectConfigurator:
         
         self.fb.init_form()
 
-        self.fb.new_add_fields(["TR_PARCELLE"])
-        grp_essence = self.fb.create_group(name="Essence")
-        self.fb.new_add_fields(["TR_TYPE_ESS", "TR_ESS"], grp_essence)
+        self.fb.add_fields(["TR_PARCELLE"])
+        grp_essence = self.fb.add_group(name="Essence")
+        self.fb.add_fields(["TR_TYPE_ESS", "TR_ESS"], grp_essence)
 
-        grp_dendro = self.fb.create_group(name="Dendrométrie", columns=2)
-        self.fb.new_add_fields(["TR_DIAM", "TR_HAUTEUR"], grp_dendro)
+        grp_dendro = self.fb.add_group(name="Dendrométrie", columns=2)
+        self.fb.add_fields(["TR_DIAM", "TR_HAUTEUR"], grp_dendro)
 
-        self.fb.new_add_fields(["TR_EFFECTIF"])
+        self.fb.add_fields(["TR_EFFECTIF"])
         
         self.fb.apply()
 

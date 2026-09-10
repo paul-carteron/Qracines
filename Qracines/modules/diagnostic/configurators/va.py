@@ -20,7 +20,7 @@ class VaConfigurator:
       
     def _init_form(self):
         self.fb.init_form()
-        self.fb.new_add_fields(["VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA"])
+        self.fb.add_fields(["VA_ESS", "VA_TX_HA", "VA_CUMUL_TX_VA"])
         self.fb.apply()
 
     def _configure_fields(self):

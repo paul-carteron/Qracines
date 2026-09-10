@@ -33,9 +33,9 @@ class ArbresConfigurator:
         self.fb.init_form()
   
         tab = self.fb.create_tab("")
-        group1 = self.fb.create_group("", columns=2, parent=tab)
-        self.fb.new_add_fields(["COMPTEUR", "PARCELLE"], parent = group1)
-        self.fb.new_add_fields(["ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "FAVORI", "OBSERVATION"], parent = tab)
+        group1 = self.fb.add_group("", columns=2, parent=tab)
+        self.fb.add_fields(["COMPTEUR", "PARCELLE"], parent = group1)
+        self.fb.add_fields(["ESSENCE_ID", "ESSENCE_SECONDAIRE_ID", "DIAMETRE", "HAUTEUR", "EFFECTIF", "FAVORI", "OBSERVATION"], parent = tab)
 
         self.fb.apply()
 

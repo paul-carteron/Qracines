@@ -18,7 +18,7 @@ class ParamConfigurator:
     def _init_form(self):
 
         self.fb.init_form()
-        self.fb.new_add_fields(["HMIN", "HMAX", "DMIN", "DMAX"])
+        self.fb.add_fields(["HMIN", "HMAX", "DMIN", "DMAX"])
         self.fb.apply()
 
     def _configure_fields(self):
