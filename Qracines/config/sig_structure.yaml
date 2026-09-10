@@ -109,4 +109,5 @@ structure:
       diag: { filename: diagnostic.gpkg }
       diag_qfield: { filename: diag_qfield.zip }
       diag_synthese: { filename: diag.xlsx }
+      pedology: { filename: pedology.gpkg }
       pedology_qfield: { filename: pedology.zip }

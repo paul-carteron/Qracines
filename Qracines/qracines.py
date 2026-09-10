@@ -9,7 +9,9 @@ from .modules.expertise.create.expertise_create import ExpertiseCreateDialog
 from .modules.expertise.merge.expertise_merge import ExpertiseMergeDialog
 from .modules.expertise.load.expertise_load import ExpertiseLoad
 
-from .modules.pedology.pedology_create import PedologyCreateDialog
+from .modules.pedology.create.pedology_create import PedologyCreateDialog
+from .modules.pedology.merge.pedology_merge import PedologyMergeDialog
+from .modules.pedology.load.pedology_load import PedologyLoad
 
 from .modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDialog
 from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialog
@@ -27,7 +29,7 @@ from pathlib import Path
 QFIELD_BUTTONS = [
 #   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"",          "load_handler"          ),
     ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_merge",   "open_diagnostic_load"  ),
-    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_import",    None                    ),
+    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_merge",     "open_pedology_load"    ),
     ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
     ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge",    "open_expertise_load"   ),
 ]
@@ -69,7 +71,8 @@ class Qsequoia2Racines:
         self.diagnostic_merge = None
         self.diagnostic_load = None
         self.pedology_create = None
-        self.pedology_import = None
+        self.pedology_merge = None
+        self.pedology_load = None
         self.tree_marking_create = None
         self.tree_marking_merge = None
         self.tree_marking_load = None
@@ -154,19 +157,31 @@ class Qsequoia2Racines:
         
     # endregion
         
-    # # region PEDOLOGY
-    # def open_pedology_create(self):
-    #     if not self._check_forest_is_selected():
-    #         return None
-        
-    #     if not self.pedology_create:
-    #         self.pedology_create = PedologyCreateDialog(self.iface)
-    #     self.pedology_create.exec_()
+    # region PEDOLOGY
+    def open_pedology_create(self):
+        if not self._check_seq_dir():
+            return None
 
-    # def open_pedology_import(self):
-    #     return
-    
-    # # endregion
+        self._check_seq_style_dir()
+
+        dialog = PedologyCreateDialog()
+        dialog.exec_()
+
+    def open_pedology_merge(self):
+        if not self._check_seq_dir():
+            return None
+
+        dialog = PedologyMergeDialog()
+        dialog.exec_()
+
+    def open_pedology_load(self):
+        if not self._check_seq_dir():
+            return None
+
+        loader = PedologyLoad()
+        loader.load()
+
+    # endregion
     
     # region TREE MARKING
     def open_tree_marking_create(self):
