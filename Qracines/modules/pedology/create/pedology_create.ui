@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PedologyCreateDialog</class>
+ <widget class="QDialog" name="PedologyCreateDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>582</width>
+    <height>650</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Pédologie</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="hbox_qfield">
+     <item>
+      <widget class="QCheckBox" name="cb_package_for_qfield">
+       <property name="toolTip">
+        <string>Lorsque la case est cochée, le projet est empaqueté pour QField, compressé en ZIP et déposé dans le répertoire de sortie</string>
+       </property>
+       <property name="text">
+        <string>Paquet pour QField</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QgsFileWidget" name="fw_outdir">
+       <property name="options">
+        <set>QFileDialog::ShowDirsOnly</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_guide">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_guide">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>GUIDE DE STATION</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="cob_stations"/>
+   </item>
+   <item>
+    <widget class="Line" name="line_vect">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_vect">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>VECTEUR</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hbox_filter_vect">
+     <item>
+      <widget class="QLabel" name="lbl_filter_seq_vect">
+       <property name="text">
+        <string>Filtre :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_filter_seq_vect"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="grid_vect">
+     <item row="0" column="0">
+      <widget class="QListWidget" name="lw_seq_vect"/>
+     </item>
+     <item row="0" column="1">
+      <layout class="QVBoxLayout" name="buttons_vect">
+       <item>
+        <widget class="QPushButton" name="pb_add_seq_vect">
+         <property name="text">
+          <string>Ajouter &gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pb_remove_seq_vect">
+         <property name="text">
+          <string>&lt; Retirer</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_vect">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="2">
+      <widget class="QListWidget" name="lw_selected_seq_vect"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_rast">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_rast">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>RASTER</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hbox_filter_rast">
+     <item>
+      <widget class="QLabel" name="lbl_filter_seq_rast">
+       <property name="text">
+        <string>Filtre :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_filter_seq_rast"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="grid_rast">
+     <item row="0" column="0">
+      <widget class="QListWidget" name="lw_seq_rast"/>
+     </item>
+     <item row="0" column="1">
+      <layout class="QVBoxLayout" name="buttons_rast">
+       <item>
+        <widget class="QPushButton" name="pb_add_seq_rast">
+         <property name="text">
+          <string>Ajouter &gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pb_remove_seq_rast">
+         <property name="text">
+          <string>&lt; Retirer</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer_rast">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="2">
+      <widget class="QListWidget" name="lw_selected_seq_rast"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfilewidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>PedologyCreateDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel"><x>0</x><y>0</y></hint>
+    <hint type="destinationlabel"><x>0</x><y>0</y></hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>PedologyCreateDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel"><x>0</x><y>0</y></hint>
+    <hint type="destinationlabel"><x>0</x><y>0</y></hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

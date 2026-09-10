@@ -414,14 +414,14 @@ class GpkgLoader(UIBinderMixin):
         """
         # 1) No files selected
         if not self.selected_files:
-            QMessageBox.warning(self, "Aucun fichier", "Aucun GeoPackage sélectionné.")
+            QMessageBox.warning(self.ui, "Aucun fichier", "Aucun GeoPackage sélectionné.")
             return False
 
         # 2) Check existence
         missing = [f for f in self.selected_files if not Path(f).exists()]
         if missing:
             QMessageBox.warning(
-                self,
+                self.ui,
                 "Fichiers introuvables",
                 "Les fichiers suivants n'existent pas :\n" + "\n".join(missing)
             )
@@ -431,7 +431,7 @@ class GpkgLoader(UIBinderMixin):
         invalid_ext = [f for f in self.selected_files if Path(f).suffix.lower() != ".gpkg"]
         if invalid_ext:
             QMessageBox.warning(
-                self,
+                self.ui,
                 "Extension invalide",
                 "Les fichiers suivants ne sont pas des .gpkg :\n" + "\n".join(invalid_ext)
             )

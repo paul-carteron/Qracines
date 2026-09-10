@@ -91,6 +91,11 @@ class FieldEditor:
         widget_setup = QgsEditorWidgetSetup('Range', config)
         self.layer.setEditorWidgetSetup(index, widget_setup)
 
+    def add_checkbox(self, field_name, config=None):
+        index = self._get_field_index(field_name)
+        widget_setup = QgsEditorWidgetSetup("CheckBox", config or {})
+        self.layer.setEditorWidgetSetup(index, widget_setup)
+
     def add_external_resource(self, field_name, config=None):
         """
         Set the 'ExternalResource' widget for a given field.

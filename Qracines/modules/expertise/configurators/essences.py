@@ -16,7 +16,7 @@ class EssencesConfigurator:
     def _init_form(self):
         
         self.fb.init_form()
-        self.fb.new_add_fields(["selected"])
+        self.fb.add_fields(["selected"])
         self.fb.apply()
 
     def _configure_fields(self):

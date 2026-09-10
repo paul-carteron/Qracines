@@ -43,11 +43,11 @@ def add_scan25(parent=None):
 
     quri = QgsDataSourceUri()
     quri.setParam("authcfg", authcfg)
-    quri.setParam("crs", "EPSG:3857")
-    quri.setParam("format", "image/jpeg")
-    quri.setParam("layers", "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR")
+    quri.setParam("crs", "IGNF:LAMB93")
+    quri.setParam("format", "image/png")
+    quri.setParam("layers", "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR.L93")
     quri.setParam("styles", "normal")
-    quri.setParam("tileMatrixSet", "PM_6_16")
+    quri.setParam("tileMatrixSet", "LAMB93_2.5m_3_16")
     quri.setParam(
         "url",
         "https://data.geopf.fr/private/wmts/?service=WMTS&version=1.0.0&request=GetCapabilities"

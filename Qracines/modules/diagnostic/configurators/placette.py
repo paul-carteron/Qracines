@@ -46,28 +46,28 @@ class PlacetteConfigurator:
 
         # GENERAL
         general_tab = self.fb.create_tab("Général")
-        self.fb.new_add_fields(["COMPTEUR", "PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
+        self.fb.add_fields(["COMPTEUR", "PLT_TYPE", "PLT_STADE", "PLT_AME", "PLT_RMQ", "PLT_PHOTO"], parent = general_tab)
 
         # PEUPLEMENT
         tab_peupl = self.fb.create_tab("Peuplement")
-        self.fb.new_add_relation(self.relations["Gha"], tab_peupl, visibility_expression=forest_ve)
-        self.fb.new_add_fields(["PLT_RICH", "PLT_STRUCTURE", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
-        group = self.fb.create_group("", parent = tab_peupl, columns=2)
-        self.fb.new_add_fields(["PLT_SINISTRE", "PLT_ACCESS"], parent = group)
+        self.fb.add_relation(self.relations["Gha"], tab_peupl, visibility_expression=forest_ve)
+        self.fb.add_fields(["PLT_RICH", "PLT_STRUCTURE", "PLT_DMOY", "PLT_CLOISO", "PLT_ELAG", "PLT_SANIT", "PLT_MECA"], parent = tab_peupl)
+        group = self.fb.add_group("", parent = tab_peupl, columns=2)
+        self.fb.add_fields(["PLT_SINISTRE", "PLT_ACCESS"], parent = group)
 
         # TAILLIS
         tab_taillis = self.fb.create_tab("Taillis")
-        self.fb.new_add_relation(self.relations["Tse"], tab_taillis, visibility_expression=both)
-        self.fb.new_add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
+        self.fb.add_relation(self.relations["Tse"], tab_taillis, visibility_expression=both)
+        self.fb.add_fields(["TSE_DENS", "TSE_VOL", "TSE_NATURE"], parent = tab_taillis)
 
         # REGE
         rege_taillis = self.fb.create_tab("Régé")
-        self.fb.new_add_relation(self.relations["Reg"], rege_taillis, visibility_expression=forest_ve)
+        self.fb.add_relation(self.relations["Reg"], rege_taillis, visibility_expression=forest_ve)
 
         # RENOUVELLEMENT
         tab_va = self.fb.create_tab("Renouvellement")
-        self.fb.new_add_relation(self.relations["Va"], tab_va, visibility_expression=va_ve)
-        self.fb.new_add_fields(["VA_HT", "PLT_ELAG", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
+        self.fb.add_relation(self.relations["Va"], tab_va, visibility_expression=va_ve)
+        self.fb.add_fields(["VA_HT", "PLT_ELAG", "VA_TX_TROUEE", "VA_VEG_CON", "VA_TX_DEG", "VA_PROTECT"], parent = tab_va)
 
         # Apply to layer
         self.fb.apply()

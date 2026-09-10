@@ -1,44 +1,39 @@
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QMetaType
+
 
 PEDOLOGY_LAYERS = {
-
     "sondage": {
         "geometry": "Point",
         "fields": [
-            ("fid", QVariant.Int),
-            ("uuid", QVariant.String),
-            ("rmq", QVariant.String),
-            ("humus", QVariant.String),
-            ("topographie", QVariant.String),
-            ("exposition", QVariant.String),
-            ("station", QVariant.String),
-            ("arret", QVariant.String),
-            ("photo", QVariant.String)
+            ("UUID", QMetaType.Type.QString),
+            ("REMARQUE", QMetaType.Type.QString),
+            ("HUMUS", QMetaType.Type.QString),
+            ("TOPOGRAPHIE", QMetaType.Type.QString),
+            ("EXPOSITION", QMetaType.Type.QString),
+            ("STATION", QMetaType.Type.QString),
+            ("ARRET", QMetaType.Type.QString),
+            ("PHOTO", QMetaType.Type.QString),
         ],
-
     },
-
     "horizons": {
         "fields": [
-            ("fid", QVariant.Int),
-            ("sondage", QVariant.String),
-            ("type", QVariant.String),
-            ("epaisseur", QVariant.Int),
-            ("humidite", QVariant.String),
-            ("texture", QVariant.String),
-            ("couleur", QVariant.String),
-            ("structure", QVariant.String),
-            ("compacite", QVariant.String),
-            ("eg", QVariant.Bool),
-            ("eg_taille", QVariant.String),
-            ("eg_proportion", QVariant.Double),
-            ("hm", QVariant.Bool),
-            ("hm_tache", QVariant.String),
-            ("hm_proportion", QVariant.Double),
-            ("car", QVariant.Bool),
-            ("car_localisation", QVariant.String),
-            ("car_puissance", QVariant.String),
-            ("profondeur", QVariant.Int)
-        ]
+            ("SONDAGE", QMetaType.Type.QString),
+            ("TYPE", QMetaType.Type.QString),
+            ("EPAISSEUR", QMetaType.Type.Int),
+            ("HUMIDITE", QMetaType.Type.QString),
+            ("TEXTURE", QMetaType.Type.QString),
+            ("COULEUR", QMetaType.Type.QString),
+            ("STRUCTURE", QMetaType.Type.QString),
+            ("COMPACITE", QMetaType.Type.QString),
+            ("EG", QMetaType.Type.Bool),
+            ("EG_TAILLE", QMetaType.Type.QString),
+            ("EG_PROPORTION", QMetaType.Type.Double),
+            ("HM", QMetaType.Type.Bool),
+            ("HM_TACHE", QMetaType.Type.QString),
+            ("HM_PROPORTION", QMetaType.Type.Double),
+            ("CAR", QMetaType.Type.Bool),
+            ("CAR_LOCALISATION", QMetaType.Type.QString),
+            ("CAR_PUISSANCE", QMetaType.Type.QString)
+        ],
     },
-    }
+}

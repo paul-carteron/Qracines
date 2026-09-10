@@ -23,7 +23,7 @@ class GhaConfigurator:
     def _init_form(self):
 
         self.fb.init_form()
-        self.fb.new_add_fields(["GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G"])
+        self.fb.add_fields(["GHA_ESSENCE_ID", "GHA_ESSENCE_SECONDAIRE_ID", "GHA_G"])
         self.fb.apply()
 
     def _configure_fields(self):

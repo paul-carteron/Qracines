@@ -16,7 +16,7 @@ class TseConfigurator:
 
     def _init_form(self):
         self.fb.init_form()
-        self.fb.new_add_fields(["TSE_ESS", "TSE_DIM"])
+        self.fb.add_fields(["TSE_ESS", "TSE_DIM"])
         self.fb.apply()
 
     def _configure_fields(self):

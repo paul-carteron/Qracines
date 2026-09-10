@@ -24,7 +24,7 @@ class VaConfigurator:
 
         self.fb.init_form()
 
-        self.fb.new_add_fields([
+        self.fb.add_fields([
             "VA_ESSENCE_ID",
             "VA_TX_TROUEE",
             "VA_AGE_APP",

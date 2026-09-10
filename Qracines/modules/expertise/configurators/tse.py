@@ -24,7 +24,7 @@ class TseConfigurator:
     def _init_form(self):
 
         self.fb.init_form()
-        self.fb.new_add_fields(["TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID"])
+        self.fb.add_fields(["TSE_ESSENCE_ID", "TSE_ESSENCE_SECONDAIRE_ID"])
         self.fb.apply()
 
     def _configure_fields(self):

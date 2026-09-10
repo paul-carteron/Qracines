@@ -27,7 +27,7 @@ class LimiteConfigurator:
 
     def _init_form(self):
         self.fb.init_form()
-        self.fb.new_add_fields(["LIMITE_TYPE", "LIMITE_RMQ", "LIMITE_PHOTO"])
+        self.fb.add_fields(["LIMITE_TYPE", "LIMITE_RMQ", "LIMITE_PHOTO"])
         self.fb.apply()
 
     def _configure_fields(self):

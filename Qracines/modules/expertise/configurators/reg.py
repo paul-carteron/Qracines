@@ -23,7 +23,7 @@ class RegConfigurator:
 
         self.fb.init_form()
 
-        self.fb.new_add_fields([
+        self.fb.add_fields([
             "REG_ESSENCE_ID",
             "REG_STADE",
             "REG_ETAT"

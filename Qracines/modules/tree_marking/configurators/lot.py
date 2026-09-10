@@ -21,15 +21,15 @@ class LotConfigurator:
     def _init_form(self):
 
         self.fb.init_form() 
-        self.fb.new_add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"])
+        self.fb.add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE", "MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"])
         self.fb.apply()
 
         self.fb.init_form()
   
         tab1 = self.fb.create_tab("Parcelle")
         tab2 = self.fb.create_tab("Marquage")
-        self.fb.new_add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE"], parent = tab1)
-        self.fb.new_add_fields(["MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"], parent = tab2)
+        self.fb.add_fields(["FOREST_ID", "TYPE", "LOT", "PARCELLE", "SURFACE"], parent = tab1)
+        self.fb.add_fields(["MARQUE","MARQUAGE_BO", "COULEUR_BO", "MARQUAGE_BI", "COULEUR_BI"], parent = tab2)
 
         self.fb.apply()
 
