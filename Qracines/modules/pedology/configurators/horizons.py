@@ -1,4 +1,4 @@
-from qgis.core import QgsFieldConstraints
+from qgis.core import QgsAttributeEditorQmlElement, QgsFieldConstraints
 
 from ....core.layer import FieldEditor, FormBuilder
 from ..config import (
@@ -28,7 +28,27 @@ class HorizonsConfigurator:
 
     def _init_form(self):
         self.form.init_form()
-        self.form.add_fields(["TYPE", "EPAISSEUR", "TEXTURE", "HUMIDITE", "COULEUR"])
+        self.form.add_fields(["TYPE", "EPAISSEUR"])
+
+        texture_image = QgsAttributeEditorQmlElement("Triangle des textures", self.form.root)
+        texture_image.setShowLabel(False)
+        texture_image.setQmlCode(
+            r'''import QtQuick
+
+                Image {
+                    width: parent.width
+                    height: sourceSize.width > 0
+                        ? width * sourceSize.height / sourceSize.width
+                        : 0
+                    source: "file:///" + expression.evaluate(
+                        "replace(@project_folder, '\\\\', '/') || '/assets/triangle_des_textures.jpeg'"
+                    )
+                    fillMode: Image.PreserveAspectFit
+                }'''
+        )
+        self.form.root.addChildElement(texture_image)
+
+        self.form.add_fields(["TEXTURE", "HUMIDITE", "COULEUR"])
         structure_group = self.form.add_group(
             "", columns=1, visibility_expression='"TYPE" = \'Fosse\''
         )

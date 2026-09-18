@@ -49,24 +49,23 @@ SOIL_MOISTURE_CHOICES = {
 }
 
 TEXTURE_CHOICES = {
-    "Argile lourde": "AA",
-    "Argileux": "A",
-    "Argile sableuse": "As",
-    "Argile limono-sableuse": "Als",
-    "Argile limoneuse": "Al",
-    "Argilo-sableux": "AS",
-    "Limon argilo-sableux": "LAS",
-    "Limon argileux": "La",
-    "Sable argileux": "Sa",
-    "Sable argilo-limoneux": "Sal",
-    "Limon sablo-argileux": "Lsa",
-    "Limon": "L",
-    "Sableux": "S",
-    "Sable": "SS",
-    "Sable limoneux": "Sl",
-    "Limon sableux": "Ls",
-    "LL": "Limon pur",
+    "Sable (A:5% L:5% S:90%)" :"S",
+    "Sable limoneux (A:5% L:25% S:70%)": "SL",
+    "Sable argileux (A:20% L:10% S:70%)": "SA",
+    "Limon léger sableux (A:5% L:5% S:40%)":" LLS",
+    "Limon sableux (A:10% L:45% S:45%)": "LS",
+    "Limon moyennement sableux (A:10% L:65% S:25%)":" LMS",
+    "Limon sablo-argileux (A:25% L:35% S:40%)":" LSA",
+    "Limon argilo-sableux (A:25% L:50% S:25%)":" LAS",
+    "Limon léger (A:5% L:90% S:5%)": "LL",
+    "Limon moyen (A:15% L:80% S:5%)": "LM",
+    "Limon argileux (A:25% L:70% S:5%)": "LA",
+    "Argile sableuse (A:35% L:10% S:55%)": "AS",
+    "Argile (A:40% L:30% S:30%)" :"A",
+    "Argile limoneuse (A:40% L:50% S:10%)": "AL",
+    "Argile lourde (A:70% L:15% S:15%)":" ALO",
 }
+
 
 STRUCTURE_CHOICES = {
     "Particulaire": "particulaire",

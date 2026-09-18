@@ -86,7 +86,13 @@ class PedologyCreateDialog(QDialog, FORM_CLASS):
             message = "Projet pédologique terminé !"
             if self.packager.is_valid():
                 packaged_dir = self.packager.package(
-                    prefix="PEDO", seq_id=self.seq_id
+                    prefix="PEDO",
+                    seq_id=self.seq_id,
+                    assets=[
+                        Path(__file__).parents[3]
+                        / "assets"
+                        / "triangle_des_textures.jpeg"
+                    ],
                 )
                 message += f"\nProjet packagé dans :\n{packaged_dir}"
 

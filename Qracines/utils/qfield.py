@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import tempfile
 import zipfile
 
@@ -7,7 +8,7 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.core import QgsOfflineEditing
 from qfieldsync.gui.package_dialog import PackageDialog
 
-def package_for_qfield(iface, project, outdir, filename):
+def package_for_qfield(iface, project, outdir, filename, assets=None):
     """
     Packages a QField‐ready project and zips it, without ever
     overwriting or mutating the “live” project on disk.
@@ -37,6 +38,12 @@ def package_for_qfield(iface, project, outdir, filename):
     dlg._validate_packaged_project_filename()
     dlg.package_project()
     dlg.close(); dlg.deleteLater(); QCoreApplication.processEvents()
+
+    if assets:
+        assets_dir = tmp_qfield_dir / "assets"
+        assets_dir.mkdir(exist_ok=True)
+        for asset in assets:
+            shutil.copy2(asset, assets_dir / Path(asset).name)
 
     # Zip the whole tmp_dir
     zip_path = Path(outdir) / f"{filename}.zip"

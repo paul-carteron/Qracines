@@ -181,7 +181,13 @@ class QfieldPackager(UIBinderMixin):
         parts = [date_str,prefix, seq_id] + list(codes or [])
         return "_".join(filter(None, parts))
 
-    def package(self, prefix: str, seq_id = None, codes: Optional[Iterable[str]] = None) -> Optional[Path]:
+    def package(
+        self,
+        prefix: str,
+        seq_id=None,
+        codes: Optional[Iterable[str]] = None,
+        assets: Optional[Iterable[Path]] = None,
+    ) -> Optional[Path]:
         """Package the current project for QField and return the archive path or None if disabled."""
         filename = self.construct_filename(prefix, seq_id, codes)
 
@@ -196,7 +202,13 @@ class QfieldPackager(UIBinderMixin):
 
         try:
             # ─── 2) Do the actual packaging work ───────────────────────────
-            out = package_for_qfield(self.iface, self.project, self.outdir, filename)
+            out = package_for_qfield(
+                self.iface,
+                self.project,
+                self.outdir,
+                filename,
+                assets=assets,
+            )
         finally:
             busy.accept()                    # mark as done (closes the dialog)
             busy.deleteLater()               # schedule for deletion
