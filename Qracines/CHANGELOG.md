@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [V1.0.18] - Unreleased
+## [V1.0.19]
+- Ajout du projet pédologie
+
+## [V1.0.18]
 
 ### Ajouts
 
@@ -15,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - Harmonisation de `FormBuilder` autour de `add_fields`, `add_group` et `add_relation`, avec prise en charge des alias de relation et des expressions de visibilité.
 
-## [V1.0.17] - Unreleased
+## [V1.0.17]
 
 ### Ajouts
 
