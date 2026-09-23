@@ -1,24 +1,25 @@
 from qgis.PyQt.QtWidgets import QMessageBox, QToolButton, QMenu
 from qgis.PyQt.QtGui import QIcon
 
-from .modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
-from .modules.diagnostic.merge.diagnostic_merge import DiagnosticMergeDialog
-from .modules.diagnostic.load.diagnostic_load import DiagnosticLoad
+from Qracines.modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
+from Qracines.modules.diagnostic.merge.diagnostic_merge import DiagnosticMergeDialog
+from Qracines.modules.diagnostic.load.diagnostic_load import DiagnosticLoad
+from Qracines.modules.diagnostic.extract.diagnostic_extract import DiagnosticExtract
 
-from .modules.expertise.create.expertise_create import ExpertiseCreateDialog
-from .modules.expertise.merge.expertise_merge import ExpertiseMergeDialog
-from .modules.expertise.load.expertise_load import ExpertiseLoad
+from Qracines.modules.expertise.create.expertise_create import ExpertiseCreateDialog
+from Qracines.modules.expertise.merge.expertise_merge import ExpertiseMergeDialog
+from Qracines.modules.expertise.load.expertise_load import ExpertiseLoad
 
-from .modules.pedology.create.pedology_create import PedologyCreateDialog
-from .modules.pedology.merge.pedology_merge import PedologyMergeDialog
-from .modules.pedology.load.pedology_load import PedologyLoad
+from Qracines.modules.pedology.create.pedology_create import PedologyCreateDialog
+from Qracines.modules.pedology.merge.pedology_merge import PedologyMergeDialog
+from Qracines.modules.pedology.load.pedology_load import PedologyLoad
 
-from .modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDialog
-from .modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialog
-from .modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
+from Qracines.modules.tree_marking.create.tree_marking_create import TreeMarkingCreateDialog
+from Qracines.modules.tree_marking.merge.tree_marking_merge import TreeMarkingMergeDialog
+from Qracines.modules.tree_marking.load.tree_marking_load import TreeMarkingLoad
 
-from .modules.scan25.scan25 import add_scan25
-from .modules.carteaux.carteaux import add_carteaux
+from Qracines.modules.scan25.scan25 import add_scan25
+from Qracines.modules.carteaux.carteaux import add_carteaux
 
 
 # import utils
@@ -27,11 +28,11 @@ from .utils.variable import get_project_variable, get_global_variable
 from pathlib import Path
 
 QFIELD_BUTTONS = [
-#   ("icon-file",        "tooltip",    "create_handler",           "merge_handler"",          "load_handler"          ),
-    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_merge",   "open_diagnostic_load"  ),
-    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_merge",     "open_pedology_load"    ),
-    ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load"),
-    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge",    "open_expertise_load"   ),
+#   ("icon-file",        "tooltip",    "create_handler",           "merge_handler",           "load_handler",           "extract_handler"          ),
+    ("diagnostic.svg",   "Diagnostic", "open_diagnostic_create",   "open_diagnostic_merge",   "open_diagnostic_load",   "open_diagnostic_extract"),
+    ("pedology.svg",     "Pédologie",  "open_pedology_create",     "open_pedology_merge",     "open_pedology_load",     None                     ),
+    ("tree_marking.svg", "Martelage",  "open_tree_marking_create", "open_tree_marking_merge", "open_tree_marking_load", None                     ),
+    ("expertise.svg",    "Expertise",  "open_expertise_create",    "open_expertise_merge",    "open_expertise_load",    None                     ),
 ]
 
 
@@ -93,7 +94,7 @@ class Qsequoia2Racines:
         self.toolbar = self.iface.addToolBar(self.plugin_name)
         self.toolbar.setObjectName("Qsequoia2RacinesToolbar")
 
-        for icon, tooltip, create_handler, merge_handler, load_handler in QFIELD_BUTTONS:
+        for icon, tooltip, create_handler, merge_handler, load_handler, extract_handler in QFIELD_BUTTONS:
 
             menu_items = []
 
@@ -105,6 +106,9 @@ class Qsequoia2Racines:
 
             if load_handler and hasattr(self, load_handler):
                 menu_items.append(("Charger", getattr(self, load_handler)))
+
+            if extract_handler and hasattr(self, extract_handler):
+                menu_items.append(("Extraire", getattr(self, extract_handler)))
 
             btn = QfieldButton(
                 icon=self.plugin_dir / "icons" / icon,
@@ -154,6 +158,13 @@ class Qsequoia2Racines:
 
         dialog = DiagnosticLoad()
         dialog.load()
+
+    def open_diagnostic_extract(self):
+        if not self._check_seq_dir():
+            return None
+
+        dialog = DiagnosticExtract()
+        dialog.extract()
         
     # endregion
         

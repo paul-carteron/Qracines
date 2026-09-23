@@ -278,7 +278,7 @@ def _load_peuplement_config() -> dict:
 
 def get_peuplements(*categories):
     """
-    Return the list of guide names defined under 'guides' in stations.yaml.
+    Return the list of peuplement names defined under 'peuplement' in peuplement.yaml.
     """
     peuplement_config = _load_peuplement_config()
     peuplements = peuplement_config.get("peuplement")
