@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Sélectionnez les géopackages pédologiques à compiler :</string>
+      <string>Sélectionnez les OUTPUT.gpkg pédologiques à compiler :</string>
      </property>
     </widget>
    </item>

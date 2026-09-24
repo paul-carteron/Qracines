@@ -1,3 +1,5 @@
+import datetime
+
 import processing
 import math
 from qgis.core import QgsProcessing
@@ -58,7 +60,11 @@ def merge_with_ess(layer, ess, f_ess_id ='ESSENCE_ID_KEY'):
         })['OUTPUT']
     return layer_with_ess
 
-def save_as_xlsx(*layers, path):
+def save_as_xlsx(*layers, path, add_date=True):
+
+    if add_date:
+        extraction_date = datetime.date.today().strftime("%Y%m%d")
+        path = path.with_stem(f"{extraction_date}_{path.stem}")
 
     processing.run("native:exporttospreadsheet", {
         'LAYERS': list(layers),

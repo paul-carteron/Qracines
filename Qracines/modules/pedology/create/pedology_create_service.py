@@ -72,15 +72,14 @@ class PedologyCreateService:
         return result["OUTPUT"]
 
     def _create_relation(self, layers):
-        return create_relation(
-            layers["sondage"], layers["horizons"],
-            "UUID", "SONDAGE",
-            relation_id="sondage_horizons", relation_name="sondage",
-        )
+        return create_relation(layers["sondage"], layers["horizons"], "UUID", "SONDAGE")
 
     def _configure_layers(self, layers, relation):
         stations = get_stations(self.guide)
         SondageConfigurator(
-            layers["sondage"], stations, relation=relation
+            layers["sondage"],
+            stations,
+            relation=relation,
+            guide=self.guide,
         ).configure()
         HorizonsConfigurator(layers["horizons"]).configure()

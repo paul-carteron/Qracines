@@ -20,10 +20,11 @@ from ..config import (
 
 
 class SondageConfigurator:
-    def __init__(self, layer, stations, relation=None):
+    def __init__(self, layer, stations, relation=None, guide=None):
         self.layer = layer
         self.stations = stations
         self.relation = relation
+        self.guide = guide
         self.fields = FieldEditor(layer)
         self.form = FormBuilder(layer)
 
@@ -41,6 +42,17 @@ class SondageConfigurator:
         self.form.apply()
 
     def _configure_fields(self):
+
+        # region GUIDE
+        self.fields.set_alias("GUIDE", "Guide de station")
+        if self.guide:
+            escaped_guide = self.guide.replace("'", "''")
+            self.fields.set_default_value("GUIDE", f"'{escaped_guide}'")
+            self.fields.set_constraint(
+                "GUIDE", QgsFieldConstraints.ConstraintNotNull
+            )
+            self.fields.set_read_only("GUIDE")
+        # endregion
 
         # region UUID
         self.fields.set_default_value("UUID", "uuid()")
@@ -117,7 +129,7 @@ class SondageConfigurator:
         self.layer.setRenderer(QgsSingleSymbolRenderer(symbol))
 
         label_settings = QgsPalLayerSettings()
-        label_settings.fieldName = "UUID"
+        label_settings.fieldName = "fid"
         label_settings.placement = Qgis.LabelPlacement.OverPoint
 
         text_format = QgsTextFormat()

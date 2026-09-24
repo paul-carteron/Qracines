@@ -134,7 +134,12 @@ class HorizonsConfigurator:
         )
         self.fields.add_value_map(
             "TEXTURE",
-            {"map": [{value: value} for value in TEXTURE_CHOICES]},
+            {
+                "map": [
+                    {label: value}
+                    for label, value in TEXTURE_CHOICES.items()
+                ]
+            },
         )
         # endregion
 

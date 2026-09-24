@@ -6,6 +6,7 @@ PEDOLOGY_LAYERS = {
         "geometry": "Point",
         "fields": [
             ("UUID", QMetaType.Type.QString),
+            ("GUIDE", QMetaType.Type.QString),
             ("REMARQUE", QMetaType.Type.QString),
             ("HUMUS", QMetaType.Type.QString),
             ("TOPOGRAPHIE", QMetaType.Type.QString),

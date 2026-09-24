@@ -240,27 +240,33 @@ def _load_pedology_config() -> dict:
     return _PEDOLOGY_CONFIG
 
 def get_guides():
-    """
-    Return the list of guide names defined under 'guides' in stations.yaml.
-    """
+    """Return the stable guide keys defined in pedology.yaml."""
     pedology_config = _load_pedology_config()
     guides = pedology_config.get("guides")
     if not isinstance(guides, dict):
-        raise KeyError("Missing or invalid top‐level 'guides' mapping in stations.yaml")
+        raise KeyError("Missing or invalid top-level 'guides' mapping in pedology.yaml")
     return list(guides.keys())
 
+def get_guide_label(guide):
+    """Return the display label for a guide key."""
+    guides = _load_pedology_config().get("guides", {})
+    if guide not in guides:
+        raise KeyError(f"Guide '{guide}' not found in pedology.yaml")
+    config = guides[guide]
+    label = config.get("label")
+    if not isinstance(label, str) or not label:
+        raise ValueError(f"Guide '{guide}' has no valid label")
+    return label
+
 def get_stations(guide):
-    """
-    Given a guide name, return its list of station codes.
-    Raises KeyError if the guide is not defined.
-    """
-    pedology_config = _load_pedology_config()
-    guides = pedology_config.get("guides")
-    if not isinstance(guides, dict) or guide not in guides:
-        raise KeyError(f"guide '{guide}' not found in stations.yaml")
-    stations = guides[guide]
-    if not isinstance(stations, list):
-        raise ValueError(f"Expected a list of stations for '{guide}', got {type(stations).__name__}")
+    """Return the station strings configured for a guide key."""
+    guides = _load_pedology_config().get("guides", {})
+    if guide not in guides:
+        raise KeyError(f"Guide '{guide}' not found in pedology.yaml")
+    guide_config = guides[guide]
+    stations = guide_config.get("stations")
+    if not isinstance(stations, list) or not all(isinstance(value, str) for value in stations):
+        raise ValueError(f"Guide '{guide}' has no valid stations list")
     return stations
 
 # endregion

@@ -1,5 +1,6 @@
 from qgis.PyQt.QtWidgets import QMessageBox, QToolButton, QMenu
 from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import QCoreApplication, QEvent
 
 from Qracines.modules.diagnostic.create.diagnostic_create import DiagnosticCreateDialog
 from Qracines.modules.diagnostic.merge.diagnostic_merge import DiagnosticMergeDialog
@@ -279,5 +280,7 @@ class Qsequoia2Racines:
         
         # Remove the toolbar if it exists
         if self.toolbar:
-            self.toolbar.deleteLater()  # Properly remove the toolbar
+            self.iface.mainWindow().removeToolBar(self.toolbar)
+            self.toolbar.deleteLater()
+            QCoreApplication.sendPostedEvents(self.toolbar, QEvent.DeferredDelete)
             self.toolbar = None
