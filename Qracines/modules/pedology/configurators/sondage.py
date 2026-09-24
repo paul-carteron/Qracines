@@ -1,14 +1,14 @@
-from PyQt5.QtGui import QColor, QFont
 from qgis.core import (
     Qgis,
     QgsFieldConstraints,
     QgsMarkerSymbol,
     QgsPalLayerSettings,
     QgsSingleSymbolRenderer,
-    QgsTextBufferSettings,
-    QgsTextFormat,
     QgsVectorLayerSimpleLabeling,
+    QgsTextFormat,
+    QgsTextBufferSettings,
 )
+from PyQt5.QtGui import QFont, QColor
 
 from ....core.layer import FieldEditor, FormBuilder
 from ..config import (
@@ -128,22 +128,23 @@ class SondageConfigurator:
         )
         self.layer.setRenderer(QgsSingleSymbolRenderer(symbol))
 
-        label_settings = QgsPalLayerSettings()
-        label_settings.fieldName = "fid"
-        label_settings.placement = Qgis.LabelPlacement.OverPoint
-
         text_format = QgsTextFormat()
-        text_format.setFont(QFont("Arial", 10))
-        text_format.setSize(10)
-        text_format.setColor(QColor(191, 22, 24))
+        text_format.setFont(QFont("Arial", 12))
+        text_format.setSize(12)
 
         buffer = QgsTextBufferSettings()
         buffer.setEnabled(True)
-        buffer.setSize(1)
-        buffer.setColor(QColor(250, 250, 250))
-        text_format.setBuffer(buffer)
+        buffer.setSize(1.5)  # thickness
+        buffer.setColor(QColor("white"))
 
+        text_format.setBuffer(buffer)   
+
+        label_settings = QgsPalLayerSettings()
+        label_settings.fieldName = "fid"
+        label_settings.placement = Qgis.LabelPlacement.OverPoint
+        label_settings.quadOffset = Qgis.LabelQuadrantPosition.Above
         label_settings.setFormat(text_format)
+        
         self.layer.setLabeling(QgsVectorLayerSimpleLabeling(label_settings))
         self.layer.setLabelsEnabled(True)
         self.layer.triggerRepaint()

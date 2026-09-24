@@ -52,7 +52,7 @@ TEXTURE_CHOICES = {
     "Sable (A:5% L:5% S:90%)": "S",
     "Sable limoneux (A:5% L:25% S:70%)": "SL",
     "Sable argileux (A:20% L:10% S:70%)": "SA",
-    "Limon léger sableux (A:5% L:5% S:40%)": "LLS",
+    "Limon léger sableux (A:5% L:60% S:45%)": "LLS",
     "Limon sableux (A:10% L:45% S:45%)": "LS",
     "Limon moyennement sableux (A:10% L:65% S:25%)": "LMS",
     "Limon sablo-argileux (A:25% L:35% S:40%)": "LSA",

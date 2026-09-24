@@ -74,9 +74,7 @@ class PedologyLoad:
                 msg, ok = layers["sondage_horizons"].loadNamedStyle(str(styles[0]), QgsMapLayer.AllStyleCategories)
                 messageLog(f"[STYLE] {msg}")
 
-                if ok:
-                    self.update_categories(layers["sondage_horizons"])
-                else:
+                if not ok:
                     messageLog(f"[STYLE] Failed to load {styles[0]}", level="e")
             else:
                 messageLog(f"[STYLE] Missing {style_name}", level="w")
@@ -85,4 +83,3 @@ class PedologyLoad:
         unfold("PEDOLOGY")
 
         return layers
-
