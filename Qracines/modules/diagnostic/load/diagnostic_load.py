@@ -1,6 +1,12 @@
+from pathlib import Path
+
+from qgis.core import QgsProject
+from qgis.PyQt.QtWidgets import QMessageBox
+
 # Import from utils folder
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
 from ....utils.config import get_qfield_path
+from ....utils.message import messageLog
 
 # configurators
 from ..configurators.placette import PlacetteConfigurator
@@ -17,12 +23,36 @@ class DiagnosticLoad:
         self.gpkg_path = get_qfield_path("diag")
     
     def load(self):
+        loaded_layers = self._get_loaded_layers()
+        if loaded_layers:
+            messageLog(f"GeoPackage already loaded, skipping: {self.gpkg_path}")
+            return loaded_layers
 
-        layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        try:
+            layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        except FileNotFoundError:
+            QMessageBox.warning(
+                None,
+                "Diagnostic introuvable",
+                f"Le géopackage diagnostic est introuvable :\n{self.gpkg_path}\n\n"
+                "Compilez les fichiers avec Diagnostic > Traiter, ou vérifiez "
+                "le dossier et l'identifiant de la séquence sélectionnée.",
+            )
+            return {}
         relations = self._create_relations(layers)
         self._configure_layers(layers, relations)
 
         return layers
+
+    def _get_loaded_layers(self):
+        gpkg_path = Path(self.gpkg_path).resolve()
+
+        return {
+            layer.name(): layer
+            for layer in QgsProject.instance().mapLayers().values()
+            if Path(layer.source().split("|", 1)[0]).resolve() == gpkg_path
+        }
+
     def _create_relations(self, layers):
         
         relations = {

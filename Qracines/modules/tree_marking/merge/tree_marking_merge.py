@@ -131,7 +131,7 @@ class TreeMarkingMergeDialog(QDialog, FORM_CLASS):
             formated_arbres = processing.run("qgis:refactorfields", {
                 'INPUT': arbres_with_ess,
                 'FIELDS_MAPPING': [
-                    {'expression': '"fid"',         'name': 'ID',          'type': 10, 'length': 50, 'precision': 0},
+                    {'expression': '"COMPTEUR"',    'name': 'ID',          'type': 2,  'length': 10, 'precision': 0},
                     {'expression': '"PARCELLE"',    'name': 'PARCELLE',    'type': 10, 'length': 50, 'precision': 0},
                     {'expression': ess_expr,        'name': 'ESSENCE',     'type': 10, 'length': 50, 'precision': 0},
                     {'expression': '"DIAMETRE"',    'name': 'DIAMETRE',    'type': 2,  'length': 10, 'precision': 3},

@@ -148,16 +148,24 @@ def load_gpkg(gpkg_path, *layers, group_name=None):
         Dictionary {layer_name: QgsVectorLayer}
     """
 
-    # Resolve path
-    if not Path(gpkg_path).exists():
+    # Only bare names can be configuration keys; missing file paths stay paths.
+    path = Path(gpkg_path)
+    if (
+        isinstance(gpkg_path, str)
+        and not path.exists()
+        and path.name == gpkg_path
+        and not path.suffix
+    ):
         try:
-            gpkg_path = get_path(gpkg_path)
-        except Exception:
-            raise FileNotFoundError(f"'{gpkg_path}' is not a valid path or key.")
-    else:
-        gpkg_path = Path(gpkg_path)
+            resolved_path = get_path(gpkg_path)
+        except KeyError as exc:
+            raise FileNotFoundError(f"'{gpkg_path}' is not a valid path or key.") from exc
+        if resolved_path is None:
+            raise ValueError("GeoPackage path is not configured.")
+        path = Path(resolved_path)
+    gpkg_path = path
 
-    if not gpkg_path.exists():
+    if not gpkg_path.is_file():
         raise FileNotFoundError(f"GeoPackage not found: {gpkg_path}")
 
     datasource = ogr.Open(str(gpkg_path))

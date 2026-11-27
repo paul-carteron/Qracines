@@ -1,14 +1,14 @@
-from PyQt5.QtGui import QColor, QFont
 from qgis.core import (
     Qgis,
     QgsFieldConstraints,
     QgsMarkerSymbol,
     QgsPalLayerSettings,
     QgsSingleSymbolRenderer,
-    QgsTextBufferSettings,
-    QgsTextFormat,
     QgsVectorLayerSimpleLabeling,
+    QgsTextFormat,
+    QgsTextBufferSettings,
 )
+from PyQt5.QtGui import QFont, QColor
 
 from ....core.layer import FieldEditor, FormBuilder
 from ..config import (
@@ -20,10 +20,11 @@ from ..config import (
 
 
 class SondageConfigurator:
-    def __init__(self, layer, stations, relation=None):
+    def __init__(self, layer, stations, relation=None, guide=None):
         self.layer = layer
         self.stations = stations
         self.relation = relation
+        self.guide = guide
         self.fields = FieldEditor(layer)
         self.form = FormBuilder(layer)
 
@@ -41,6 +42,17 @@ class SondageConfigurator:
         self.form.apply()
 
     def _configure_fields(self):
+
+        # region GUIDE
+        self.fields.set_alias("GUIDE", "Guide de station")
+        if self.guide:
+            escaped_guide = self.guide.replace("'", "''")
+            self.fields.set_default_value("GUIDE", f"'{escaped_guide}'")
+            self.fields.set_constraint(
+                "GUIDE", QgsFieldConstraints.ConstraintNotNull
+            )
+            self.fields.set_read_only("GUIDE")
+        # endregion
 
         # region UUID
         self.fields.set_default_value("UUID", "uuid()")
@@ -116,22 +128,23 @@ class SondageConfigurator:
         )
         self.layer.setRenderer(QgsSingleSymbolRenderer(symbol))
 
-        label_settings = QgsPalLayerSettings()
-        label_settings.fieldName = "UUID"
-        label_settings.placement = Qgis.LabelPlacement.OverPoint
-
         text_format = QgsTextFormat()
-        text_format.setFont(QFont("Arial", 10))
-        text_format.setSize(10)
-        text_format.setColor(QColor(191, 22, 24))
+        text_format.setFont(QFont("Arial", 12))
+        text_format.setSize(12)
 
         buffer = QgsTextBufferSettings()
         buffer.setEnabled(True)
-        buffer.setSize(1)
-        buffer.setColor(QColor(250, 250, 250))
-        text_format.setBuffer(buffer)
+        buffer.setSize(1.5)  # thickness
+        buffer.setColor(QColor("white"))
 
+        text_format.setBuffer(buffer)   
+
+        label_settings = QgsPalLayerSettings()
+        label_settings.fieldName = "fid"
+        label_settings.placement = Qgis.LabelPlacement.OverPoint
+        label_settings.quadOffset = Qgis.LabelQuadrantPosition.Above
         label_settings.setFormat(text_format)
+        
         self.layer.setLabeling(QgsVectorLayerSimpleLabeling(label_settings))
         self.layer.setLabelsEnabled(True)
         self.layer.triggerRepaint()

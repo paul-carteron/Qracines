@@ -7,7 +7,7 @@ from qgis.core import QgsCoordinateReferenceSystem, QgsProject
 from qgis.utils import iface
 
 from .pedology_create_service import PedologyCreateService
-from ....utils.config import get_guides, get_racines_path
+from ....utils.config import get_guide_label, get_guides, get_racines_path
 from ....utils.ui import QfieldPackager, SeqLayerSelector
 from ....utils.variable import get_global_variable, get_project_variable
 
@@ -24,7 +24,8 @@ class PedologyCreateDialog(QDialog, FORM_CLASS):
         self.seq_id = get_project_variable("QS2_seq_id") or None
         self.style_dir = get_global_variable("QS2_styles_directory") or None
 
-        self.cob_stations.addItems(get_guides())
+        for guide in get_guides():
+            self.cob_stations.addItem(get_guide_label(guide), guide)
 
         self.seq_vect_selector = SeqLayerSelector(
             ui=self,
@@ -73,7 +74,7 @@ class PedologyCreateDialog(QDialog, FORM_CLASS):
         )
 
         service = PedologyCreateService(
-            guide=self.cob_stations.currentText(),
+            guide=self.cob_stations.currentData(),
             seq_dir=self.seq_dir,
             style_dir=self.style_dir,
             seq_vect_keys=self.seq_vect_selector.selected_keys(),
@@ -86,7 +87,13 @@ class PedologyCreateDialog(QDialog, FORM_CLASS):
             message = "Projet pédologique terminé !"
             if self.packager.is_valid():
                 packaged_dir = self.packager.package(
-                    prefix="PEDO", seq_id=self.seq_id
+                    prefix="PEDO",
+                    seq_id=self.seq_id,
+                    assets=[
+                        Path(__file__).parents[3]
+                        / "assets"
+                        / "triangle_des_textures.jpeg"
+                    ],
                 )
                 message += f"\nProjet packagé dans :\n{packaged_dir}"
 
