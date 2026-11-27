@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [V1.0.21]
+- Changemetn des sliders en range classique
+
 ## [V1.0.20]
 - Ajout d'une fonctionnalité pour extraire les valeurs du diag
 
