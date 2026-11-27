@@ -4,9 +4,9 @@ import processing
 import math
 from qgis.core import QgsProcessing
 
-def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID_KEY'):
+def calculate_essence_id(layer, f_ess_id, f_ess_sec_id=None, f_name='ESSENCE_ID_KEY'):
     """
-    Adds a calculated ESSENCE_ID field to a layer by combining two existing fields.
+    Adds an integer essence ID, optionally falling back to a secondary field.
 
     Parameters
     ----------
@@ -14,10 +14,10 @@ def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID_KEY')
         The input layer to process.
     f_ess_id : str
         Name of the primary essence ID field (e.g. 'TR_ESSENCE_ID').
-    f_ess_sec_id : str
-        Name of the secondary essence ID field (e.g. 'TR_ESSENCE_SECONDAIRE_ID').
+    f_ess_sec_id : str, optional
+        Secondary essence ID field used when the primary field is empty.
     f_name : str, optional
-        Name of the output field to create. Defaults to 'ESSENCE_ID'.
+        Name of the output field to create. Defaults to 'ESSENCE_ID_KEY'.
 
     Returns
     -------
@@ -27,20 +27,17 @@ def calculate_essence_id(layer, f_ess_id, f_ess_sec_id, f_name='ESSENCE_ID_KEY')
         - Otherwise, secondary field value if not null or empty
         - Cast as integer
     """
+    essence_expr = f'''nullif(to_string("{f_ess_id}"), '')'''
+    if f_ess_sec_id:
+        essence_expr = f'''coalesce({essence_expr}, nullif(to_string("{f_ess_sec_id}"), ''))'''
+
     layer_with_ess_id = processing.run("qgis:fieldcalculator", {
         'INPUT': layer,
         'FIELD_NAME': f_name,
         'FIELD_TYPE': 1,
         'FIELD_LENGTH': 50,
         'FIELD_PRECISION': 0,
-        'FORMULA': f"""
-            to_int(
-                coalesce(
-                    nullif("{f_ess_id}", ''),
-                    nullif("{f_ess_sec_id}", '')
-                )
-            )
-        """,
+        'FORMULA': f"to_int({essence_expr})",
         'OUTPUT': 'memory:'
     })['OUTPUT']
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from qgis.core import QgsProject
+from qgis.PyQt.QtWidgets import QMessageBox
 
 # Import from utils folder
 from ....utils.layers import load_gpkg, create_relation, set_relation_label
@@ -27,7 +28,17 @@ class DiagnosticLoad:
             messageLog(f"GeoPackage already loaded, skipping: {self.gpkg_path}")
             return loaded_layers
 
-        layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        try:
+            layers = load_gpkg(self.gpkg_path, group_name="DIAGNOSTIC")
+        except FileNotFoundError:
+            QMessageBox.warning(
+                None,
+                "Diagnostic introuvable",
+                f"Le géopackage diagnostic est introuvable :\n{self.gpkg_path}\n\n"
+                "Compilez les fichiers avec Diagnostic > Traiter, ou vérifiez "
+                "le dossier et l'identifiant de la séquence sélectionnée.",
+            )
+            return {}
         relations = self._create_relations(layers)
         self._configure_layers(layers, relations)
 

@@ -33,8 +33,8 @@ class ParamConfigurator:
         for field, alias in aliases:
             self.fe.set_alias(field, alias)
 
-        h_config = {'AllowNull': False, 'Max': 40, 'Min': 1, 'Precision': 0, 'Step': 1, 'Style': 'Slider'}
-        d_config = {'AllowNull': False, 'Max': 200, 'Min': 5, 'Precision': 0, 'Step': 5, 'Style': 'Slider'}
+        h_config = {'AllowNull': False, 'Max': 40, 'Min': 1, 'Precision': 0, 'Step': 1}
+        d_config = {'AllowNull': False, 'Max': 200, 'Min': 5, 'Precision': 0, 'Step': 5}
 
         self.fe.add_range("HMIN", h_config)
         self.fe.set_default_value("HMIN", "3")
